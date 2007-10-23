@@ -17,19 +17,17 @@
 #define TEST_INDEP 1
 #define TEST_BLOCK 1
 
+extern int nTests;
+extern int nFails;
+
 static int
 testGetScenarioLength(const char StocFile[], const int expScens,
 		      const int expNodes, const int expReals);
 
-static int nTests = 0;
-static int nFails = 0;
-
 /**
- *  Call the testGtscel function and print a summary of results.
+ *  Call the test function for different inputs.
  */
 int unitGetScenarioLength(void) {
-
-  int failures = 0;
 
 #if TEST_INDEP
   testGetScenarioLength("trivial.sto", 4, 5, 4);
@@ -62,13 +60,7 @@ int unitGetScenarioLength(void) {
   testGetScenarioLength("minoux-100-0.5.sto", 100, 101, 0);
 #endif /* TEST_BLOCK */
 
-  printf("\nTotal tests: %d\n", nTests);
-  printf("Total fails: %d\n", nFails);
-
-  if (nFails == 0 && nTests > 0)
-    printf("\n *** ALL TESTS PASS! ***\n");
-
-  return failures;
+  return 0;
 }
 
 int
