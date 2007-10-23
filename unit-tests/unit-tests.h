@@ -7,4 +7,7 @@
 extern int
 unitGetScenarioLength(void);
 
+extern int
+unitCountRows(void);
+
 #endif /* UNIT_TESTS_H */

@@ -25,6 +25,29 @@ enum ErrorCodes {
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 
+/** The SmpsCore class */
+class SmpsCore {
+
+ public:
+  SmpsCore(const char *coreFileName);
+
+  /** Count the number of rows declared in the core file */
+  int countRows(void);
+
+  /** Retrieve the number of rows in the core file */
+  int getRows(void);
+
+ private:
+
+  /** Number of rows in the core file */
+  int nRows;
+
+  /** Name of the core file */
+  char coreFile[100];
+
+};
+
+
 /** The SmpsTree class */
 class SmpsTree {
 
