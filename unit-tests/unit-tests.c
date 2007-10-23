@@ -1,5 +1,4 @@
-extern int
-unitGetScenarioLength(void);
+#include "unit-tests.h"
 
 int main(void) {
 
