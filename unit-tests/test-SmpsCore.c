@@ -20,6 +20,9 @@ extern int nFails;
 static int
 testCountRows(const char CoreFile[], const int expRows);
 
+static int
+testGetStages(const char TimeFile[], const int expStages);
+
 /**
  *  Call the test function for different inputs.
  */
@@ -45,6 +48,33 @@ int unitCountRows(void) {
   return 0;
 }
 
+/**
+ *  Call the test function for different inputs.
+ */
+int unitGetStages(void) {
+
+  testGetStages("trivial.tim", 2);
+  testGetStages("LandS.tim", 2);
+  testGetStages("gbd.tim", 2);
+  testGetStages("smallnet.tim", 2);
+  testGetStages("mod2-2.tim", 2);
+  testGetStages("sslp_10_50_100.tim", 2);
+  testGetStages("ssn.tim", 2);
+  testGetStages("stocfor1.tim", 2);
+  testGetStages("minoux.tim", 2);
+  testGetStages("sgpf5y3.tim", 3);
+  testGetStages("fxm2.tim", 2);
+  testGetStages("fxm4.tim", 4);
+  testGetStages("jll_gva.tim", 2);
+  testGetStages("pltexpA2.tim", 2);
+  testGetStages("pltexpA4.tim", 4);
+  testGetStages("pltexpA7.tim", 7);
+  testGetStages("stormG2.tim", 2);
+  testGetStages("T1mgnB.tim", 2);
+
+  return 0;
+}
+
 int testCountRows(const char CoreFile[], const int expRows) {
 
   int rv;
@@ -66,6 +96,34 @@ int testCountRows(const char CoreFile[], const int expRows) {
   nTests++;
   if (nRows != expRows) {
     printf(" | FAIL: m: %d (exp: %d)\n", nRows, expRows);
+    nFails++;
+  }
+
+  return 0;
+}
+
+int testGetStages(const char TimeFile[], const int expStages) {
+
+  int rv;
+
+  char FileName[100];
+  char SmpsPath[] = SMPS_PATH;
+  strcpy(FileName, SmpsPath);
+  strcat(FileName, TimeFile);
+
+  printf("* Testing: %s\n", TimeFile);
+
+  /* scan the stochastic file for the number of scenarios and the length */
+  SmpsCore core("", FileName);
+  rv = core.countStages();
+  if (rv)
+    return rv;
+
+  int nStages = core.getStages();
+  nTests++;
+
+  if (nStages != expStages) {
+    printf(" | FAIL: nStages: %d (exp: %d)\n", nStages, expStages);
     nFails++;
   }
 

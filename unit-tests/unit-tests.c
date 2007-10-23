@@ -20,6 +20,7 @@ int main(void) {
 
   callSuite(unitGetScenarioLength, "getScenarioLength");
   callSuite(unitCountRows, "countRows");
+  callSuite(unitGetStages, "getStages");
 
   return 0;
 }

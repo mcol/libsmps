@@ -24,4 +24,7 @@ unitGetScenarioLength(void);
 extern int
 unitCountRows(void);
 
+extern int
+unitGetStages(void);
+
 #endif /* UNIT_TESTS_H */
