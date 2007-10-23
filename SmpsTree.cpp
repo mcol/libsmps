@@ -116,8 +116,8 @@ int SmpsTree::getScenarioLength() {
 	scanIndepLine(stoc);
       else if (stocType == TYPE_BLOCKS)
 	scanBlocksLine(stoc);
-      if (stocType < 0)
-	return ERROR_WRONG_STOC_TYPE;
+      else
+	return stocType;
     }
   }
 
@@ -148,12 +148,12 @@ getStocType(char *buffer) {
 
   else if (strcmp(type, "SCEN") == 0) {
     fprintf(stderr, "Error: SCENARIOS format not implemented.\n");
-    return -1;
+    return TYPE_NOT_IMPLEMENTED;;
   }
 
   else {
     fprintf(stderr, "Error: Stochastic type not recognised.\n");
-    return -1;
+    return TYPE_NOT_RECOGNISED;
   }
 }
 
@@ -219,7 +219,7 @@ int SmpsTree::scanIndepLine(FILE *stoc) {
     else {
       fprintf(stderr, "Something wrong with this line? (read %d values)\n%s\n",
 	      nValuesRead, buffer);
-      return 1;
+      return ERROR_STOC_FORMAT;
     }
   }
 
