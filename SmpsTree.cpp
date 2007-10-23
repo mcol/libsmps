@@ -19,7 +19,6 @@
 */
 
 #define DEBUG_SMPSTREE  0
-#define MPS_FORMAT_SIZE 11
 
 static int
 getStocType(char *buffer);
@@ -79,7 +78,7 @@ int SmpsTree::getMaxReals() {
 int SmpsTree::getScenarioLength() {
 
   char buffer[LINE_MAX];
-  char format[MPS_FORMAT_SIZE];
+  char format[SMPS_FIELD_SIZE];
   int foundName = 0;
   int stocType = 0;
 
@@ -131,7 +130,7 @@ int SmpsTree::getScenarioLength() {
 int
 getStocType(char *buffer) {
 
-  char type[MPS_FORMAT_SIZE];
+  char type[SMPS_FIELD_SIZE];
 
   sscanf(buffer, "%s\n", type);
 
@@ -166,8 +165,8 @@ int SmpsTree::scanIndepLine(FILE *stoc) {
   // check that it is DISCRETE
 
   char buffer[LINE_MAX];
-  char row[MPS_FORMAT_SIZE], curRow[MPS_FORMAT_SIZE];
-  char col[MPS_FORMAT_SIZE], curCol[MPS_FORMAT_SIZE];
+  char row[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE];
+  char col[SMPS_FIELD_SIZE], curCol[SMPS_FIELD_SIZE];
 
   int nChangesBlock = 1;
   int nValuesRead;
@@ -235,9 +234,9 @@ int SmpsTree::scanBlocksLine(FILE *stoc) {
   int nBlocks = 0, nRealBlock = 0;
   bool newBlock = false;
   char buffer[LINE_MAX];
-  char row[MPS_FORMAT_SIZE], curRow[MPS_FORMAT_SIZE] = "";
-  char per[MPS_FORMAT_SIZE], curPer[MPS_FORMAT_SIZE] = "";
-  char col[MPS_FORMAT_SIZE], rw2[MPS_FORMAT_SIZE];
+  char row[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE] = "";
+  char per[SMPS_FIELD_SIZE], curPer[SMPS_FIELD_SIZE] = "";
+  char col[SMPS_FIELD_SIZE], rw2[SMPS_FIELD_SIZE];
   int nValuesRead;
 
   // read all lines of the file

@@ -4,6 +4,9 @@
 /** Maximum length of a line */
 #define LINE_MAX 200
 
+/** Length of each field in the smps files */
+#define SMPS_FIELD_SIZE 11
+
 /** The type of stochastic file */
 enum StocType {
   TYPE_INDEP = 1,
