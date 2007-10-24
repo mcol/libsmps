@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "unit-tests.h"
-#include "../smps.h"
+#include "smps.h"
 
 extern int nTests;
 extern int nFails;

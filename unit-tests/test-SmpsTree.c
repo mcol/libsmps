@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "unit-tests.h"
-#include "../smps.h"
+#include "smps.h"
 
 #define TEST_INDEP 1
 #define TEST_BLOCK 1

@@ -10,14 +10,6 @@ OBJECTS := \
 	SmpsTree.o \
 	$(NULL)
 
-TESTS	:= \
-	SmpsCore.o \
-	SmpsTree.o \
-	unit-tests/test-SmpsCore.o \
-	unit-tests/test-SmpsTree.o \
-	unit-tests/unit-tests.o \
-	$(NULL)
-
 HEADERS := \
 	smps.h \
 	$(NULL)
