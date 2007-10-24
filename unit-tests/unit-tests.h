@@ -15,6 +15,14 @@
 /** Path to the smps test problems directory */
 #define SMPS_PATH "/home/mcolombo/oops/smps/testproblems/"
 
+/** Outcomes of the unit tests */
+enum TestResults {
+  TEST_ERROR = -1,
+  TEST_SUCCESS = 0,
+  TEST_FAILURE,
+  LAST_RESULT
+};
+
 /** Call a unit test suite and print a summary of results. */
 int callSuite(int (*testSuite)(void), const char name[]);
 

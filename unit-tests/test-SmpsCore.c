@@ -84,22 +84,23 @@ int testCountRows(const char CoreFile[], const int expRows) {
   strcpy(FileName, SmpsPath);
   strcat(FileName, CoreFile);
 
-  printf("* Testing: %s\n", CoreFile);
-
   /* scan the stochastic file for the number of scenarios and the length */
   SmpsCore core(FileName);
   rv = core.countRows();
-  if (rv)
-    return rv;
+  if (rv) {
+    return TEST_ERROR;
+  }
 
   int nRows = core.getRows();
   nTests++;
   if (nRows != expRows) {
+    printf("* Testing: %s\n", CoreFile);
     printf(" | FAIL: m: %d (exp: %d)\n", nRows, expRows);
     nFails++;
+    return TEST_FAILURE;
   }
 
-  return 0;
+  return TEST_SUCCESS;
 }
 
 int testGetStages(const char TimeFile[], const int expStages) {
@@ -111,21 +112,22 @@ int testGetStages(const char TimeFile[], const int expStages) {
   strcpy(FileName, SmpsPath);
   strcat(FileName, TimeFile);
 
-  printf("* Testing: %s\n", TimeFile);
-
   /* scan the stochastic file for the number of scenarios and the length */
   SmpsCore core("", FileName);
   rv = core.countStages();
-  if (rv)
-    return rv;
+  if (rv) {
+    return TEST_ERROR;
+  }
 
   int nStages = core.getStages();
   nTests++;
 
   if (nStages != expStages) {
+    printf("* Testing: %s\n", TimeFile);
     printf(" | FAIL: nStages: %d (exp: %d)\n", nStages, expStages);
     nFails++;
+    return TEST_FAILURE;
   }
 
-  return 0;
+  return TEST_SUCCESS;
 }

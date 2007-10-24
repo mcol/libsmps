@@ -30,15 +30,12 @@ int callSuite(int (*testSuite)(void), const char name[]) {
 
   nTests = 0;
   nFails = 0;
-  printf("\n *** Tests for %s ***\n\n", name);
+  printf("\n\n *** Tests for %s ***\n\n", name);
 
   testSuite();
 
   printf("\nTotal tests: %d\n", nTests);
   printf("Total fails: %d\n", nFails);
-
-  if (nFails == 0 && nTests > 0)
-    printf("\n *** ALL TESTS PASS! ***\n");
 
   return 0;
 }
