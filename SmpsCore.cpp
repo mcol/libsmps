@@ -1,4 +1,14 @@
-#include <stdio.h>
+/*
+ *  SmpsCore.cpp
+ *
+ *  Structure for the core data of the problem.
+ *
+ *  Marco Colombo
+ *  School of Mathematics
+ *  University of Edinburgh
+ *
+ */
+
 #include <string.h>
 #include "smps.h"
 

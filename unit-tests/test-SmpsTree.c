@@ -69,7 +69,7 @@ testGetScenarioLength(const char StocFile[], const int expScens,
 
   int rv;
 
-  char FileName[100];
+  char FileName[SMPS_FILENAME_MAX];
   char SmpsPath[] = SMPS_PATH;
   strcpy(FileName, SmpsPath);
   strcat(FileName, StocFile);

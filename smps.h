@@ -1,8 +1,25 @@
+/*
+ *  smps.h
+ *
+ *  Common declarations for the smps classes.
+ *
+ *  Marco Colombo
+ *  School of Mathematics
+ *  University of Edinburgh
+ *
+ */
+
 #ifndef _SMPS_H_
 #define _SMPS_H_
 
+#include <stdio.h>
+
+
 /** Maximum length of a line */
 #define LINE_MAX 200
+
+/** Maximum length of a filename */
+#define SMPS_FILENAME_MAX 100
 
 /** Length of each field in the smps files */
 #define SMPS_FIELD_SIZE 11
@@ -33,6 +50,8 @@ enum ErrorCodes {
 class SmpsCore {
 
  public:
+
+  /** Constructor */
   SmpsCore(const char *coreFileName);
   SmpsCore(const char *coreFileName, const char *timeFileName);
 
@@ -57,10 +76,10 @@ class SmpsCore {
   int nStages;
 
   /** Name of the core file */
-  char coreFile[100];
+  char coreFile[SMPS_FILENAME_MAX];
 
   /** Name of the time file */
-  char timeFile[100];
+  char timeFile[SMPS_FILENAME_MAX];
 
 };
 
@@ -115,7 +134,7 @@ class SmpsTree {
   int maxReals;
 
   /** Name of the stochastic file */
-  char stocFile[100];
+  char stocFile[SMPS_FILENAME_MAX];
 
   int scanIndepLine(FILE *file);
 
