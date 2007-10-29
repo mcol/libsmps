@@ -1,6 +1,5 @@
 DEPTH   := ../..
 
-include $(DEPTH)/mkfhost/oopshome
 include $(DEPTH)/mkincl
 
 CC = g++
