@@ -45,27 +45,27 @@ SmpsTree::SmpsTree(const char *stocFileName) {
 }
 
 /** Retrieve the number of nodes in the event tree */
-int SmpsTree::getNodes() {
+int SmpsTree::getNodes() const {
   return nNodes;
 }
 
 /** Retrieve the maximum number of nodes in the event tree */
-int SmpsTree::getMaxNodes() {
+int SmpsTree::getMaxNodes() const {
   return maxNodes;
 }
 
 /** Retrieve the number of scenarios in the event tree */
-int SmpsTree::getScens() {
+int SmpsTree::getScens() const {
   return nScens;
 }
 
 /** Retrieve the maximum number of scenarios in the event tree */
-int SmpsTree::getMaxScens() {
+int SmpsTree::getMaxScens() const {
   return maxScens;
 }
 
 /** Retrieve the maximum number of realizations in the event tree */
-int SmpsTree::getMaxReals() {
+int SmpsTree::getMaxReals() const {
   return maxReals;
 }
 

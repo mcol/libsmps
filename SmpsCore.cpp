@@ -31,12 +31,12 @@ SmpsCore::SmpsCore(const char *coreFileName, const char *timeFileName) {
 }
 
 /** Retrieve the number of rows in the core file */
-int SmpsCore::getRows() {
+int SmpsCore::getRows() const {
   return nRows;
 }
 
 /** Retrieve the number of stages in the problem */
-int SmpsCore::getStages() {
+int SmpsCore::getStages() const {
   return nStages;
 }
 
