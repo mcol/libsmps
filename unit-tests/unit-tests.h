@@ -35,4 +35,7 @@ unitCountRows(void);
 extern int
 unitGetStages(void);
 
+extern int
+unitTokenizer(void);
+
 #endif /* UNIT_TESTS_H */

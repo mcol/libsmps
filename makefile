@@ -7,10 +7,12 @@ CC = g++
 OBJECTS := \
 	SmpsCore.o \
 	SmpsTree.o \
+	Tokenizer.o \
 	$(NULL)
 
 HEADERS := \
 	smps.h \
+	Tokenizer.h \
 	$(NULL)
 
 DEPENDS := \

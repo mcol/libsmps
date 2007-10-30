@@ -21,6 +21,7 @@ int main(void) {
   callSuite(unitGetScenarioLength, "getScenarioLength");
   callSuite(unitCountRows, "countRows");
   callSuite(unitGetStages, "getStages");
+  callSuite(unitTokenizer, "Tokenizer");
 
   return 0;
 }

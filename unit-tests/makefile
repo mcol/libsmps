@@ -11,6 +11,7 @@ LIBS	+= $(LIBSMPS)
 TESTOBJS := \
 	test-SmpsCore.o \
 	test-SmpsTree.o \
+	test-Tokenizer.o \
 	unit-tests.o \
 	$(NULL)
 
