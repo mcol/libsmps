@@ -1,5 +1,5 @@
 /*
- *  test-SmpsTree.c
+ *  test-SmpsTree.cpp
  *
  *  Unit tests for the SmpsTree class.
  *

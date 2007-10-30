@@ -1,5 +1,5 @@
 /*
- *  test-SmpsCore.c
+ *  test-SmpsCore.cpp
  *
  *  Unit tests for the SmpsCore class.
  *

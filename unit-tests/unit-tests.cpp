@@ -1,5 +1,5 @@
 /*
- *  unit-tests.c
+ *  unit-tests.cpp
  *
  *  Main driver for the unit tests.
  *
