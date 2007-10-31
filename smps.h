@@ -16,7 +16,7 @@
 
 
 /** Maximum length of a line */
-#define LINE_MAX 200
+#define SMPS_LINE_MAX 200
 
 /** Maximum length of a filename */
 #define SMPS_FILENAME_MAX 100

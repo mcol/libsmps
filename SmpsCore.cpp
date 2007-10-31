@@ -43,7 +43,7 @@ int SmpsCore::getStages() const {
 /** Count the number of rows declared in the core file */
 int SmpsCore::countRows() {
 
-  char buffer[LINE_MAX];
+  char buffer[SMPS_LINE_MAX];
   char type[SMPS_FIELD_SIZE], name[SMPS_FIELD_SIZE];
   bool foundRows = false;
 
@@ -57,7 +57,7 @@ int SmpsCore::countRows() {
   }
 
   // read all lines of the file
-  while (fgets(buffer, LINE_MAX, core) != NULL) {
+  while (fgets(buffer, SMPS_LINE_MAX, core) != NULL) {
 
     nValuesRead = sscanf(buffer, "%s %s\n", type, name);
 
@@ -89,7 +89,7 @@ int SmpsCore::countRows() {
 /** Count the number of stages declared in the time file */
 int SmpsCore::countStages() {
 
-  char buffer[LINE_MAX];
+  char buffer[SMPS_LINE_MAX];
   char col[SMPS_FIELD_SIZE], row[SMPS_FIELD_SIZE], per[SMPS_FIELD_SIZE];
   int nValuesRead;
 
@@ -101,7 +101,7 @@ int SmpsCore::countStages() {
   }
 
   // read all lines of the file
-  while (fgets(buffer, LINE_MAX, time) != NULL) {
+  while (fgets(buffer, SMPS_LINE_MAX, time) != NULL) {
 
     nValuesRead = sscanf(buffer, "%s %s %s\n", col, row, per);
 
