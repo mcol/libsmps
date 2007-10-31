@@ -10,6 +10,7 @@
  */
 
 #include <stdio.h>
+#include <cstring>
 #include "unit-tests.h"
 
 int nTests;
@@ -39,4 +40,36 @@ int callSuite(int (*testSuite)(void), const char name[]) {
   printf("Total fails: %d\n", nFails);
 
   return 0;
+}
+
+/** Check numerical equality between two integer values */
+int checkEqual(const int value, const int expValue,
+	       const char valueName[], const char testName[]) {
+
+  nTests++;
+  if (value != expValue) {
+    if (testName)
+      printf("* Testing: %s\n", testName);
+    printf(" | FAIL: %s: %d (exp: %d)\n", valueName, value, expValue);
+    nFails++;
+    return TEST_FAILURE;
+  }
+
+  return TEST_SUCCESS;
+}
+
+/** Check numerical equality between two strings */
+int checkEqual(const char value[], const char expValue[],
+	       const char valueName[], const char testName[]) {
+
+  nTests++;
+  if (strcmp(value, expValue) != 0) {
+    if (testName)
+      printf("* Testing: %s\n", testName);
+    printf(" | FAIL: %s: '%s' (exp: '%s')\n", valueName, value, expValue);
+    nFails++;
+    return TEST_FAILURE;
+  }
+
+  return TEST_SUCCESS;
 }

@@ -91,16 +91,9 @@ int testCountRows(const char CoreFile[], const int expRows) {
     return TEST_ERROR;
   }
 
-  int nRows = core.getRows();
-  nTests++;
-  if (nRows != expRows) {
-    printf("* Testing: %s\n", CoreFile);
-    printf(" | FAIL: m: %d (exp: %d)\n", nRows, expRows);
-    nFails++;
-    return TEST_FAILURE;
-  }
+  rv = checkEqual(core.getRows(), expRows, "nRows", CoreFile);
 
-  return TEST_SUCCESS;
+  return rv;
 }
 
 int testGetStages(const char TimeFile[], const int expStages) {
@@ -119,15 +112,7 @@ int testGetStages(const char TimeFile[], const int expStages) {
     return TEST_ERROR;
   }
 
-  int nStages = core.getStages();
-  nTests++;
+  rv = checkEqual(core.getStages(), expStages, "nStages", TimeFile);
 
-  if (nStages != expStages) {
-    printf("* Testing: %s\n", TimeFile);
-    printf(" | FAIL: nStages: %d (exp: %d)\n", nStages, expStages);
-    nFails++;
-    return TEST_FAILURE;
-  }
-
-  return TEST_SUCCESS;
+  return rv;
 }

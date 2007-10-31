@@ -67,7 +67,7 @@ int
 testGetScenarioLength(const char StocFile[], const int expScens,
 		      const int expNodes, const int expReals) {
 
-  int rv = TEST_SUCCESS;
+  int rv;
 
   char FileName[SMPS_FILENAME_MAX];
   char SmpsPath[] = SMPS_PATH;
@@ -81,33 +81,9 @@ testGetScenarioLength(const char StocFile[], const int expScens,
     return TEST_ERROR;
   }
 
-  int maxScens = tree.getMaxScens();
-  nTests++;
-
-  int maxNodes = tree.getMaxNodes();
-  nTests++;
-
-  //  int maxReals = tree.getMaxReals();
-  //  nTests++;
-
-  if (maxScens != expScens) {
-    printf("* Testing: %s\n", StocFile);
-    printf(" | FAIL: maxScens: %d (exp: %d)\n", maxScens, expScens);
-    nFails++;
-    rv = TEST_FAILURE;
-  }
-
-  if (maxNodes != expNodes) {
-    printf("* Testing: %s\n", StocFile);
-    printf(" | FAIL: maxNodes: %d (exp: %d)\n", maxNodes, expNodes);
-    nFails++;
-    rv = TEST_FAILURE;
-  }
-
-  //  if (maxReals != expReals) {
-  //    printf(" | FAIL: maxReals: %d (exp: %d)\n", maxReals, expReals);
-  //    nFails++;
-  //  }
+  rv = checkEqual(tree.getMaxScens(), expScens, "maxScens", StocFile);
+  rv = checkEqual(tree.getMaxNodes(), expNodes, "maxNodes", StocFile);
+  //  rv = checkEqual(tree.getMaxReals(), expReals, "maxReals", StocFile);
 
   return rv;
 }

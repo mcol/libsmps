@@ -9,8 +9,6 @@
  *
  */
 
-#include <stdio.h>
-#include <cstring>
 #include "unit-tests.h"
 #include "Tokenizer.h"
 
@@ -20,40 +18,17 @@ extern int nFails;
 int testTokenizer(char *line, char *expToken,
 		  const int expLength, const bool expMore = false) {
 
-  int rv = TEST_SUCCESS;
+  int rv;
 
   Tokenizer tokenLine(line);
 
   char *token = tokenLine.getStartNextToken();
-  nTests++;
 
-  int length = tokenLine.getLength();
-  nTests++;
+  rv = checkEqual(token, expToken, "token");
+  rv = checkEqual(tokenLine.getLength(), expLength, "length");
+  rv = checkEqual(tokenLine.hasMoreTokens(), expMore, "more");
 
-  bool more = tokenLine.hasMoreTokens();
-  nTests++;
-
-  if (strcmp(token, expToken) != 0) {
-    printf(" | FAIL: token: '%s' (exp: '%s')\n", token, expToken);
-    nFails++;
-    rv = TEST_FAILURE;
-  }
-
-  if (length != expLength) {
-    printf(" * Testing line: '%s'\n", line);
-    printf(" | FAIL: length: %d (exp: %d)\n", length, expLength);
-    nFails++;
-    rv = TEST_FAILURE;
-  }
-
-  if (more != expMore) {
-    printf(" * Testing line: '%s'\n", line);
-    printf(" | FAIL: more: %d (exp: %d)\n", more, expMore);
-    nFails++;
-    rv = TEST_FAILURE;
-  }
-
-  return 0;
+  return rv;
 }
 
 /**
