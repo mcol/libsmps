@@ -12,7 +12,8 @@
 #ifndef UNIT_TESTS_H
 #define UNIT_TESTS_H
 
-#include <stdlib.h>
+#include <iostream>
+using namespace std;
 
 /** Path to the smps test problems directory */
 #define SMPS_PATH "/home/mcolombo/oops/smps/testproblems/"
@@ -34,13 +35,23 @@ enum TestResults {
 /** Call a unit test suite and print a summary of results. */
 int callSuite(int (*testSuite)(void), const char name[]);
 
-/** Check numerical equality between two integer values. */
-int checkEqual(const int value, const int expValue,
-	       const char valueName[], const char testName[] = NULL);
+/** Check equality between two values. */
+template<class T>
+int checkEqual(const T& value, const T& expValue,
+	       const char valueName[], const char testName[] = NULL) {
 
-/** Check numerical equality between two strings. */
-int checkEqual(const char value[], const char expValue[],
-	       const char valueName[], const char testName[] = NULL);
+  nTests++;
+  if (value != expValue) {
+    if (testName)
+      printf("* Testing: %s\n", testName);
+    cout << " | FAIL: " << valueName << ": " << value
+	 << " (exp: " << expValue << ")\n" << endl;
+    nFails++;
+    return TEST_FAILURE;
+  }
+
+  return TEST_SUCCESS;
+}
 
 extern int
 unitGetScenarioLength(void);
