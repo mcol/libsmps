@@ -16,11 +16,10 @@
 
 
 /** Constructor */
-Tokenizer::Tokenizer(char *rLine) {
-
-  line = rLine;
-  pos  = rLine;
-  length = -1;
+Tokenizer::Tokenizer(char *rLine) :
+  line(rLine),
+  pos(rLine),
+  length(-1) {
 }
 
 /** Destructor */

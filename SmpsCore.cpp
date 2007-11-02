@@ -14,20 +14,18 @@
 
 
 /** Constructor */
-SmpsCore::SmpsCore(const char *coreFileName) {
-  
+SmpsCore::SmpsCore(const char *coreFileName) :
+  nRows(0),
+  nStages(0) {
   strcpy(coreFile, coreFileName);
-  nRows = 0;
-  nStages = 0;
 }
 
 /** Constructor */
-SmpsCore::SmpsCore(const char *coreFileName, const char *timeFileName) {
-  
+SmpsCore::SmpsCore(const char *coreFileName, const char *timeFileName) :
+  nRows(0),
+  nStages(0) {
   strcpy(coreFile, coreFileName);
   strcpy(timeFile, timeFileName);
-  nRows = 0;
-  nStages = 0;
 }
 
 /** Retrieve the number of rows in the core file */

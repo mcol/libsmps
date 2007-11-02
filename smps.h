@@ -118,17 +118,17 @@ class SmpsTree {
   /** Number of nodes in the event tree */
   int nNodes;
 
-  /** Maximum number of nodes in the event tree */
-  int maxNodes;
-
   /** Number of scenarios */
   int nScens;
 
-  /** Maximum number of scenarios */
-  int maxScens;
-
   /** Number of stages in the event tree */
   int nStages;
+
+  /** Maximum number of nodes in the event tree */
+  int maxNodes;
+
+  /** Maximum number of scenarios */
+  int maxScens;
 
   /** Maximum number of realisations */
   int maxReals;

@@ -26,7 +26,7 @@
  *  REALISATION there are some ENTRIES.
  *  All realisations of the same block should have the same ENTRIES,
  *  but not always all are listed.
-*/
+ */
 
 #define DEBUG_SMPSTREE  0
 
@@ -34,14 +34,14 @@ static int
 getStocType(char *buffer);
 
 /** Constructor */
-SmpsTree::SmpsTree(const char *stocFileName) {
-  
+SmpsTree::SmpsTree(const char *stocFileName) :
+  nNodes(0),
+  nScens(1),
+  nStages(0),
+  maxNodes(0),
+  maxScens(1),
+  maxReals(1) {
   strcpy(stocFile, stocFileName);
-  nNodes = 0;
-  nScens = 1;
-  maxNodes = 0;
-  maxScens = 1;
-  maxReals = 1;
 }
 
 /** Retrieve the number of nodes in the event tree */
