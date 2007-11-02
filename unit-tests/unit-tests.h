@@ -17,6 +17,12 @@
 /** Path to the smps test problems directory */
 #define SMPS_PATH "/home/mcolombo/oops/smps/testproblems/"
 
+/** Number of test executed */
+extern int nTests;
+
+/** Number of test failed */
+extern int nFails;
+
 /** Outcomes of the unit tests */
 enum TestResults {
   TEST_ERROR = -1,

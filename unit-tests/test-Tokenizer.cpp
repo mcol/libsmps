@@ -12,9 +12,6 @@
 #include "unit-tests.h"
 #include "Tokenizer.h"
 
-extern int nTests;
-extern int nFails;
-
 int testTokenizer(char *line, char *expToken,
 		  const int expLength, const bool expMore = false) {
 

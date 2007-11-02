@@ -17,9 +17,6 @@
 #define TEST_INDEP 1
 #define TEST_BLOCK 1
 
-extern int nTests;
-extern int nFails;
-
 static int
 testGetScenarioLength(const char StocFile[], const int expScens,
 		      const int expNodes, const int expReals);

@@ -14,9 +14,6 @@
 #include "unit-tests.h"
 #include "smps.h"
 
-extern int nTests;
-extern int nFails;
-
 static int
 testCountRows(const char CoreFile[], const int expRows);
 
