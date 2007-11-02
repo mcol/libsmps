@@ -12,14 +12,16 @@
 #include "unit-tests.h"
 #include "Tokenizer.h"
 
-int testTokenizer(char *line, char *expToken,
-		  const int expLength, const bool expMore = false) {
+static int
+testTokenizer(string line, string expToken,
+	      const int expLength, const bool expMore = false) {
 
   int rv;
 
-  Tokenizer tokenLine(line);
+  char *rline = const_cast<char *>(line.c_str());
+  Tokenizer tokenLine(rline);
 
-  char *token = tokenLine.getStartNextToken();
+  string token = tokenLine.getStartNextToken();
 
   rv = checkEqual(token, expToken, "token");
   rv = checkEqual(tokenLine.getLength(), expLength, "length");
