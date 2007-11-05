@@ -81,9 +81,6 @@ int SmpsTree::getMaxReals() const {
  *
  *   @attention
  *   This routine returns an upper bound on the number of nodes.
- *
- *   @todo Probably it should not accept 4 parameters, but 2: a class
- *   and the StocFile.
  */
 int SmpsTree::getScenarioLength() {
 
