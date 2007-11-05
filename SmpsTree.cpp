@@ -10,6 +10,7 @@
  */
 
 #include <string.h>
+#include <fstream>
 #include "smps.h"
 
 /**
@@ -84,6 +85,7 @@ int SmpsTree::getMaxReals() const {
  */
 int SmpsTree::getScenarioLength() {
 
+  ifstream stoc;
   char buffer[SMPS_LINE_MAX];
   char format[SMPS_FIELD_SIZE];
   int foundName = 0;
@@ -91,14 +93,17 @@ int SmpsTree::getScenarioLength() {
   int rv = 0;
 
   // open the input file
-  FILE *stoc = fopen(stocFile, "r");
-  if (!stoc) {
+  stoc.open(stocFile, ifstream::in);
+  if (stoc.fail()) {
     fprintf(stderr, "Error: Could not open file %s.\n", stocFile);
     return ERROR_FILE_NOT_FOUND;
   }
 
-  // read all lines of the file
-  while (fgets(buffer, SMPS_LINE_MAX, stoc) != NULL) {
+  // read the file
+  while (!stoc.eof()) {
+
+    // read a line from the file
+    stoc.getline(buffer, SMPS_LINE_MAX);
 
 #if DEBUG_SMPSTREE_BUFFER
     printf(buffer);
@@ -132,7 +137,7 @@ int SmpsTree::getScenarioLength() {
   }
 
   // close the input file
-  fclose(stoc);
+  stoc.close();
 
   return rv;
 }
@@ -173,7 +178,7 @@ int getStocType(char *buffer) {
 }
 
 /** Scan the lines of a stochastic file in INDEP DISCRETE format */
-int SmpsTree::scanIndepLine(FILE *stoc) {
+int SmpsTree::scanIndepLine(ifstream &stoc) {
 
   char buffer[SMPS_LINE_MAX];
   char row[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE];
@@ -182,8 +187,11 @@ int SmpsTree::scanIndepLine(FILE *stoc) {
   int nChangesBlock = 1;
   int nValuesRead;
 
-  // read all lines of the file
-  while (fgets(buffer, SMPS_LINE_MAX, stoc) != NULL) {
+  // read the file
+  while (!stoc.eof()) {
+
+    // read a line from the file
+    stoc.getline(buffer, SMPS_LINE_MAX);
 
 #if DEBUG_SMPSTREE_BUFFER
     printf(buffer);
@@ -238,7 +246,7 @@ int SmpsTree::scanIndepLine(FILE *stoc) {
 }
 
 /** Scan the lines of a stochastic file in BLOCKS DISCRETE format */
-int SmpsTree::scanBlocksLine(FILE *stoc) {
+int SmpsTree::scanBlocksLine(ifstream &stoc) {
 
   int nBlocks = 0, nRealBlock = 0;
   bool newBlock = false;
@@ -248,8 +256,11 @@ int SmpsTree::scanBlocksLine(FILE *stoc) {
   char col[SMPS_FIELD_SIZE], rw2[SMPS_FIELD_SIZE];
   int nValuesRead;
 
-  // read all lines of the file
-  while (fgets(buffer, SMPS_LINE_MAX, stoc) != NULL) {
+  // read the file
+  while (!stoc.eof()) {
+
+    // read a line from the file
+    stoc.getline(buffer, SMPS_LINE_MAX);
 
 #if DEBUG_SMPSTREE_BUFFER
     printf(buffer);

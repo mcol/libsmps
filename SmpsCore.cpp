@@ -10,6 +10,7 @@
  */
 
 #include <string.h>
+#include <fstream>
 #include "smps.h"
 
 
@@ -41,6 +42,7 @@ int SmpsCore::getStages() const {
 /** Count the number of rows declared in the core file */
 int SmpsCore::countRows() {
 
+  ifstream core;
   char buffer[SMPS_LINE_MAX];
   char type[SMPS_FIELD_SIZE], name[SMPS_FIELD_SIZE];
   bool foundRows = false;
@@ -48,14 +50,17 @@ int SmpsCore::countRows() {
   int nValuesRead;
 
   // open the input file
-  FILE *core = fopen(coreFile, "r");
-  if (!core) {
+  core.open(coreFile, ifstream::in);
+  if (core.fail()) {
     fprintf(stderr, "Error: Could not open file %s.\n", coreFile);
     return ERROR_FILE_NOT_FOUND;
   }
 
-  // read all lines of the file
-  while (fgets(buffer, SMPS_LINE_MAX, core) != NULL) {
+  // read the file
+  while (!core.eof()) {
+
+    // read a line from the file
+    core.getline(buffer, SMPS_LINE_MAX);
 
     nValuesRead = sscanf(buffer, "%s %s\n", type, name);
 
@@ -75,11 +80,10 @@ int SmpsCore::countRows() {
     else {
 
     }
-
   }
 
   // close the input file
-  fclose(core);
+  core.close();
 
   return 0;
 }
@@ -87,19 +91,23 @@ int SmpsCore::countRows() {
 /** Count the number of stages declared in the time file */
 int SmpsCore::countStages() {
 
+  ifstream time;
   char buffer[SMPS_LINE_MAX];
   char col[SMPS_FIELD_SIZE], row[SMPS_FIELD_SIZE], per[SMPS_FIELD_SIZE];
   int nValuesRead;
 
   // open the input file
-  FILE *time = fopen(timeFile, "r");
-  if (!time) {
+  time.open(timeFile, ifstream::in);
+  if (time.fail()) {
     fprintf(stderr, "Error: Could not open file %s.\n", timeFile);
     return ERROR_FILE_NOT_FOUND;
   }
 
-  // read all lines of the file
-  while (fgets(buffer, SMPS_LINE_MAX, time) != NULL) {
+  // read the file
+  while (!time.eof()) {
+
+    // read a line from the file
+    time.getline(buffer, SMPS_LINE_MAX);
 
     nValuesRead = sscanf(buffer, "%s %s %s\n", col, row, per);
 
@@ -123,7 +131,7 @@ int SmpsCore::countStages() {
   }
 
   // close the input file
-  fclose(time);
+  time.close();
 
   return 0;
 }

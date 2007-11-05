@@ -12,7 +12,8 @@
 #ifndef _SMPS_H_
 #define _SMPS_H_
 
-#include <stdio.h>
+#include <fstream>
+using namespace std;
 
 
 /** Maximum length of a line */
@@ -137,10 +138,10 @@ class SmpsTree {
   char stocFile[SMPS_FILENAME_MAX];
 
   /** Scan the lines of a stochastic file in INDEP DISCRETE format */
-  int scanIndepLine(FILE *file);
+  int scanIndepLine(ifstream &file);
 
   /** Scan the lines of a stochastic file in BLOCKS DISCRETE format */
-  int scanBlocksLine(FILE *file);
+  int scanBlocksLine(ifstream &file);
 
 };
 
