@@ -165,6 +165,10 @@ int SmpsTree::scanIndepLine(ifstream &stoc) {
     // read a line from the file
     stoc.getline(buffer, SMPS_LINE_MAX);
 
+    // skip the asterisk lines
+    if (buffer[0] == '*')
+      continue;
+
 #if DEBUG_SMPSTREE_BUFFER
     printf(buffer);
 #endif
@@ -204,6 +208,7 @@ int SmpsTree::scanIndepLine(ifstream &stoc) {
 	maxNodes += nChangesBlock * MAX(maxNodes, 1);
 	maxScens *= nChangesBlock;
 	maxReals = maxScens * (maxReals - 2) + 5;
+	break;
       }
     }
 
@@ -233,6 +238,10 @@ int SmpsTree::scanBlocksLine(ifstream &stoc) {
 
     // read a line from the file
     stoc.getline(buffer, SMPS_LINE_MAX);
+
+    // skip the asterisk lines
+    if (buffer[0] == '*')
+      continue;
 
 #if DEBUG_SMPSTREE_BUFFER
     printf(buffer);
@@ -289,6 +298,7 @@ int SmpsTree::scanBlocksLine(ifstream &stoc) {
 	if (newBlock)
 	  maxReals += nRealBlock;
 	maxReals = maxReals * maxScens;
+	break;
       }
     }
     else {
