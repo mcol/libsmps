@@ -134,16 +134,21 @@ int SmpsTree::getScenarioLength() {
   return 0;
 }
 
-int
-getStocType(char *buffer) {
+int getStocType(char *buffer) {
 
-  char type[SMPS_FIELD_SIZE];
+  char type[SMPS_FIELD_SIZE], distr[SMPS_FIELD_SIZE];
 
-  sscanf(buffer, "%s\n", type);
+  sscanf(buffer, "%s %s\n", type, distr);
 
 #if DEBUG_SMPSTREE
   printf(" | Type: %s\n", type);
+  printf(" | Distribution: %s\n", distr);
 #endif
+
+  // check that the distribution is discrete
+  if (strcmp(distr, "DISCRETE") != 0) {
+    return TYPE_NOT_IMPLEMENTED;
+  }
 
   if (strcmp(type, "BLOCKS") == 0) {
     return TYPE_BLOCKS;
@@ -155,7 +160,7 @@ getStocType(char *buffer) {
 
   else if (strcmp(type, "SCEN") == 0) {
     fprintf(stderr, "Error: SCENARIOS format not implemented.\n");
-    return TYPE_NOT_IMPLEMENTED;;
+    return TYPE_NOT_IMPLEMENTED;
   }
 
   else {
@@ -164,12 +169,8 @@ getStocType(char *buffer) {
   }
 }
 
-/**
- *  @todo Check that it is DISCRETE.
- */
+/** Scan the lines of a stochastic file in INDEP DISCRETE format */
 int SmpsTree::scanIndepLine(FILE *stoc) {
-
-  // check that it is DISCRETE
 
   char buffer[SMPS_LINE_MAX];
   char row[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE];
@@ -233,9 +234,7 @@ int SmpsTree::scanIndepLine(FILE *stoc) {
   return 0;
 }
 
-/**
- *  @todo Check that it is DISCRETE.
- */
+/** Scan the lines of a stochastic file in BLOCKS DISCRETE format */
 int SmpsTree::scanBlocksLine(FILE *stoc) {
 
   int nBlocks = 0, nRealBlock = 0;

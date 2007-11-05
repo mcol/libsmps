@@ -136,8 +136,10 @@ class SmpsTree {
   /** Name of the stochastic file */
   char stocFile[SMPS_FILENAME_MAX];
 
+  /** Scan the lines of a stochastic file in INDEP DISCRETE format */
   int scanIndepLine(FILE *file);
 
+  /** Scan the lines of a stochastic file in BLOCKS DISCRETE format */
   int scanBlocksLine(FILE *file);
 
 };
