@@ -100,7 +100,7 @@ int SmpsTree::getScenarioLength() {
   }
 
   // read the file
-  while (!stoc.eof()) {
+  while (!stoc.eof() && !stocType) {
 
     // read a line from the file
     stoc.getline(buffer, SMPS_LINE_MAX);
@@ -122,19 +122,16 @@ int SmpsTree::getScenarioLength() {
     }
 
     // determine the type of stochastic file
-    if (!stocType) {
-      stocType = getStocType(buffer);
-
-      if (stocType == TYPE_INDEP)
-	scanIndepLine(stoc);
-      else if (stocType == TYPE_BLOCKS)
-	scanBlocksLine(stoc);
-      else {
-	rv = stocType;
-	break;
-      }
-    }
+    stocType = getStocType(buffer);
   }
+
+  // do a quick scan of the rest of the file
+  if (stocType == TYPE_INDEP)
+    scanIndepLine(stoc);
+  else if (stocType == TYPE_BLOCKS)
+    scanBlocksLine(stoc);
+  else
+    rv = stocType;
 
   // close the input file
   stoc.close();
