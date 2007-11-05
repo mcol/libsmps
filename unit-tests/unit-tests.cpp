@@ -21,6 +21,7 @@ int main(void) {
   callSuite(unitCountRows, "countRows");
   callSuite(unitGetStages, "getStages");
   callSuite(unitTokenizer, "Tokenizer");
+  callSuite(unitEncodeName, "encodeName");
 
   return 0;
 }
@@ -30,7 +31,7 @@ int callSuite(int (*testSuite)(void), const char name[]) {
 
   nTests = 0;
   nFails = 0;
-  printf("\n\n *** Tests for %s ***\n\n", name);
+  printf("\n\n *** Tests for %s ***\n", name);
 
   testSuite();
 

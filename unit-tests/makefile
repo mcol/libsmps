@@ -12,6 +12,7 @@ TESTOBJS := \
 	test-SmpsCore.o \
 	test-SmpsTree.o \
 	test-Tokenizer.o \
+	test-Utils.o \
 	unit-tests.o \
 	$(NULL)
 

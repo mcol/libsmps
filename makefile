@@ -9,12 +9,14 @@ OBJECTS := \
 	SmpsCore.o \
 	SmpsTree.o \
 	Tokenizer.o \
+	Utils.o \
 	$(NULL)
 
 HEADERS := \
 	smps.h \
 	Node.h \
 	Tokenizer.h \
+	Utils.h \
 	$(NULL)
 
 DEPENDS := \

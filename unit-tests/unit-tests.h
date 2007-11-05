@@ -65,4 +65,7 @@ unitGetStages(void);
 extern int
 unitTokenizer(void);
 
+extern int
+unitEncodeName(void);
+
 #endif /* UNIT_TESTS_H */
