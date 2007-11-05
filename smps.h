@@ -97,8 +97,8 @@ class SmpsTree {
   /** Constructor */
   SmpsTree(const char *stocFileName);
 
-  /** Parse the stochastic file to retrieve some problem data */
-  int getScenarioLength(void);
+  /** Read the stochastic file */
+  int readFile(void);
 
   /** Retrieve the number of nodes in the event tree */
   int getNodes(void) const {
@@ -153,11 +153,11 @@ class SmpsTree {
   /** Name of the stochastic file */
   char stocFile[SMPS_FILENAME_MAX];
 
-  /** Scan the lines of a stochastic file in INDEP DISCRETE format */
-  int scanIndepLine(ifstream &file);
+  /** Scan a stochastic file in INDEP DISCRETE format */
+  int scanIndepType(ifstream &file);
 
-  /** Scan the lines of a stochastic file in BLOCKS DISCRETE format */
-  int scanBlocksLine(ifstream &file);
+  /** Scan a stochastic file in BLOCKS DISCRETE format */
+  int scanBlocksType(ifstream &file);
 
 };
 

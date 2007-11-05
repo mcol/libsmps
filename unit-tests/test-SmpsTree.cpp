@@ -73,7 +73,7 @@ testGetScenarioLength(const char StocFile[], const int expScens,
 
   /* scan the stochastic file for the number of scenarios and the length */
   SmpsTree tree(FileName);
-  rv = tree.getScenarioLength();
+  rv = tree.readFile();
   if (rv) {
     return TEST_ERROR;
   }

@@ -46,19 +46,18 @@ SmpsTree::SmpsTree(const char *stocFileName) :
 }
 
 /**
- *   Parse the stochastic file to retrieve some problem data.
+ *   Read the stochastic file to retrieve the problem data.
  *
  *   This routine does a quick scan of StocFile and works out the
  *   maximum number of scenarios in the problem, the maximum number
  *   of changes, and the maximum number of nodes in the reduced tree.
+ *   After this, a full read of the file is performed, during which the
+ *   elements of the SmpsTree structure are set up.
  *
  *   @return 0  Everything is fine.
  *           >0 Error.
- *
- *   @attention
- *   This routine returns an upper bound on the number of nodes.
  */
-int SmpsTree::getScenarioLength() {
+int SmpsTree::readFile() {
 
   ifstream stoc;
   char buffer[SMPS_LINE_MAX];
@@ -102,9 +101,9 @@ int SmpsTree::getScenarioLength() {
 
   // do a quick scan of the rest of the file
   if (stocType == TYPE_INDEP)
-    scanIndepLine(stoc);
+    scanIndepType(stoc);
   else if (stocType == TYPE_BLOCKS)
-    scanBlocksLine(stoc);
+    scanBlocksType(stoc);
   else
     rv = stocType;
 
@@ -149,8 +148,8 @@ int getStocType(char *buffer) {
   }
 }
 
-/** Scan the lines of a stochastic file in INDEP DISCRETE format */
-int SmpsTree::scanIndepLine(ifstream &stoc) {
+/** Scan a stochastic file in INDEP DISCRETE format */
+int SmpsTree::scanIndepType(ifstream &stoc) {
 
   char buffer[SMPS_LINE_MAX];
   char row[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE];
@@ -222,8 +221,8 @@ int SmpsTree::scanIndepLine(ifstream &stoc) {
   return 0;
 }
 
-/** Scan the lines of a stochastic file in BLOCKS DISCRETE format */
-int SmpsTree::scanBlocksLine(ifstream &stoc) {
+/** Scan a stochastic file in BLOCKS DISCRETE format */
+int SmpsTree::scanBlocksType(ifstream &stoc) {
 
   int nBlocks = 0, nRealBlock = 0;
   bool newBlock = false;
