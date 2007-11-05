@@ -88,6 +88,7 @@ int SmpsTree::getScenarioLength() {
   char format[SMPS_FIELD_SIZE];
   int foundName = 0;
   int stocType = 0;
+  int rv = 0;
 
   // open the input file
   FILE *stoc = fopen(stocFile, "r");
@@ -123,15 +124,17 @@ int SmpsTree::getScenarioLength() {
 	scanIndepLine(stoc);
       else if (stocType == TYPE_BLOCKS)
 	scanBlocksLine(stoc);
-      else
-	return stocType;
+      else {
+	rv = stocType;
+	break;
+      }
     }
   }
 
   // close the input file
   fclose(stoc);
 
-  return 0;
+  return rv;
 }
 
 int getStocType(char *buffer) {
