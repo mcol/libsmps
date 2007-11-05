@@ -5,6 +5,7 @@ include $(DEPTH)/mkincl
 CC = g++
 
 OBJECTS := \
+	Node.o \
 	SmpsCore.o \
 	SmpsTree.o \
 	Tokenizer.o \
@@ -12,6 +13,7 @@ OBJECTS := \
 
 HEADERS := \
 	smps.h \
+	Node.h \
 	Tokenizer.h \
 	$(NULL)
 
