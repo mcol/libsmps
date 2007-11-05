@@ -29,16 +29,6 @@ SmpsCore::SmpsCore(const char *coreFileName, const char *timeFileName) :
   strcpy(timeFile, timeFileName);
 }
 
-/** Retrieve the number of rows in the core file */
-int SmpsCore::getRows() const {
-  return nRows;
-}
-
-/** Retrieve the number of stages in the problem */
-int SmpsCore::getStages() const {
-  return nStages;
-}
-
 /** Count the number of rows declared in the core file */
 int SmpsCore::countRows() {
 

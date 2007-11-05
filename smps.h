@@ -60,13 +60,17 @@ class SmpsCore {
   int countRows(void);
 
   /** Retrieve the number of rows in the core file */
-  int getRows(void) const;
+  int getRows(void) const {
+    return nRows;
+  }
 
   /** Count the number of stages declared in the time file */
   int countStages(void);
 
   /** Retrieve the number of stages in the problem */
-  int getStages(void) const;
+  int getStages(void) const {
+    return nStages;
+  }
 
  private:
 
@@ -97,22 +101,34 @@ class SmpsTree {
   int getScenarioLength(void);
 
   /** Retrieve the number of nodes in the event tree */
-  int getNodes(void) const;
+  int getNodes(void) const {
+    return nNodes;
+  }
 
   /** Retrieve the maximum number of nodes in the event tree */
-  int getMaxNodes(void) const;
+  int getMaxNodes(void) const {
+    return maxNodes;
+  }
 
   /** Retrieve the number of scenarios in the event tree */
-  int getScens(void) const;
+  int getScens(void) const {
+    return nScens;
+  }
 
   /** Retrieve the maximum number of scenarios in the event tree */
-  int getMaxScens(void) const;
+  int getMaxScens(void) const {
+    return maxScens;
+  }
 
   /** Retrieve the number of stages in the event tree */
-  int getStages(void) const;
+  int getStages(void) const {
+    return nStages;
+  }
 
   /** Retrieve the maximum number of realisations in the event tree */
-  int getMaxReals(void) const;
+  int getMaxReals(void) const {
+    return maxReals;
+  }
 
  private:
 

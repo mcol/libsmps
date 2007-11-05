@@ -25,11 +25,6 @@ Tokenizer::Tokenizer(char *rLine) :
 /** Destructor */
 Tokenizer::~Tokenizer() {}
 
-/** Retrieve the length of the next token */
-int Tokenizer::getLength() const {
-  return length;
-}
-
 /** Find the starting position of the next token from the line */
 char* Tokenizer::getStartNextToken() {
 

@@ -41,9 +41,3 @@ int Node::addChild() {
 
   return 0;
 }
-
-/** Set the parent node */
-void Node::setParent(Node *parentNode) {
-
-  parent = parentNode;
-}

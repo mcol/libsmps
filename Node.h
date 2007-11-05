@@ -31,7 +31,9 @@ class Node {
   int addChild();
 
   /** Set the parent node */
-  void setParent(Node *parent);
+  void setParent(Node *parentNode) {
+    parent = parentNode;
+  }
 
  private:
 

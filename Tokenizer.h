@@ -25,7 +25,9 @@ class Tokenizer {
   ~Tokenizer();
 
   /** Retrieve the length of the next token */
-  int getLength() const;
+  int getLength() const {
+    return length;
+  }
 
   /** Find the starting position of the next token from the line */
   char* getStartNextToken();

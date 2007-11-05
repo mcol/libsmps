@@ -45,31 +45,6 @@ SmpsTree::SmpsTree(const char *stocFileName) :
   strcpy(stocFile, stocFileName);
 }
 
-/** Retrieve the number of nodes in the event tree */
-int SmpsTree::getNodes() const {
-  return nNodes;
-}
-
-/** Retrieve the maximum number of nodes in the event tree */
-int SmpsTree::getMaxNodes() const {
-  return maxNodes;
-}
-
-/** Retrieve the number of scenarios in the event tree */
-int SmpsTree::getScens() const {
-  return nScens;
-}
-
-/** Retrieve the maximum number of scenarios in the event tree */
-int SmpsTree::getMaxScens() const {
-  return maxScens;
-}
-
-/** Retrieve the maximum number of realizations in the event tree */
-int SmpsTree::getMaxReals() const {
-  return maxReals;
-}
-
 /**
  *   Parse the stochastic file to retrieve some problem data.
  *
