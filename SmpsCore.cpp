@@ -106,7 +106,7 @@ int SmpsCore::countStages() {
     nValuesRead = sscanf(buffer, "%s %s %s\n", col, row, per);
 
     if (nValuesRead == 2) {
-      if (strcmp(col, "TIME") != 0) {
+      if (strcmp(col, "TIME") != 0 && strcmp(col, "PERIODS") != 0) {
 	fprintf(stderr, "Something wrong with this line?\n%s\n", buffer);
 	return ERROR_TIME_FORMAT;
       }
