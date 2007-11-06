@@ -79,3 +79,22 @@ bool Tokenizer::hasMoreTokens() {
 
   return true;
 }
+
+/** Count the number of tokens in the string */
+int Tokenizer::countTokens() {
+
+  int nTokens = 0;
+
+  // store the current position
+  char *oldpos = pos;
+
+  while (hasMoreTokens()) {
+    getStartNextToken();
+    ++nTokens;
+  }
+
+  // reset the position
+  pos = oldpos;
+
+  return nTokens;
+}

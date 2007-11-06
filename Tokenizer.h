@@ -35,6 +35,9 @@ class Tokenizer {
   /** Check if there are other non-space characters in the line */
   bool hasMoreTokens();
 
+  /** Count the number of tokens in the string */
+  int countTokens();
+
  private:
 
   /** The line to tokenize */
