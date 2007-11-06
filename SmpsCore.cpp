@@ -11,7 +11,7 @@
 
 #include <string.h>
 #include <fstream>
-#include "smps.h"
+#include "Smps.h"
 #include "Utils.h"
 
 

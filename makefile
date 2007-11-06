@@ -6,6 +6,7 @@ CC = g++
 
 OBJECTS := \
 	Node.o \
+	Smps.o \
 	SmpsCore.o \
 	SmpsTree.o \
 	Tokenizer.o \
@@ -13,8 +14,8 @@ OBJECTS := \
 	$(NULL)
 
 HEADERS := \
-	smps.h \
 	Node.h \
+	Smps.h \
 	Tokenizer.h \
 	Utils.h \
 	$(NULL)

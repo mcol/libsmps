@@ -13,7 +13,7 @@
 #define _UTILS_H_
 
 #include <fstream>
-#include "smps.h"
+#include "Smps.h"
 using namespace std;
 
 

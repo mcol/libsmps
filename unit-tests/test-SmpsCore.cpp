@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "unit-tests.h"
-#include "smps.h"
+#include "Smps.h"
 
 static int
 testCountRows(const char CoreFile[], const int expRows);

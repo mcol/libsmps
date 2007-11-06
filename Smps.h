@@ -1,7 +1,7 @@
 /*
- *  smps.h
+ *  Smps.h
  *
- *  Common declarations for the smps classes.
+ *  Common declarations for the Smps classes.
  *
  *  Marco Colombo
  *  School of Mathematics
@@ -13,6 +13,7 @@
 #define _SMPS_H_
 
 #include <fstream>
+#include <string>
 using namespace std;
 
 
@@ -45,6 +46,37 @@ enum ErrorCodes {
 
 /** The maximum between two numbers */
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
+
+
+/** The Smps class */
+class Smps {
+
+ public:
+
+  /** Constructor */
+  Smps(const char smpsFileName[]);
+
+  /** Read the Smps files */
+  int read(void);
+
+ private:
+
+  /** Name of the smps input file */
+  string smpsFile;
+
+  /** Name of the core file */
+  string coreFile;
+
+  /** Name of the time file */
+  string timeFile;
+
+  /** Name of the stochastic file */
+  string stocFile;
+
+  /** Read the smps input file */
+  int readSmpsFile(void);
+
+};
 
 
 /** The SmpsCore class */

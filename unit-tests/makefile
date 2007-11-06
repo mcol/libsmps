@@ -17,7 +17,7 @@ TESTOBJS := \
 	$(NULL)
 
 HEADERS := \
-	../smps.h \
+	../Smps.h \
 	unit-tests.h \
 	$(NULL)
 
