@@ -156,8 +156,14 @@ class SmpsTree {
   /** Scan a stochastic file in INDEP DISCRETE format */
   int scanIndepType(ifstream &file);
 
+  /** Read a stochastic file in INDEP DISCRETE format */
+  int readIndepType(ifstream &file);
+
   /** Scan a stochastic file in BLOCKS DISCRETE format */
   int scanBlocksType(ifstream &file);
+
+  /** Read a stochastic file in BLOCKS DISCRETE format */
+  int readBlocksType(ifstream &file);
 
 };
 

@@ -94,11 +94,26 @@ int SmpsTree::readFile() {
     stocType = getStocType(buffer);
   }
 
-  // do a quick scan of the rest of the file
+  // store the file position at this point
+  int filePos = stoc.tellg();
+
+  // first pass: do a quick scan of the rest of the file
   if (stocType == TYPE_INDEP)
     scanIndepType(stoc);
   else if (stocType == TYPE_BLOCKS)
     scanBlocksType(stoc);
+  else
+    rv = stocType;
+
+  // restore the file position
+  stoc.clear();
+  stoc.seekg(filePos);
+
+  // second pass: extract all the information from the file
+  if (stocType == TYPE_INDEP)
+    readIndepType(stoc);
+  else if (stocType == TYPE_BLOCKS)
+    readBlocksType(stoc);
   else
     rv = stocType;
 
@@ -210,6 +225,24 @@ int SmpsTree::scanIndepType(ifstream &stoc) {
   return 0;
 }
 
+/** Read a stochastic file in INDEP DISCRETE format */
+int SmpsTree::readIndepType(ifstream &stoc) {
+
+  char buffer[SMPS_LINE_MAX];
+  int rv;
+
+  // read the file
+  while (!stoc.eof()) {
+
+    // read a line from the file
+    rv = readSmpsLine(stoc, buffer);
+    if (rv)
+      continue;
+  }
+
+  return 0;
+}
+
 /** Scan a stochastic file in BLOCKS DISCRETE format */
 int SmpsTree::scanBlocksType(ifstream &stoc) {
 
@@ -288,6 +321,24 @@ int SmpsTree::scanBlocksType(ifstream &stoc) {
 	      nValuesRead, buffer);
       return 1;
     }
+  }
+
+  return 0;
+}
+
+/** Read a stochastic file in BLOCKS DISCRETE format */
+int SmpsTree::readBlocksType(ifstream &stoc) {
+
+  char buffer[SMPS_LINE_MAX];
+  int rv;
+
+  // read the file
+  while (!stoc.eof()) {
+
+    // read a line from the file
+    rv = readSmpsLine(stoc, buffer);
+    if (rv)
+      continue;
   }
 
   return 0;
