@@ -55,3 +55,21 @@ int lookupCode(const char **names, const char *name, int nRows,
 
   return index;
 }
+
+
+/** Read a line from an Smps file */
+int readSmpsLine(ifstream &file, char *buffer) {
+
+  // read a line from the file
+  file.getline(buffer, SMPS_LINE_MAX);
+
+  // skip the asterisk lines
+  if (buffer[0] == '*')
+    return 1;
+
+#ifdef DEBUG_SMPS_BUFFER
+  printf(buffer);
+#endif
+
+  return 0;
+}

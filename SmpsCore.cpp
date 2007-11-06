@@ -12,6 +12,7 @@
 #include <string.h>
 #include <fstream>
 #include "smps.h"
+#include "Utils.h"
 
 
 /** Constructor */
@@ -36,8 +37,7 @@ int SmpsCore::countRows() {
   char buffer[SMPS_LINE_MAX];
   char type[SMPS_FIELD_SIZE], name[SMPS_FIELD_SIZE];
   bool foundRows = false;
-
-  int nValuesRead;
+  int nValuesRead, rv;
 
   // open the input file
   core.open(coreFile, ifstream::in);
@@ -50,7 +50,9 @@ int SmpsCore::countRows() {
   while (!core.eof()) {
 
     // read a line from the file
-    core.getline(buffer, SMPS_LINE_MAX);
+    rv = readSmpsLine(core, buffer);
+    if (rv)
+      continue;
 
     nValuesRead = sscanf(buffer, "%s %s\n", type, name);
 
@@ -84,7 +86,7 @@ int SmpsCore::countStages() {
   ifstream time;
   char buffer[SMPS_LINE_MAX];
   char col[SMPS_FIELD_SIZE], row[SMPS_FIELD_SIZE], per[SMPS_FIELD_SIZE];
-  int nValuesRead;
+  int nValuesRead, rv;
 
   // open the input file
   time.open(timeFile, ifstream::in);
@@ -97,7 +99,9 @@ int SmpsCore::countStages() {
   while (!time.eof()) {
 
     // read a line from the file
-    time.getline(buffer, SMPS_LINE_MAX);
+    rv = readSmpsLine(time, buffer);
+    if (rv)
+      continue;
 
     nValuesRead = sscanf(buffer, "%s %s %s\n", col, row, per);
 

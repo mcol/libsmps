@@ -12,6 +12,7 @@
 #include <string.h>
 #include <fstream>
 #include "smps.h"
+#include "Utils.h"
 
 /**
  *  A BLOCK is a set of entries that will change their values together.
@@ -77,14 +78,8 @@ int SmpsTree::readFile() {
   while (!stoc.eof() && !stocType) {
 
     // read a line from the file
-    stoc.getline(buffer, SMPS_LINE_MAX);
-
-#if DEBUG_SMPSTREE_BUFFER
-    printf(buffer);
-#endif
-
-    // skip the asterisk lines
-    if (buffer[0] == '*')
+    rv = readSmpsLine(stoc, buffer);
+    if (rv)
       continue;
 
     // find the problem name
@@ -156,21 +151,15 @@ int SmpsTree::scanIndepType(ifstream &stoc) {
   char col[SMPS_FIELD_SIZE], curCol[SMPS_FIELD_SIZE];
 
   int nChangesBlock = 1;
-  int nValuesRead;
+  int nValuesRead, rv;
 
   // read the file
   while (!stoc.eof()) {
 
     // read a line from the file
-    stoc.getline(buffer, SMPS_LINE_MAX);
-
-    // skip the asterisk lines
-    if (buffer[0] == '*')
+    rv = readSmpsLine(stoc, buffer);
+    if (rv)
       continue;
-
-#if DEBUG_SMPSTREE_BUFFER
-    printf(buffer);
-#endif
 
     nValuesRead = sscanf(buffer, "%s %s %*f %*s %*f\n", col, row);
 
@@ -230,21 +219,15 @@ int SmpsTree::scanBlocksType(ifstream &stoc) {
   char row[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE] = "";
   char per[SMPS_FIELD_SIZE], curPer[SMPS_FIELD_SIZE] = "";
   char col[SMPS_FIELD_SIZE], rw2[SMPS_FIELD_SIZE];
-  int nValuesRead;
+  int nValuesRead, rv;
 
   // read the file
   while (!stoc.eof()) {
 
     // read a line from the file
-    stoc.getline(buffer, SMPS_LINE_MAX);
-
-    // skip the asterisk lines
-    if (buffer[0] == '*')
+    rv = readSmpsLine(stoc, buffer);
+    if (rv)
       continue;
-
-#if DEBUG_SMPSTREE_BUFFER
-    printf(buffer);
-#endif
 
     nValuesRead = sscanf(buffer, "%s %s %s %s %*f\n", col, row, per, rw2);
 
