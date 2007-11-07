@@ -60,9 +60,6 @@ extern int
 unitCountRows(void);
 
 extern int
-unitGetStages(void);
-
-extern int
 unitReadTimeFile(void);
 
 extern int

@@ -117,14 +117,6 @@ class SmpsCore {
     return nRows;
   }
 
-  /** Count the number of stages declared in the time file */
-  int countStages(void);
-
-  /** Retrieve the number of stages in the problem */
-  int getStages(void) const {
-    return nStages;
-  }
-
  private:
 
   /** Number of rows in the core file */

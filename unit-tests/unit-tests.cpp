@@ -19,7 +19,6 @@ int main(void) {
 
   callSuite(unitGetScenarioLength, "getScenarioLength");
   callSuite(unitCountRows, "countRows");
-  callSuite(unitGetStages, "getStages");
   callSuite(unitReadTimeFile, "readTimeFile");
   callSuite(unitTokenizer, "Tokenizer");
   callSuite(unitEncodeName, "encodeName");
