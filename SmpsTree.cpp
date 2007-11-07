@@ -162,8 +162,8 @@ int getStocType(char *buffer) {
 int SmpsTree::scanIndepType(ifstream &stoc) {
 
   char buffer[SMPS_LINE_MAX];
-  char row[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE];
-  char col[SMPS_FIELD_SIZE], curCol[SMPS_FIELD_SIZE];
+  char row[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE] = "";
+  char col[SMPS_FIELD_SIZE], curCol[SMPS_FIELD_SIZE] = "";
 
   int nChangesBlock = 1;
   int nValuesRead, rv;
