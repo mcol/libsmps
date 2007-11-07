@@ -66,13 +66,18 @@ class SmpsCore {
     return nRows;
   }
 
+  /** Retrieve the number of periods in the time file */
+  int getPeriods(void) const {
+    return nPeriods;
+  }
+
  private:
 
   /** Number of rows in the core file */
   int nRows;
 
-  /** Number of stages in the problem */
-  int nStages;
+  /** Number of periods in the time file */
+  int nPeriods;
 
   /** Name of the core file */
   char coreFile[SMPS_FILENAME_MAX];

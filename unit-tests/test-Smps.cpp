@@ -30,7 +30,7 @@ testReadTimeFile(const char TimeFile[], const int expStages) {
     return TEST_ERROR;
   }
 
-  rv = checkEqual(smps.getStages(), expStages, "nStages", TimeFile);
+  rv = checkEqual(smps.getPeriods(), expStages, "nPeriods", TimeFile);
 
   return rv;
 }
