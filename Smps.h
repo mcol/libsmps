@@ -59,6 +59,9 @@ class Smps {
   /** Read the Smps files */
   int read(void);
 
+  /** Read the smps input file */
+  int readSmpsFile(void);
+
  private:
 
   /** Name of the smps input file */
@@ -72,9 +75,6 @@ class Smps {
 
   /** Name of the stochastic file */
   string stocFile;
-
-  /** Read the smps input file */
-  int readSmpsFile(void);
 
 };
 
