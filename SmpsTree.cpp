@@ -43,7 +43,8 @@ SmpsTree::SmpsTree(const char *stocFileName) :
   maxNodes(0),
   maxScens(1),
   maxReals(1) {
-  strcpy(stocFile, stocFileName);
+  if (stocFileName)
+    strcpy(stocFile, stocFileName);
 }
 
 /**

@@ -18,10 +18,11 @@
 
 
 /** Constructor */
-Smps::Smps(const char smpsFileName[]) :
+Smps::Smps(const char *smpsFileName) :
   nStages(0) {
-  // store the file name in the class
-  smpsFile = smpsFileName;
+
+  if (smpsFileName)
+    smpsFile = smpsFileName;
 }
 
 /** Read the Smps files */

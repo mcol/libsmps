@@ -55,7 +55,7 @@ class Smps {
  public:
 
   /** Constructor */
-  Smps(const char smpsFileName[]);
+  Smps(const char *smpsFileName = NULL);
 
   /** Read the Smps files */
   int read(void);
@@ -106,7 +106,7 @@ class SmpsCore {
  public:
 
   /** Constructor */
-  SmpsCore(const char *coreFileName);
+  SmpsCore(const char *coreFileName = NULL);
   SmpsCore(const char *coreFileName, const char *timeFileName);
 
   /** Count the number of rows declared in the core file */
@@ -140,7 +140,7 @@ class SmpsTree {
  public:
 
   /** Constructor */
-  SmpsTree(const char *stocFileName);
+  SmpsTree(const char *stocFileName = NULL);
 
   /** Read the stochastic file */
   int readFile(void);

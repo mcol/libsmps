@@ -19,7 +19,8 @@
 SmpsCore::SmpsCore(const char *coreFileName) :
   nRows(0),
   nStages(0) {
-  strcpy(coreFile, coreFileName);
+  if (coreFileName)
+    strcpy(coreFile, coreFileName);
 }
 
 /** Constructor */

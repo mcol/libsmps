@@ -24,8 +24,7 @@ testReadTimeFile(const char TimeFile[], const int expStages) {
   strcpy(FileName, SmpsPath);
   strcat(FileName, TimeFile);
 
-  /* scan the stochastic file for the number of scenarios and the length */
-  Smps smps(FileName);
+  Smps smps;
   rv = smps.readTimeFile(FileName);
   if (rv) {
     return TEST_ERROR;
