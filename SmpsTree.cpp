@@ -59,7 +59,7 @@ SmpsTree::SmpsTree(const char *stocFileName) :
  *   @return 0  Everything is fine.
  *           >0 Error.
  */
-int SmpsTree::readFile() {
+int SmpsTree::readStocFile(const char *stocFileName) {
 
   ifstream stoc;
   char buffer[SMPS_LINE_MAX];
@@ -69,9 +69,9 @@ int SmpsTree::readFile() {
   int rv = 0;
 
   // open the input file
-  stoc.open(stocFile, ifstream::in);
+  stoc.open(stocFileName, ifstream::in);
   if (stoc.fail()) {
-    fprintf(stderr, "Error: Could not open file %s.\n", stocFile);
+    fprintf(stderr, "Error: Could not open file %s.\n", stocFileName);
     return ERROR_FILE_NOT_FOUND;
   }
 

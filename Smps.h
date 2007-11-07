@@ -143,7 +143,7 @@ class SmpsTree {
   SmpsTree(const char *stocFileName = NULL);
 
   /** Read the stochastic file */
-  int readFile(void);
+  int readStocFile(const char *stocFileName);
 
   /** Retrieve the number of nodes in the event tree */
   int getNodes(void) const {
