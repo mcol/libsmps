@@ -49,57 +49,6 @@ enum ErrorCodes {
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 
-/** The Smps class */
-class Smps {
-
- public:
-
-  /** Constructor */
-  Smps(const char *smpsFileName = NULL);
-
-  /** Read the Smps files */
-  int read(void);
-
-  /** Read the smps input file */
-  int readSmpsFile(void);
-
-  /** Read the time file */
-  int readTimeFile(string timeFileName);
-
-  /** Retrieve the number of stages in the problem */
-  int getStages(void) const {
-    return nStages;
-  }
-
- private:
-
-  /** Number of stages in the problem */
-  int nStages;
-
-  /** List of the period names read from the time file */
-  vector<string> periodNames;
-
-  /** List of the first row name of each period */
-  vector<string> begPeriodRow;
-
-  /** List of the first column name of each period */
-  vector<string> begPeriodCol;
-
-  /** Name of the smps input file */
-  string smpsFile;
-
-  /** Name of the core file */
-  string coreFile;
-
-  /** Name of the time file */
-  string timeFile;
-
-  /** Name of the stochastic file */
-  string stocFile;
-
-};
-
-
 /** The SmpsCore class */
 class SmpsCore {
 
@@ -209,6 +158,57 @@ class SmpsTree {
 
   /** Read a stochastic file in BLOCKS DISCRETE format */
   int readBlocksType(ifstream &file);
+
+};
+
+
+/** The Smps class */
+class Smps {
+
+ public:
+
+  /** Constructor */
+  Smps(const char *smpsFileName = NULL);
+
+  /** Read the Smps files */
+  int read(void);
+
+  /** Read the smps input file */
+  int readSmpsFile(void);
+
+  /** Read the time file */
+  int readTimeFile(string timeFileName);
+
+  /** Retrieve the number of stages in the problem */
+  int getStages(void) const {
+    return nStages;
+  }
+
+ private:
+
+  /** Number of stages in the problem */
+  int nStages;
+
+  /** List of the period names read from the time file */
+  vector<string> periodNames;
+
+  /** List of the first row name of each period */
+  vector<string> begPeriodRow;
+
+  /** List of the first column name of each period */
+  vector<string> begPeriodCol;
+
+  /** Name of the smps input file */
+  string smpsFile;
+
+  /** Name of the core file */
+  string coreFile;
+
+  /** Name of the time file */
+  string timeFile;
+
+  /** Name of the stochastic file */
+  string stocFile;
 
 };
 
