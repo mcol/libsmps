@@ -58,6 +58,9 @@ class SmpsCore {
   SmpsCore(const char *coreFileName = NULL);
   SmpsCore(const char *coreFileName, const char *timeFileName);
 
+  /** Read the time file */
+  int readTimeFile(string timeFileName);
+
   /** Count the number of rows declared in the core file */
   int countRows(void);
 
@@ -78,6 +81,15 @@ class SmpsCore {
 
   /** Number of periods in the time file */
   int nPeriods;
+
+  /** List of the period names read from the time file */
+  vector<string> periodNames;
+
+  /** List of the first row name of each period */
+  vector<string> begPeriodRow;
+
+  /** List of the first column name of each period */
+  vector<string> begPeriodCol;
 
   /** Name of the core file */
   char coreFile[SMPS_FILENAME_MAX];
@@ -181,9 +193,6 @@ class Smps {
   /** Read the smps input file */
   int readSmpsFile(void);
 
-  /** Read the time file */
-  int readTimeFile(string timeFileName);
-
   /** Retrieve the number of stages in the problem */
   int getStages(void) const {
     return nStages;
@@ -193,15 +202,6 @@ class Smps {
 
   /** Number of stages in the problem */
   int nStages;
-
-  /** List of the period names read from the time file */
-  vector<string> periodNames;
-
-  /** List of the first row name of each period */
-  vector<string> begPeriodRow;
-
-  /** List of the first column name of each period */
-  vector<string> begPeriodCol;
 
   /** Name of the smps input file */
   string smpsFile;

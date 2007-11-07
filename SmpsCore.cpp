@@ -9,9 +9,11 @@
  *
  */
 
+#include <iostream>
 #include <string.h>
 #include <fstream>
 #include "Smps.h"
+#include "Tokenizer.h"
 #include "Utils.h"
 
 
@@ -79,4 +81,82 @@ int SmpsCore::countRows() {
   core.close();
 
   return 0;
+}
+
+/** Read the time file */
+int SmpsCore::readTimeFile(string timeFileName) {
+
+  ifstream time;
+  char buffer[SMPS_LINE_MAX];
+  char rowName[SMPS_FIELD_SIZE], colName[SMPS_FIELD_SIZE];
+  char perName[SMPS_FIELD_SIZE];
+  bool foundName = false, foundPeriods = false;
+  int nTokens, rv = 0;
+
+  // open the time file
+  time.open(timeFileName.c_str(), ifstream::in);
+  if (time.fail()) {
+    cerr << "Error: Could not open file " << timeFileName << endl;
+    return ERROR_FILE_NOT_FOUND;
+  }
+
+  // read the file
+  while (!time.eof()) {
+
+    // read a line from the file
+    rv = readSmpsLine(time, buffer);
+    if (rv)
+      continue;
+
+    // find the problem name
+    if (!foundName) {
+      sscanf(buffer, "%s %*s\n", perName);
+      if (strcmp(perName, "TIME") == 0)
+	foundName = true;
+      continue;
+    }
+
+    // find the periods line
+    if (!foundPeriods) {
+      sscanf(buffer, "%s %*s\n", perName);
+      if (strcmp(perName, "PERIODS") == 0)
+	foundPeriods = true;
+      continue;
+    }
+
+    Tokenizer line(buffer);
+    nTokens = line.countTokens();
+
+    // normal period declaration line
+    if (nTokens == 3) {
+      sscanf(buffer, "%s %s %s\n", colName, rowName, perName);
+      periodNames.push_back(perName);
+      begPeriodRow.push_back(rowName);
+      begPeriodCol.push_back(colName);
+      ++nPeriods;
+    }
+
+    // we reached the ENDATA section
+    else if (nTokens == 1 && strncmp(buffer, "ENDATA", 6) == 0)
+      break;
+
+    // we cannot make sense of this line
+    else {
+      cerr << "Line not recognized (read " << nTokens << " values):\n>"
+	   << buffer << "<" << endl;
+      continue;
+    }
+  }
+
+  // we may have reached the end of the file without having found
+  // the information we wanted
+  if (!foundName || !foundPeriods) {
+    cerr << "Problem reading the time file." << endl;
+    rv = ERROR_TIME_FORMAT;
+  }
+
+  // close the time file
+  time.close();
+
+  return rv;
 }
