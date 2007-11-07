@@ -9,6 +9,7 @@ LIBSMPS	:= ../libsmps.a
 LIBS	+= $(LIBSMPS)
 
 TESTOBJS := \
+	test-Smps.o \
 	test-SmpsCore.o \
 	test-SmpsTree.o \
 	test-Tokenizer.o \

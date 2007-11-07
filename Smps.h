@@ -13,6 +13,7 @@
 #define _SMPS_H_
 
 #include <fstream>
+#include <vector>
 #include <string>
 using namespace std;
 
@@ -62,7 +63,27 @@ class Smps {
   /** Read the smps input file */
   int readSmpsFile(void);
 
+  /** Read the time file */
+  int readTimeFile(string timeFileName);
+
+  /** Retrieve the number of stages in the problem */
+  int getStages(void) const {
+    return nStages;
+  }
+
  private:
+
+  /** Number of stages in the problem */
+  int nStages;
+
+  /** List of the period names read from the time file */
+  vector<string> periodNames;
+
+  /** List of the first row name of each period */
+  vector<string> begPeriodRow;
+
+  /** List of the first column name of each period */
+  vector<string> begPeriodCol;
 
   /** Name of the smps input file */
   string smpsFile;
