@@ -193,15 +193,7 @@ class Smps {
   /** Read the smps input file */
   int readSmpsFile(void);
 
-  /** Retrieve the number of stages in the problem */
-  int getStages(void) const {
-    return nStages;
-  }
-
  private:
-
-  /** Number of stages in the problem */
-  int nStages;
 
   /** Name of the smps input file */
   string smpsFile;

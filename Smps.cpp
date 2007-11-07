@@ -16,8 +16,7 @@
 
 
 /** Constructor */
-Smps::Smps(const char *smpsFileName) :
-  nStages(0) {
+Smps::Smps(const char *smpsFileName) {
 
   if (smpsFileName)
     smpsFile = smpsFileName;
