@@ -14,35 +14,9 @@
 #include "unit-tests.h"
 #include "Smps.h"
 
+
 static int
-testCountRows(const char CoreFile[], const int expRows);
-
-/**
- *  Call the test function for different inputs.
- */
-int unitCountRows(void) {
-
-  testCountRows("trivial.cor", 4);
-  testCountRows("LandS.cor", 10);
-  testCountRows("gbd.cor", 10);
-  testCountRows("smallnet.cor", 12);
-  testCountRows("mod2-2.cor", 17);
-  testCountRows("sslp_10_50_100.cor", 62);
-  testCountRows("ssn.cor", 177);
-  testCountRows("stocfor1.cor", 118);
-  testCountRows("minoux.cor", 118);
-  testCountRows("sgpf5y3.cor", 189);
-  testCountRows("fxm.cor", 331);
-  testCountRows("jll_gva.cor", 350);
-  testCountRows("pltexpA2.cor", 167);
-  testCountRows("pltexpA7.cor", 687);
-  testCountRows("stormG2.cor", 714);
-  testCountRows("T1mgnB.cor", 2558);
-
-  return 0;
-}
-
-int testCountRows(const char CoreFile[], const int expRows) {
+testCountRows(const char CoreFile[], const int expRows) {
 
   int rv;
 
@@ -87,7 +61,24 @@ testReadTimeFile(const char TimeFile[], const int expStages) {
 /**
  *  Call the test function for different inputs.
  */
-int unitReadTimeFile(void) {
+int unitSmpsCore(void) {
+
+  testCountRows("trivial.cor", 4);
+  testCountRows("LandS.cor", 10);
+  testCountRows("gbd.cor", 10);
+  testCountRows("smallnet.cor", 12);
+  testCountRows("mod2-2.cor", 17);
+  testCountRows("sslp_10_50_100.cor", 62);
+  testCountRows("ssn.cor", 177);
+  testCountRows("stocfor1.cor", 118);
+  testCountRows("minoux.cor", 118);
+  testCountRows("sgpf5y3.cor", 189);
+  testCountRows("fxm.cor", 331);
+  testCountRows("jll_gva.cor", 350);
+  testCountRows("pltexpA2.cor", 167);
+  testCountRows("pltexpA7.cor", 687);
+  testCountRows("stormG2.cor", 714);
+  testCountRows("T1mgnB.cor", 2558);
 
   testReadTimeFile("trivial.tim", 2);
   testReadTimeFile("LandS.tim", 2);

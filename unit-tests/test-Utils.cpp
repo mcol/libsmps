@@ -12,6 +12,7 @@
 #include "unit-tests.h"
 #include "Utils.h"
 
+
 static int
 testEncodeName(const char name[], const int m, const int expCode) {
 
@@ -27,7 +28,7 @@ testEncodeName(const char name[], const int m, const int expCode) {
 /**
  *  Call the test function for different inputs.
  */
-int unitEncodeName(void) {
+int unitUtils(void) {
 
   testEncodeName("trivial", 4, 3);
   testEncodeName("LandS", 10, 6);

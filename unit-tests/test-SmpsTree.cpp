@@ -42,7 +42,7 @@ testReadStocFile(const char StocFile[], const int expScens,
 /**
  *  Call the test function for different inputs.
  */
-int unitReadStocFile(void) {
+int unitSmpsTree(void) {
 
 #ifndef SKIP_TEST_INDEP
   testReadStocFile("trivial.sto", 4, 5, 4);

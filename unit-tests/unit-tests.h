@@ -53,22 +53,4 @@ int checkEqual(const T& value, const T& expValue,
   return TEST_SUCCESS;
 }
 
-extern int
-unitReadSmpsFile(void);
-
-extern int
-unitCountRows(void);
-
-extern int
-unitReadTimeFile(void);
-
-extern int
-unitReadStocFile(void);
-
-extern int
-unitTokenizer(void);
-
-extern int
-unitEncodeName(void);
-
 #endif /* UNIT_TESTS_H */

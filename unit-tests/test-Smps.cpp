@@ -14,6 +14,7 @@
 #include "unit-tests.h"
 #include "Smps.h"
 
+
 static int
 testReadSmpsFile(const char SmpsFile[]) {
 
@@ -36,7 +37,7 @@ testReadSmpsFile(const char SmpsFile[]) {
 /**
  *  Call the test function for different inputs.
  */
-int unitReadSmpsFile(void) {
+int unitSmps(void) {
 
   testReadSmpsFile("fxm3_2.smps");
   testReadSmpsFile("gbd.smps");

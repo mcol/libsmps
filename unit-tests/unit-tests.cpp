@@ -11,18 +11,33 @@
 
 #include "unit-tests.h"
 
+
+extern int
+unitSmps(void);
+
+extern int
+unitSmpsCore(void);
+
+extern int
+unitSmpsTree(void);
+
+extern int
+unitTokenizer(void);
+
+extern int
+unitUtils(void);
+
 int nTests;
 int nFails;
 
 /** Main driver. */
 int main(void) {
 
-  callSuite(unitReadSmpsFile, "readSmpsFile");
-  callSuite(unitCountRows, "countRows");
-  callSuite(unitReadTimeFile, "readTimeFile");
-  callSuite(unitReadStocFile, "readStocFile");
+  callSuite(unitSmps,      "Smps");
+  callSuite(unitSmpsCore,  "SmpsCore");
+  callSuite(unitSmpsTree,  "SmpsTree");
   callSuite(unitTokenizer, "Tokenizer");
-  callSuite(unitEncodeName, "encodeName");
+  callSuite(unitUtils,     "Utils");
 
   return 0;
 }
