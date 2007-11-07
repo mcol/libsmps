@@ -14,55 +14,10 @@
 #include "unit-tests.h"
 #include "Smps.h"
 
-#define TEST_INDEP 1
-#define TEST_BLOCK 1
 
 static int
-testGetScenarioLength(const char StocFile[], const int expScens,
-		      const int expNodes, const int expReals);
-
-/**
- *  Call the test function for different inputs.
- */
-int unitGetScenarioLength(void) {
-
-#if TEST_INDEP
-  testGetScenarioLength("trivial.sto", 4, 5, 4);
-  testGetScenarioLength("trivial2.sto", 2, 3, 2);
-  testGetScenarioLength("trivial4.sto", 4, 5, 4);
-  testGetScenarioLength("trivial5.sto", 2, 3, 2);
-  testGetScenarioLength("trivial-mtx.sto", 2, 3, 3);
-  testGetScenarioLength("fxm2_1.sto", 1, 2, 1);
-  testGetScenarioLength("fxm2_2.sto", 2, 3, 2);
-  testGetScenarioLength("fxm2_6.sto", 6, 7, 6);
-  testGetScenarioLength("fxm3_1.sto", 1, 3, 2);
-  testGetScenarioLength("fxm3_2.sto", 4, 7, 4);
-  testGetScenarioLength("fxm3_6.sto", 36, 43, 12);
-  testGetScenarioLength("fxm4_6.sto", 216, 259, 18);
-#endif /* TEST_INDEP */
-
-#if TEST_BLOCK
-  testGetScenarioLength("trivial-blk.sto", 2, 3, 0);
-  testGetScenarioLength("LandS_blocks.sto", 3, 4, 0);
-  testGetScenarioLength("mod2-2.sto", 10, 11, 0);
-  testGetScenarioLength("stocfor1.sto", 1, 2, 0);
-  testGetScenarioLength("stocfor2.sto", 64, 65, 0);
-  testGetScenarioLength("ft3-small.sto", 2, 3, 0);
-  testGetScenarioLength("pltexpA2_6.sto", 6, 7, 0);
-  testGetScenarioLength("pltexpA3_6.sto", 36, 43, 0);
-  testGetScenarioLength("pltexpA4_6.sto", 216, 259, 0);
-  testGetScenarioLength("pltexpA6_6.sto", 7776, 9331, 0);
-  testGetScenarioLength("stormG2_4.sto", 4, 5, 0);
-  testGetScenarioLength("stormG2_8.sto", 8, 9, 0);
-  testGetScenarioLength("minoux-100-0.5.sto", 100, 101, 0);
-#endif /* TEST_BLOCK */
-
-  return 0;
-}
-
-int
-testGetScenarioLength(const char StocFile[], const int expScens,
-		      const int expNodes, const int expReals) {
+testReadStocFile(const char StocFile[], const int expScens,
+		 const int expNodes, const int expReals) {
 
   int rv;
 
@@ -71,9 +26,8 @@ testGetScenarioLength(const char StocFile[], const int expScens,
   strcpy(FileName, SmpsPath);
   strcat(FileName, StocFile);
 
-  /* scan the stochastic file for the number of scenarios and the length */
   SmpsTree tree(FileName);
-  rv = tree.readFile();
+  rv = tree.readStocFile(FileName);
   if (rv) {
     return TEST_ERROR;
   }
@@ -83,4 +37,43 @@ testGetScenarioLength(const char StocFile[], const int expScens,
   //  rv = checkEqual(tree.getMaxReals(), expReals, "maxReals", StocFile);
 
   return rv;
+}
+
+/**
+ *  Call the test function for different inputs.
+ */
+int unitReadStocFile(void) {
+
+#ifndef SKIP_TEST_INDEP
+  testReadStocFile("trivial.sto", 4, 5, 4);
+  testReadStocFile("trivial2.sto", 2, 3, 2);
+  testReadStocFile("trivial4.sto", 4, 5, 4);
+  testReadStocFile("trivial5.sto", 2, 3, 2);
+  testReadStocFile("trivial-mtx.sto", 2, 3, 3);
+  testReadStocFile("fxm2_1.sto", 1, 2, 1);
+  testReadStocFile("fxm2_2.sto", 2, 3, 2);
+  testReadStocFile("fxm2_6.sto", 6, 7, 6);
+  testReadStocFile("fxm3_1.sto", 1, 3, 2);
+  testReadStocFile("fxm3_2.sto", 4, 7, 4);
+  testReadStocFile("fxm3_6.sto", 36, 43, 12);
+  testReadStocFile("fxm4_6.sto", 216, 259, 18);
+#endif /* SKIP_TEST_INDEP */
+
+#ifndef SKIP_TEST_BLOCK
+  testReadStocFile("trivial-blk.sto", 2, 3, 0);
+  testReadStocFile("LandS_blocks.sto", 3, 4, 0);
+  testReadStocFile("mod2-2.sto", 10, 11, 0);
+  testReadStocFile("stocfor1.sto", 1, 2, 0);
+  testReadStocFile("stocfor2.sto", 64, 65, 0);
+  testReadStocFile("ft3-small.sto", 2, 3, 0);
+  testReadStocFile("pltexpA2_6.sto", 6, 7, 0);
+  testReadStocFile("pltexpA3_6.sto", 36, 43, 0);
+  testReadStocFile("pltexpA4_6.sto", 216, 259, 0);
+  testReadStocFile("pltexpA6_6.sto", 7776, 9331, 0);
+  testReadStocFile("stormG2_4.sto", 4, 5, 0);
+  testReadStocFile("stormG2_8.sto", 8, 9, 0);
+  testReadStocFile("minoux-100-0.5.sto", 100, 101, 0);
+#endif /* SKIP_TEST_BLOCK */
+
+  return 0;
 }

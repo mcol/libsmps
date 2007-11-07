@@ -17,9 +17,9 @@ int nFails;
 /** Main driver. */
 int main(void) {
 
-  callSuite(unitGetScenarioLength, "getScenarioLength");
   callSuite(unitCountRows, "countRows");
   callSuite(unitReadTimeFile, "readTimeFile");
+  callSuite(unitReadStocFile, "readStocFile");
   callSuite(unitTokenizer, "Tokenizer");
   callSuite(unitEncodeName, "encodeName");
 

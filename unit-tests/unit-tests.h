@@ -54,13 +54,13 @@ int checkEqual(const T& value, const T& expValue,
 }
 
 extern int
-unitGetScenarioLength(void);
-
-extern int
 unitCountRows(void);
 
 extern int
 unitReadTimeFile(void);
+
+extern int
+unitReadStocFile(void);
 
 extern int
 unitTokenizer(void);
