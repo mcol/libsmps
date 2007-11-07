@@ -54,6 +54,9 @@ int checkEqual(const T& value, const T& expValue,
 }
 
 extern int
+unitReadSmpsFile(void);
+
+extern int
 unitCountRows(void);
 
 extern int

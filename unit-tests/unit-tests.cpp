@@ -17,6 +17,7 @@ int nFails;
 /** Main driver. */
 int main(void) {
 
+  callSuite(unitReadSmpsFile, "readSmpsFile");
   callSuite(unitCountRows, "countRows");
   callSuite(unitReadTimeFile, "readTimeFile");
   callSuite(unitReadStocFile, "readStocFile");

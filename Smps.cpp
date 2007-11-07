@@ -27,7 +27,7 @@ int Smps::read(void) {
 
   int rv;
 
-  rv = readSmpsFile();
+  rv = readSmpsFile(smpsFile);
   if (rv)
     return rv;
 
@@ -35,19 +35,19 @@ int Smps::read(void) {
 }
 
 /** Read the smps input file */
-int Smps::readSmpsFile() {
+int Smps::readSmpsFile(string smpsFileName) {
 
   int rv = 0;
   ifstream smps;
 
-  smps.open(smpsFile.c_str(), ifstream::in);
+  smps.open(smpsFileName.c_str(), ifstream::in);
   if (smps.fail()) {
-    cerr << "Could not open file " << smpsFile << endl;
+    cerr << "Could not open file " << smpsFileName << endl;
     return ERROR_FILE_NOT_FOUND;
   }
 
   // find the path to the problem files
-  string path = dirname(const_cast<char *>(smpsFile.c_str()));
+  string path = dirname(const_cast<char *>(smpsFileName.c_str()));
 
   // read the filenames
   smps >> coreFile >> timeFile >> stocFile;

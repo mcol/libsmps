@@ -191,7 +191,7 @@ class Smps {
   int read(void);
 
   /** Read the smps input file */
-  int readSmpsFile(void);
+  int readSmpsFile(string smpsFileName);
 
  private:
 
