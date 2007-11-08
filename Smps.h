@@ -77,6 +77,14 @@ class SmpsCore {
   /** Give access to SmpsTree to the private members */
   friend class SmpsTree;
 
+ protected:
+
+  /** Name of the core file */
+  char coreFile[SMPS_FILENAME_MAX];
+
+  /** Name of the time file */
+  char timeFile[SMPS_FILENAME_MAX];
+
  private:
 
   /** Number of rows in the core file */
@@ -93,12 +101,6 @@ class SmpsCore {
 
   /** List of the first column name of each period */
   vector<string> begPeriodCol;
-
-  /** Name of the core file */
-  char coreFile[SMPS_FILENAME_MAX];
-
-  /** Name of the time file */
-  char timeFile[SMPS_FILENAME_MAX];
 
 };
 
@@ -149,6 +151,11 @@ class SmpsTree {
     return maxReals;
   }
 
+ protected:
+
+  /** Name of the stochastic file */
+  char stocFile[SMPS_FILENAME_MAX];
+
  private:
 
   /** Number of nodes in the event tree */
@@ -168,9 +175,6 @@ class SmpsTree {
 
   /** Maximum number of realisations */
   int maxReals;
-
-  /** Name of the stochastic file */
-  char stocFile[SMPS_FILENAME_MAX];
 
   /** Pointer to an initialized SmpsCore object */
   SmpsCore *core;
