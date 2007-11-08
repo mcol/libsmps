@@ -75,6 +75,9 @@ class SmpsCore {
     return nPeriods;
   }
 
+  /** Give access to SmpsTree to the private members */
+  friend class SmpsTree;
+
  private:
 
   /** Number of rows in the core file */
