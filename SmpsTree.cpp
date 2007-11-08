@@ -42,7 +42,8 @@ SmpsTree::SmpsTree(const char *stocFileName) :
   nStages(0),
   maxNodes(0),
   maxScens(1),
-  maxReals(1) {
+  maxReals(1),
+  core(NULL) {
   if (stocFileName)
     strcpy(stocFile, stocFileName);
 }
@@ -67,6 +68,12 @@ int SmpsTree::readStocFile(const char *stocFileName) {
   int foundName = 0;
   int stocType = 0;
   int rv = 0;
+
+  // ensure that we have a core structure attached
+  if (!core) {
+    printf("No core attached.\n");
+    return ERROR_UNATTACHED_CORE;
+  }
 
   // open the input file
   stoc.open(stocFileName, ifstream::in);

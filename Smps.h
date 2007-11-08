@@ -42,6 +42,7 @@ enum ErrorCodes {
   ERROR_CORE_FORMAT,
   ERROR_TIME_FORMAT,
   ERROR_STOC_FORMAT,
+  ERROR_UNATTACHED_CORE,
   LAST_ERROR
 };
 
@@ -108,6 +109,11 @@ class SmpsTree {
   /** Constructor */
   SmpsTree(const char *stocFileName = NULL);
 
+  /** Set the pointer to an initialized SmpsCore object */
+  void attachCore(SmpsCore &coreClass) {
+    core = &coreClass;
+  }
+
   /** Read the stochastic file */
   int readStocFile(const char *stocFileName);
 
@@ -163,6 +169,9 @@ class SmpsTree {
 
   /** Name of the stochastic file */
   char stocFile[SMPS_FILENAME_MAX];
+
+  /** Pointer to an initialized SmpsCore object */
+  SmpsCore *core;
 
   /** Scan a stochastic file in INDEP DISCRETE format */
   int scanIndepType(ifstream &file);
