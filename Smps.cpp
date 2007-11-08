@@ -55,6 +55,11 @@ int Smps::readSmpsFile(string smpsFileName) {
   timeFile = path + "/" + timeFile;
   stocFile = path + "/" + stocFile;
 
+  // set the filenames of the base classes
+  SmpsCore::coreFile = coreFile;
+  SmpsCore::timeFile = timeFile;
+  SmpsTree::stocFile = stocFile;
+
   // close the smps file
   smps.close();
 
