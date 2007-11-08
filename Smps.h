@@ -180,7 +180,7 @@ class SmpsTree {
 
 
 /** The Smps class */
-class Smps {
+class Smps : public SmpsCore, public SmpsTree {
 
  public:
 
