@@ -16,10 +16,8 @@
 
 
 /** Constructor */
-Smps::Smps(const char *smpsFileName) {
-
-  if (smpsFileName)
-    smpsFile = smpsFileName;
+Smps::Smps(string smpsFileName) :
+  smpsFile(smpsFileName) {
 }
 
 /** Read the Smps files */

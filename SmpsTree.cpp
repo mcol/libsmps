@@ -37,7 +37,8 @@ static int
 getStocType(char *buffer);
 
 /** Constructor */
-SmpsTree::SmpsTree(const char *stocFileName) :
+SmpsTree::SmpsTree(string stocFileName) :
+  stocFile(stocFileName),
   nNodes(0),
   nScens(1),
   nStages(0),
@@ -45,8 +46,6 @@ SmpsTree::SmpsTree(const char *stocFileName) :
   maxScens(1),
   maxReals(1),
   core(NULL) {
-  if (stocFileName)
-    strcpy(stocFile, stocFileName);
 }
 
 /**

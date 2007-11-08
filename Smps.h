@@ -56,7 +56,7 @@ class SmpsCore {
  public:
 
   /** Constructor */
-  SmpsCore(const char *coreFileName = "", const char *timeFileName = "");
+  SmpsCore(string coreFileName = "", string timeFileName = "");
 
   /** Read the time file */
   int readTimeFile(string timeFileName = "");
@@ -80,10 +80,10 @@ class SmpsCore {
  protected:
 
   /** Name of the core file */
-  char coreFile[SMPS_FILENAME_MAX];
+  string coreFile;
 
   /** Name of the time file */
-  char timeFile[SMPS_FILENAME_MAX];
+  string timeFile;
 
  private:
 
@@ -111,7 +111,7 @@ class SmpsTree {
  public:
 
   /** Constructor */
-  SmpsTree(const char *stocFileName = NULL);
+  SmpsTree(string stocFileName = "");
 
   /** Set the pointer to an initialized SmpsCore object */
   void attachCore(SmpsCore &coreClass) {
@@ -154,7 +154,7 @@ class SmpsTree {
  protected:
 
   /** Name of the stochastic file */
-  char stocFile[SMPS_FILENAME_MAX];
+  string stocFile;
 
  private:
 
@@ -200,7 +200,7 @@ class Smps : public SmpsCore, public SmpsTree {
  public:
 
   /** Constructor */
-  Smps(const char *smpsFileName = NULL);
+  Smps(string smpsFileName = "");
 
   /** Read the Smps files */
   int read(void);

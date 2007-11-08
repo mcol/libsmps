@@ -18,11 +18,11 @@
 
 
 /** Constructor */
-SmpsCore::SmpsCore(const char *coreFileName, const char *timeFileName) :
+SmpsCore::SmpsCore(string coreFileName, string timeFileName) :
+  coreFile(coreFileName),
+  timeFile(timeFileName),
   nRows(0),
   nPeriods(0) {
-  strcpy(coreFile, coreFileName);
-  strcpy(timeFile, timeFileName);
 }
 
 /** Count the number of rows declared in the core file */
@@ -35,9 +35,9 @@ int SmpsCore::countRows() {
   int nValuesRead, rv;
 
   // open the input file
-  core.open(coreFile, ifstream::in);
+  core.open(coreFile.c_str(), ifstream::in);
   if (core.fail()) {
-    fprintf(stderr, "Error: Could not open file %s.\n", coreFile);
+    cerr << "Could not open file '" << coreFile << "'." << endl;
     return ERROR_FILE_NOT_FOUND;
   }
 
