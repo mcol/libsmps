@@ -56,8 +56,7 @@ class SmpsCore {
  public:
 
   /** Constructor */
-  SmpsCore(const char *coreFileName = NULL);
-  SmpsCore(const char *coreFileName, const char *timeFileName);
+  SmpsCore(const char *coreFileName = "", const char *timeFileName = "");
 
   /** Read the time file */
   int readTimeFile(string timeFileName);

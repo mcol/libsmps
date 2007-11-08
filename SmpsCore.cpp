@@ -18,14 +18,6 @@
 
 
 /** Constructor */
-SmpsCore::SmpsCore(const char *coreFileName) :
-  nRows(0),
-  nPeriods(0) {
-  if (coreFileName)
-    strcpy(coreFile, coreFileName);
-}
-
-/** Constructor */
 SmpsCore::SmpsCore(const char *coreFileName, const char *timeFileName) :
   nRows(0),
   nPeriods(0) {
