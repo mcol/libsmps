@@ -10,6 +10,7 @@
  */
 
 #include <string.h>
+#include <iostream>
 #include <fstream>
 #include "Smps.h"
 #include "Utils.h"
@@ -60,7 +61,7 @@ SmpsTree::SmpsTree(const char *stocFileName) :
  *   @return 0  Everything is fine.
  *           >0 Error.
  */
-int SmpsTree::readStocFile(const char *stocFileName) {
+int SmpsTree::readStocFile(string stocFileName) {
 
   ifstream stoc;
   char buffer[SMPS_LINE_MAX];
@@ -75,10 +76,14 @@ int SmpsTree::readStocFile(const char *stocFileName) {
     return ERROR_UNATTACHED_CORE;
   }
 
+  // read the SmpsTree::stocFile if no stocFileName has been given
+  if (stocFileName == "")
+    stocFileName = stocFile;
+
   // open the input file
-  stoc.open(stocFileName, ifstream::in);
+  stoc.open(stocFileName.c_str(), ifstream::in);
   if (stoc.fail()) {
-    fprintf(stderr, "Error: Could not open file %s.\n", stocFileName);
+    cerr << "Could not open file '" << stocFileName << "'." << endl;
     return ERROR_FILE_NOT_FOUND;
   }
 

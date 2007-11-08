@@ -59,7 +59,7 @@ class SmpsCore {
   SmpsCore(const char *coreFileName = "", const char *timeFileName = "");
 
   /** Read the time file */
-  int readTimeFile(string timeFileName);
+  int readTimeFile(string timeFileName = "");
 
   /** Count the number of rows declared in the core file */
   int countRows(void);
@@ -119,7 +119,7 @@ class SmpsTree {
   }
 
   /** Read the stochastic file */
-  int readStocFile(const char *stocFileName);
+  int readStocFile(string stocFileName = "");
 
   /** Retrieve the number of nodes in the event tree */
   int getNodes(void) const {
