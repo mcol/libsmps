@@ -22,7 +22,75 @@ SmpsCore::SmpsCore(string coreFileName, string timeFileName) :
   coreFile(coreFileName),
   timeFile(timeFileName),
   nRows(0),
+  nCols(0),
+  nza(0),
+  rwnmbs(NULL),
+  clpnts(NULL),
+  rwhead(NULL),
+  links(NULL),
+  clnmbs(NULL),
+  acoeff(NULL),
+  nzq(0),
+  qclpts(NULL),
+  qrwnbs(NULL),
+  qdiag(NULL),
+  qcoeff(NULL),
+  objRow(0),
+  objConstant(0.0),
+  blo(NULL),
+  bup(NULL),
+  rhs(NULL),
+  ranges(NULL),
+  rwstat(NULL),
+  stavar(NULL),
+  rwname(NULL),
+  clname(NULL),
+  hdrwcd(NULL),
+  hdclcd(NULL),
+  lnkrwcd(NULL),
+  lnkclcd(NULL),
   nPeriods(0) {
+}
+
+/** Destructor */
+SmpsCore::~SmpsCore() {
+
+  if (rwname)
+    free(rwname);
+  if (clname)
+    free(clname);
+  if (rwstat)
+    free(rwstat);
+  if (stavar)
+    free(stavar);
+  if (hdrwcd)
+    free(hdrwcd);
+  if (hdclcd)
+    free(hdclcd);
+  if (lnkrwcd)
+    free(lnkrwcd);
+  if (lnkclcd)
+    free(lnkclcd);
+  if (rwnmbs)
+    free(rwnmbs);
+  if (clpnts)
+    free(clpnts);
+  if (rwhead)
+    free(rwhead);
+  if (links)
+    free(links);
+  if (clnmbs)
+    free(clnmbs);
+  if (acoeff)
+    free(acoeff);
+  if (ranges)
+    free(ranges);
+  if (rhs)
+    free(rhs);
+  if (bup)
+    free(bup);
+  if (blo)
+    free(blo);
 }
 
 /** Count the number of rows declared in the core file */
@@ -73,6 +141,67 @@ int SmpsCore::countRows() {
   core.close();
 
   return 0;
+}
+
+/** Read the core file */
+int SmpsCore::readCoreFile(string coreFileName) {
+
+  int rv, iqp = 1, iolog = 77;
+  double big = 1.e31;
+  double dlobnd = 0.0, dupbnd = big;
+  int maxm, maxn;
+  int maxnza, maxnzq;
+
+  // rdrhs assumes these are initialised like this
+  char nameb[10]  = "        ";
+  char namec[10]  = "        ";
+  char nammps[10] = "        ";
+  char nambnd[10] = "        ";
+  char namran[10] = "        ";
+
+  // reset SmpsCore::coreFile if a coreFileName has been given
+  if (coreFileName != "")
+    coreFile = coreFileName;
+
+  countRows();
+  maxm = nRows + 1, maxn = 5 * nRows;
+  maxnza = (maxm*maxn/1000 > maxn*10) ? maxm*maxn/1000 : maxn*10;
+
+  rwname  = (char *) calloc(8*(maxm+2), sizeof(char));
+  clname  = (char *) calloc(8*(maxn+2), sizeof(char));
+  rwstat  = (int *)  calloc(maxm, sizeof(int));
+  stavar  = (int *)  calloc(maxn, sizeof(int));
+  hdrwcd  = (int *)  calloc(maxm+1, sizeof(int));
+  hdclcd  = (int *)  calloc(maxn+1, sizeof(int));
+  lnkrwcd = (int *)  calloc(maxm+1, sizeof(int));
+  lnkclcd = (int *)  calloc(maxn+1, sizeof(int));
+  rwnmbs  = (int *)  calloc(maxnza, sizeof(int));
+  clpnts  = (int *)  calloc(maxn+1, sizeof(int));
+  rwhead  = (int *)  calloc(maxm, sizeof(int));
+  links   = (int *)  calloc(maxnza, sizeof(int));
+  clnmbs  = (int *)  calloc(maxnza, sizeof(int));
+  acoeff  = (double *) calloc(maxnza, sizeof(double));
+  ranges  = (double *) calloc(maxm, sizeof(double));
+  rhs     = (double *) calloc(maxm, sizeof(double));
+  bup     = (double *) calloc(maxn, sizeof(double));
+  blo     = (double *) calloc(maxn, sizeof(double));
+  double *relt = (double *) calloc(maxn, sizeof(double));
+  int    *irow = (int *) calloc(maxn, sizeof(int));
+
+  // read the core file
+  char core[100] = "";
+  strcpy(core, coreFile.c_str());
+  RDMPS1(&rv, &iqp, &maxm, &maxn, &maxnza, &maxnzq, &nRows, &nCols, &nza, &nzq,
+	 &objRow, &iolog, &big, &dlobnd, &dupbnd, &objConstant,
+	 namec, nameb, namran, nambnd, nammps, core,
+	 qdiag, qclpts, qrwnbs, qcoeff,
+	 rwname, clname, stavar, rwstat, hdrwcd, lnkrwcd, hdclcd, lnkclcd,
+	 rwnmbs, clpnts, irow, acoeff, rhs, ranges, bup, blo, relt);
+
+  free(relt);
+  free(irow);
+
+  return rv;
 }
 
 /** Read the time file */

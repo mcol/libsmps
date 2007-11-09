@@ -57,6 +57,12 @@ class SmpsCore {
   /** Constructor */
   SmpsCore(string coreFileName = "", string timeFileName = "");
 
+  /** Destructor */
+  ~SmpsCore();
+
+  /** Read the core file */
+  int readCoreFile(string coreFileName = "");
+
   /** Read the time file */
   int readTimeFile(string timeFileName = "");
 
@@ -86,8 +92,89 @@ class SmpsCore {
 
  private:
 
-  /** Number of rows in the core file */
+  /** Number of rows */
   int nRows;
+
+  /** Number of columns */
+  int nCols;
+
+  /** Number of nonzeros in A */
+  int nza;
+
+  /** Row numbers of A */
+  int *rwnmbs;
+
+  /** Pointers to starts of columns of A */
+  int *clpnts;
+
+  /** Pointer to last element in row */
+  int *rwhead;
+
+  /** Pointer to previous element in row */
+  int *links;
+
+  /** Column numbers of elements of A */
+  int *clnmbs;
+
+  /** Nonzero elements of A */
+  double *acoeff;
+
+  /** Number of nonzeros in Q */
+  int nzq;
+
+  /** Column pointers for non-diagonal of Q */
+  int *qclpts;
+
+  /** Row indices for non-diag part of Q */
+  int *qrwnbs;
+
+  /** Diagonal of Q */
+  double *qdiag;
+
+  /** Nonzeros of non-diag part of Q */
+  double *qcoeff;
+
+  /** Index of the objective row */
+  int objRow;
+
+  /** Constant added to the objective */
+  double objConstant;
+
+  /** Variable lower bounds */
+  double *blo;
+
+  /** Variable upper bounds */
+  double *bup;
+
+  /** Right hand side of problem */
+  double *rhs;
+
+  /** Ranges for constraints */
+  double *ranges;
+
+  /** Type of constraints */
+  int *rwstat;
+
+  /** Type of variables */
+  int *stavar;
+
+  /** Array of row names */
+  char *rwname;
+
+  /** Array of column names */
+  char *clname;
+
+  /** Header to linked list of rows with same code */
+  int *hdrwcd;
+
+  /** Header to linked list of columns with same code */
+  int *hdclcd;
+
+  /** Linked list of rows with same code */
+  int *lnkrwcd;
+
+  /** Linked list of columns with same code */
+  int *lnkclcd;
 
   /** Number of periods in the time file */
   int nPeriods;
@@ -205,5 +292,18 @@ class Smps : public SmpsCore, public SmpsTree {
   string smpsFile;
 
 };
+
+#define RDMPS1      rdmps1_
+
+extern "C" {
+
+void
+RDMPS1(int*, int*, int*, int*, int*, int*, int*, int*, int*, int*, int*, int*,
+       double*, double*, double*, double*,
+       char*, char*, char*, char*, char*, const char*,
+       double*, int*, int*, double*, char*, char*, int*, int*,
+       int*, int*, int*, int*, int*, int*, int*,
+       double*, double*, double*, double*, double*, double*);
+}
 
 #endif /* _SMPS_H_ */

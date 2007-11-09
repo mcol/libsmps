@@ -38,6 +38,23 @@ testCountRows(const char CoreFile[], const int expRows) {
 }
 
 static int
+testReadCoreFile(const char CoreFile[], const int expStages) {
+
+  int rv;
+
+  char FileName[SMPS_FILENAME_MAX];
+  char SmpsPath[] = SMPS_PATH;
+  strcpy(FileName, SmpsPath);
+  strcat(FileName, CoreFile);
+
+  SmpsCore core;
+  rv = core.readCoreFile(FileName);
+  rv = checkEqual(rv, 0, "rv", CoreFile);
+
+  return rv;
+}
+
+static int
 testReadTimeFile(const char TimeFile[], const int expStages) {
 
   int rv;
@@ -80,6 +97,23 @@ int unitSmpsCore(void) {
   testCountRows("pltexpA7.cor", 687);
   testCountRows("stormG2.cor", 714);
   testCountRows("T1mgnB.cor", 2558);
+
+  setFamily("testReadCoreFile");
+  testReadCoreFile("trivial.cor", 4);
+  testReadCoreFile("LandS.cor", 10);
+  testReadCoreFile("gbd.cor", 10);
+  testReadCoreFile("smallnet.cor", 12);
+  testReadCoreFile("mod2-2.cor", 17);
+  testReadCoreFile("ssn.cor", 177);
+  testReadCoreFile("stocfor1.cor", 118);
+  testReadCoreFile("minoux.cor", 118);
+  testReadCoreFile("sgpf5y3.cor", 189);
+  testReadCoreFile("fxm.cor", 331);
+  testReadCoreFile("jll_gva.cor", 350);
+  testReadCoreFile("pltexpA2.cor", 167);
+  testReadCoreFile("pltexpA7.cor", 687);
+  testReadCoreFile("stormG2.cor", 714);
+  testReadCoreFile("T1mgnB.cor", 2558);
 
   setFamily("testReadTimeFile");
   testReadTimeFile("trivial.tim", 2);

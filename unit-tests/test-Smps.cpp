@@ -31,6 +31,15 @@ testReadSmpsFile(const char SmpsFile[]) {
   // here we only test that the operation was successful
   rv = checkEqual(rv, 0, "rv", SmpsFile);
 
+  rv = smps.readCoreFile();
+  rv = checkEqual(rv, 0, "rv", SmpsFile);
+
+  rv = smps.readTimeFile();
+  rv = checkEqual(rv, 0, "rv", SmpsFile);
+
+  rv = smps.readStocFile();
+  rv = checkEqual(rv, 0, "rv", SmpsFile);
+
   return rv;
 }
 

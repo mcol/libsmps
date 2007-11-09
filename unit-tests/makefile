@@ -4,7 +4,7 @@ include $(DEPTH)/mkincl
 
 CC = g++
 
-LIBSMPS	:= ../libsmps.a
+LIBSMPS	:= ../libsmps.a ../libmps.a
 
 LIBS	+= $(LIBSMPS)
 
