@@ -26,9 +26,7 @@ testReadStocFile(const char StocFile[], const int expScens,
   strcpy(FileName, SmpsPath);
   strcat(FileName, StocFile);
 
-  SmpsCore core;
   SmpsTree tree(FileName);
-  tree.attachCore(core);
   rv = tree.readStocFile(FileName);
   if (rv) {
     return TEST_ERROR;

@@ -44,8 +44,7 @@ SmpsTree::SmpsTree(string stocFileName) :
   nStages(0),
   maxNodes(0),
   maxScens(1),
-  maxReals(1),
-  core(NULL) {
+  maxReals(1) {
 }
 
 /**
@@ -68,12 +67,6 @@ int SmpsTree::readStocFile(string stocFileName) {
   int foundName = 0;
   int stocType = 0;
   int rv = 0;
-
-  // ensure that we have a core structure attached
-  if (!core) {
-    printf("No core attached.\n");
-    return ERROR_UNATTACHED_CORE;
-  }
 
   // read the SmpsTree::stocFile if no stocFileName has been given
   if (stocFileName == "")
