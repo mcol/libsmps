@@ -213,15 +213,6 @@ class Smps : public SmpsCore, public SmpsTree {
   /** Name of the smps input file */
   string smpsFile;
 
-  /** Name of the core file */
-  string coreFile;
-
-  /** Name of the time file */
-  string timeFile;
-
-  /** Name of the stochastic file */
-  string stocFile;
-
 };
 
 #endif /* _SMPS_H_ */
