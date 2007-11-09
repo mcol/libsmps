@@ -63,6 +63,7 @@ testReadTimeFile(const char TimeFile[], const int expStages) {
  */
 int unitSmpsCore(void) {
 
+  setFamily("testCountRows");
   testCountRows("trivial.cor", 4);
   testCountRows("LandS.cor", 10);
   testCountRows("gbd.cor", 10);
@@ -80,6 +81,7 @@ int unitSmpsCore(void) {
   testCountRows("stormG2.cor", 714);
   testCountRows("T1mgnB.cor", 2558);
 
+  setFamily("testReadTimeFile");
   testReadTimeFile("trivial.tim", 2);
   testReadTimeFile("LandS.tim", 2);
   testReadTimeFile("gbd.tim", 2);

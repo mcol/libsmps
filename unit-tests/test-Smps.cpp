@@ -39,6 +39,7 @@ testReadSmpsFile(const char SmpsFile[]) {
  */
 int unitSmps(void) {
 
+  setFamily("testReadSmpsFile");
   testReadSmpsFile("fxm3_2.smps");
   testReadSmpsFile("gbd.smps");
   testReadSmpsFile("LandS.smps");

@@ -47,6 +47,7 @@ testReadStocFile(const char StocFile[], const int expScens,
 int unitSmpsTree(void) {
 
 #ifndef SKIP_TEST_INDEP
+  setFamily("testReadStocFile Indep");
   testReadStocFile("trivial.sto", 4, 5, 4);
   testReadStocFile("trivial2.sto", 2, 3, 2);
   testReadStocFile("trivial4.sto", 4, 5, 4);
@@ -62,6 +63,7 @@ int unitSmpsTree(void) {
 #endif /* SKIP_TEST_INDEP */
 
 #ifndef SKIP_TEST_BLOCK
+  setFamily("testReadStocFile Blocks");
   testReadStocFile("trivial-blk.sto", 2, 3, 0);
   testReadStocFile("LandS_blocks.sto", 3, 4, 0);
   testReadStocFile("mod2-2.sto", 10, 11, 0);

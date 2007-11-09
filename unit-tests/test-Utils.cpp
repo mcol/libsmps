@@ -30,6 +30,7 @@ testEncodeName(const char name[], const int m, const int expCode) {
  */
 int unitUtils(void) {
 
+  setFamily("testEncodeName");
   testEncodeName("trivial", 4, 3);
   testEncodeName("LandS", 10, 6);
   testEncodeName("gbd", 10, 10);

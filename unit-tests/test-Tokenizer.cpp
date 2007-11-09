@@ -51,6 +51,7 @@ testCountTokens(string line, const int expTokens) {
  */
 int unitTokenizer(void) {
 
+  setFamily("testTokenizer");
   testTokenizer("line", "line", 4);
   testTokenizer(" line", "line", 4);
   testTokenizer("  line", "line", 4);
@@ -65,6 +66,7 @@ int unitTokenizer(void) {
   testTokenizer("  line\tcont", "line\tcont", 4, true);
   testTokenizer("\tline  cont", "line  cont", 4, true);
 
+  setFamily("testCountTokens");
   testCountTokens("one", 1);
   testCountTokens("", 0);
   testCountTokens("two words", 2);
