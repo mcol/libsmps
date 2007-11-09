@@ -68,14 +68,14 @@ int SmpsTree::readStocFile(string stocFileName) {
   int stocType = 0;
   int rv = 0;
 
-  // read the SmpsTree::stocFile if no stocFileName has been given
-  if (stocFileName == "")
-    stocFileName = stocFile;
+  // reset SmpsTree::stocFile if a stocFileName has been given
+  if (stocFileName != "")
+    stocFile = stocFileName;
 
   // open the input file
-  stoc.open(stocFileName.c_str(), ifstream::in);
+  stoc.open(stocFile.c_str(), ifstream::in);
   if (stoc.fail()) {
-    cerr << "Could not open file '" << stocFileName << "'." << endl;
+    cerr << "Could not open file '" << stocFile << "'." << endl;
     return ERROR_FILE_NOT_FOUND;
   }
 

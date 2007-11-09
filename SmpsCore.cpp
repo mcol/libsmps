@@ -85,14 +85,14 @@ int SmpsCore::readTimeFile(string timeFileName) {
   bool foundName = false, foundPeriods = false;
   int nTokens, rv = 0;
 
-  // read SmpsCore::timeFile if no timeFileName has been given
-  if (timeFileName == "")
-    timeFileName = timeFile;
+  // reset SmpsCore::timeFile if a timeFileName has been given
+  if (timeFileName != "")
+    timeFile = timeFileName;
 
   // open the time file
-  time.open(timeFileName.c_str(), ifstream::in);
+  time.open(timeFile.c_str(), ifstream::in);
   if (time.fail()) {
-    cerr << "Could not open file '" << timeFileName << "'." << endl;
+    cerr << "Could not open file '" << timeFile << "'." << endl;
     return ERROR_FILE_NOT_FOUND;
   }
 
