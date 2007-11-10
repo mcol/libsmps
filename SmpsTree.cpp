@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include "Smps.h"
+#include "Tokenizer.h"
 #include "Utils.h"
 
 /**
@@ -166,12 +167,13 @@ int getStocType(char *buffer) {
 /** Scan a stochastic file in INDEP DISCRETE format */
 int SmpsTree::scanIndepType(ifstream &stoc) {
 
+  int rv, nBlocks = 0;
   char buffer[SMPS_LINE_MAX];
-  char row[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE] = "";
-  char col[SMPS_FIELD_SIZE], curCol[SMPS_FIELD_SIZE] = "";
+  char rowName[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE] = "";
+  char colName[SMPS_FIELD_SIZE], curCol[SMPS_FIELD_SIZE] = "";
 
-  int nChangesBlock = 1;
-  int nValuesRead, rv;
+  // number of nodes for the current stage
+  int nNodesStage = 1;
 
   // read the file
   while (!stoc.eof()) {
@@ -181,48 +183,46 @@ int SmpsTree::scanIndepType(ifstream &stoc) {
     if (rv)
       continue;
 
-    nValuesRead = sscanf(buffer, "%s %s %*f %*s %*f\n", col, row);
+    Tokenizer line(buffer);
+    int nTokens = line.countTokens();
 
-    if (nValuesRead == 2) {
+    if (nTokens == 4 || nTokens == 5) {
+
+      // this is a line of the form
+      //  RIGHT     DEMAND1   184.0          (PERIOD2)   0.3
+      sscanf(buffer, "%s %s %*f %*s %*f\n", colName, rowName);
+
+      // we have found a new block
+      ++nBlocks;
 
       // check if the name of the block or of the period matches
-      if ((strcmp(col, curCol) != 0) ||
-	  (strcmp(row, curRow) != 0)) {
+      if ((strcmp(colName, curCol) != 0) ||
+	  (strcmp(rowName, curRow) != 0)) {
 
-#if DEBUG_SMPSTREE
-	printf(" | Row: %s  Per: %s\n", row, per);
-	printf(" | nChangesBlock is: %d\n", nChangesBlock);
-#endif
+	// store the new names of row and period
+	strcpy(curRow, rowName);
+	strcpy(curCol, colName);
 
-	// update the current values of row and period
-	strcpy(curCol, col);
-	strcpy(curRow, row);
-
-	maxScens *= MAX(nChangesBlock, 1);
-	maxNodes += nChangesBlock * MAX(maxNodes, 1);
-	maxReals++;
-
-	nChangesBlock = 1;
-      }
-
-      else {
-	nChangesBlock += 1;
-	//maxReals++;
+	nNodesStage *= nBlocks;
+	maxNodes += nNodesStage;
+	nBlocks = 0;
       }
     }
 
-    else if (nValuesRead == 1) {
-      if (strcmp(col, "ENDATA") == 0) {
-	maxNodes += nChangesBlock * MAX(maxNodes, 1);
-	maxScens *= nChangesBlock;
-	maxReals = maxScens * (maxReals - 2) + 5;
-	break;
-      }
+    // we reached the ENDATA section
+    else if (nTokens == 1 && strcmp(buffer, "ENDATA") == 0) {
+
+      nNodesStage *= (nBlocks + 1);
+      maxNodes += nNodesStage;
+      maxScens = nNodesStage;
+
+      break;
     }
 
+    // we cannot parse this line
     else {
-      fprintf(stderr, "Something wrong with this line? (read %d values)\n%s\n",
-	      nValuesRead, buffer);
+      cerr << "Something wrong with this line?" << endl
+	   << ">" << buffer << "<" << endl;
       return ERROR_STOC_FORMAT;
     }
   }
@@ -251,13 +251,13 @@ int SmpsTree::readIndepType(ifstream &stoc) {
 /** Scan a stochastic file in BLOCKS DISCRETE format */
 int SmpsTree::scanBlocksType(ifstream &stoc) {
 
-  int nBlocks = 0, nRealBlock = 0;
-  bool newBlock = false;
-  char buffer[SMPS_LINE_MAX];
-  char row[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE] = "";
-  char per[SMPS_FIELD_SIZE], curPer[SMPS_FIELD_SIZE] = "";
-  char col[SMPS_FIELD_SIZE], rw2[SMPS_FIELD_SIZE];
-  int nValuesRead, rv;
+  int rv, nBlocks = 0;
+  char buffer[SMPS_LINE_MAX], bl[SMPS_FIELD_SIZE];
+  char blockName[SMPS_FIELD_SIZE], curBlock[SMPS_FIELD_SIZE] = "";
+  char stageName[SMPS_FIELD_SIZE], curStage[SMPS_FIELD_SIZE] = "";
+
+  // number of nodes for the current stage
+  int nNodesStage = 1;
 
   // read the file
   while (!stoc.eof()) {
@@ -267,64 +267,61 @@ int SmpsTree::scanBlocksType(ifstream &stoc) {
     if (rv)
       continue;
 
-    nValuesRead = sscanf(buffer, "%s %s %s %s %*f\n", col, row, per, rw2);
+    Tokenizer line(buffer);
+    int nTokens = line.countTokens();
 
-    if (nValuesRead == 4) {
+    if (nTokens == 4) {
 
-      // beginning of a new block
-      if (strcmp(col, "BL") == 0) {
-	nBlocks++;
+      // this is a line of the form
+      //  BL BLOCK1    PERIOD2   0.3
+      sscanf(buffer, "%s %s %s %*f\n", bl, blockName, stageName);
 
-	// special case the first line in each block
-	if (newBlock) {
-	  maxReals += nRealBlock;
-	  newBlock = false;
+      // check that the format is the one expected
+      if (strcmp(bl, "BL") != 0) {
+	cerr << "Something wrong with this line?" << endl
+	     << ">" << buffer << "<" << endl;
+	return ERROR_STOC_FORMAT;
+      }
+
+      // we have found a new block
+      ++nBlocks;
+
+      // this block has a different name from the one read before
+      if (strcmp(blockName, curBlock) != 0)  {
+
+	// store the new name
+	strcpy(curBlock, blockName);
+	nNodesStage *= nBlocks;
+	nBlocks = 0;
+
+	// this block refers to a new period
+	if (strcmp(stageName, curStage) != 0) {
+	  strcpy(curStage, stageName);
+	  maxNodes += nNodesStage;
 	}
-
-	// check if the name of the block or of the period matches
-	if ((strcmp(row, curRow) != 0) || // row here is the name of the block
-	    (strcmp(per, curPer) != 0)) {
-
-#if DEBUG_SMPSTREE
-	printf(" | Block: %s  Per: %s\n", curRow, curPer);
-	printf(" | Block: %s  Per: %s\n", row, per);
-#endif
-
-	  strcpy(curRow, row);
-	  strcpy(curPer, per);
-
-	  newBlock = true;
-	  nRealBlock = 0;
-	  maxScens *= nBlocks;
-	  maxNodes += maxScens;
-	  nBlocks = 0;
-	}
-      }
-
-      // normal lines inside the block (with 2 values)
-      else {
-	nRealBlock++;
       }
     }
-    
-    // normal lines inside the block (with 1 value)
-    else if (nValuesRead == 3) {
-      nRealBlock++;
+
+    // realisation line
+    else if (nTokens == 3 || nTokens == 5) {
+
     }
-    else if (nValuesRead == 1) {
-      if (strcmp(col, "ENDATA") == 0) {
-	maxScens = maxScens * (nBlocks + 1);
-	maxNodes += maxScens;
-	if (newBlock)
-	  maxReals += nRealBlock;
-	maxReals = maxReals * maxScens;
-	break;
-      }
+
+    // we reached the ENDATA section
+    else if (nTokens == 1 && strcmp(buffer, "ENDATA") == 0) {
+
+      nNodesStage *= (nBlocks + 1);
+      maxNodes += nNodesStage;
+      maxScens = nNodesStage;
+
+      break;
     }
+
+    // we cannot parse this line
     else {
-      fprintf(stderr, "Something wrong with this line? (read %d values)\n%s\n",
-	      nValuesRead, buffer);
-      return 1;
+      cerr << "Something wrong with this line?" << endl
+	   << ">" << buffer << "<" << endl;
+      return ERROR_STOC_FORMAT;
     }
   }
 
