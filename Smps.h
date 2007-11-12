@@ -284,7 +284,7 @@ class Smps : public SmpsCore, public SmpsTree {
   int read(void);
 
   /** Read the smps input file */
-  int readSmpsFile(string smpsFileName);
+  int readSmpsFile(string smpsFileName = "");
 
  private:
 
