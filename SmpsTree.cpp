@@ -45,7 +45,7 @@ SmpsTree::SmpsTree(string stocFileName) :
   nStages(0),
   maxNodes(0),
   maxScens(1),
-  maxReals(1) {
+  maxReals(0) {
 }
 
 /**
@@ -205,6 +205,7 @@ int SmpsTree::scanIndepType(ifstream &stoc) {
 
 	nNodesStage *= nBlocks;
 	maxNodes += nNodesStage;
+	++maxReals;
 	nBlocks = 0;
       }
     }
@@ -215,6 +216,7 @@ int SmpsTree::scanIndepType(ifstream &stoc) {
       nNodesStage *= (nBlocks + 1);
       maxNodes += nNodesStage;
       maxScens = nNodesStage;
+      maxReals = maxScens * maxReals + 1;
 
       break;
     }
@@ -255,9 +257,11 @@ int SmpsTree::scanBlocksType(ifstream &stoc) {
   char buffer[SMPS_LINE_MAX], bl[SMPS_FIELD_SIZE];
   char blockName[SMPS_FIELD_SIZE], curBlock[SMPS_FIELD_SIZE] = "";
   char stageName[SMPS_FIELD_SIZE], curStage[SMPS_FIELD_SIZE] = "";
+  bool firstRealBlock = false;
 
   // number of nodes for the current stage
   int nNodesStage = 1;
+  int nRealsBlock = 0;
 
   // read the file
   while (!stoc.eof()) {
@@ -286,8 +290,16 @@ int SmpsTree::scanBlocksType(ifstream &stoc) {
       // we have found a new block
       ++nBlocks;
 
+      if (firstRealBlock) {
+	maxReals += nRealsBlock;
+	firstRealBlock = false;
+      }
+
       // this block has a different name from the one read before
       if (strcmp(blockName, curBlock) != 0)  {
+
+	firstRealBlock = true;
+	nRealsBlock = 0;
 
 	// store the new name
 	strcpy(curBlock, blockName);
@@ -304,7 +316,7 @@ int SmpsTree::scanBlocksType(ifstream &stoc) {
 
     // realisation line
     else if (nTokens == 3 || nTokens == 5) {
-
+      ++nRealsBlock;
     }
 
     // we reached the ENDATA section
@@ -313,6 +325,9 @@ int SmpsTree::scanBlocksType(ifstream &stoc) {
       nNodesStage *= (nBlocks + 1);
       maxNodes += nNodesStage;
       maxScens = nNodesStage;
+      if (firstRealBlock)
+	maxReals += nRealsBlock;
+      maxReals = maxReals * maxScens + 1;
 
       break;
     }
