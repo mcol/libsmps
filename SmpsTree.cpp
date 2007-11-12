@@ -210,7 +210,7 @@ int SmpsTree::scanIndepType(ifstream &stoc) {
     }
 
     // we reached the ENDATA section
-    else if (nTokens == 1 && strcmp(buffer, "ENDATA") == 0) {
+    else if (nTokens == 1 && strncmp(buffer, "ENDATA", 6) == 0) {
 
       nNodesStage *= (nBlocks + 1);
       maxNodes += nNodesStage;
@@ -308,7 +308,7 @@ int SmpsTree::scanBlocksType(ifstream &stoc) {
     }
 
     // we reached the ENDATA section
-    else if (nTokens == 1 && strcmp(buffer, "ENDATA") == 0) {
+    else if (nTokens == 1 && strncmp(buffer, "ENDATA", 6) == 0) {
 
       nNodesStage *= (nBlocks + 1);
       maxNodes += nNodesStage;
