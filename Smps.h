@@ -201,7 +201,7 @@ class SmpsCore {
 
 
 /** The SmpsTree class */
-class SmpsTree {
+class SmpsTree : public SmpsCore {
 
  public:
 
@@ -282,7 +282,7 @@ class SmpsTree {
 
 
 /** The Smps class */
-class Smps : public SmpsCore, public SmpsTree {
+class Smps : public SmpsTree {
 
  public:
 
