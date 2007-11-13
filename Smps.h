@@ -211,6 +211,9 @@ class SmpsTree : public SmpsCore {
   /** Constructor */
   SmpsTree(string stocFileName = "");
 
+  /** Destructor */
+  ~SmpsTree();
+
   /** Read the stochastic file */
   int readStocFile(string stocFileName = "");
 
@@ -260,6 +263,9 @@ class SmpsTree : public SmpsCore {
   /** Number of stages in the event tree */
   int nStages;
 
+  /** Number of diagonal blocks */
+  int nBlocks;
+
   /** Maximum number of nodes in the event tree */
   int maxNodes;
 
@@ -268,6 +274,61 @@ class SmpsTree : public SmpsCore {
 
   /** Maximum number of realisations */
   int maxReals;
+
+  /** Parent of node */
+  int *parent;
+
+  /** Number of children of node */
+  int *n_chd;
+
+  /** First child of node */
+  int *f_chd;
+
+  /** First row of node (in det equiv matrix) */
+  int *f_rw_nd;
+
+  /** First col of node (in det equiv matrix) */
+  int *f_cl_nd;
+
+  /** Scenario that node belongs to */
+  int *scenario;
+
+  /** Period (stage) that node belongs to */
+  int *period;
+
+  /** Block that node belongs to */
+  int *block;
+
+  /** Ordering of nodes */
+  int *order;
+
+  /** Invertion of order of nodes (place of nd) */
+  int *revorder;
+
+  /** Path probability of nodes */
+  double *probnd;
+
+  /** Length of scenario correction list */
+  int scenLength;
+
+  /** Maximum length of scenario correction list */
+  int maxScenLength;
+
+  /** First entry in list for scenario [maxScens] */
+  int *sc_first;
+
+  /** Number of entries in list for scenario [maxScens] */
+  int *sc_len;
+
+  /* these are in FORTRAN numbering */
+  /** Row of CORE affected by change [maxScenLength] */
+  int *entryRow;
+
+  /** Column of CORE affected by change [maxScenLength] */
+  int *entryCol;
+
+  /** New (changed) entry [maxScenLength] */
+  double *entryVal;
 
   /** Scan a stochastic file in INDEP DISCRETE format */
   int scanIndepType(ifstream &file);
@@ -306,6 +367,7 @@ class Smps : public SmpsTree {
 };
 
 #define RDMPS1      rdmps1_
+#define RDSTCH      rdstch_
 
 extern "C" {
 
@@ -316,6 +378,15 @@ RDMPS1(int*, int*, int*, int*, int*, int*, int*, int*, int*, int*, int*, int*,
        double*, int*, int*, double*, char*, char*, int*, int*,
        int*, int*, int*, int*, int*, int*, int*,
        double*, double*, double*, double*, double*, double*);
+
+void
+RDSTCH(int*, int*, int*, int*, int*, const char*,
+       int*, double*, int*, int*, int*,
+       int*, int*, int*, int*, char*, int*, int*, int*, int*,
+       int*, int*, double*, int*, int*, char*, char*, int*,
+       int*, int*, int*, int*, int*, char*, int*, int*,
+       int*, int*, double*, double*, char*,  int*, int*);
+
 }
 
 #endif /* _SMPS_H_ */

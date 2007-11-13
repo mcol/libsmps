@@ -43,9 +43,46 @@ SmpsTree::SmpsTree(string stocFileName) :
   nNodes(0),
   nScens(1),
   nStages(0),
+  nBlocks(0),
   maxNodes(0),
   maxScens(1),
-  maxReals(0) {
+  maxReals(0),
+  parent(NULL),
+  n_chd(NULL),
+  f_chd(NULL),
+  f_rw_nd(NULL),
+  f_cl_nd(NULL),
+  scenario(NULL),
+  period(NULL),
+  block(NULL),
+  order(NULL),
+  revorder(NULL),
+  probnd(NULL),
+  scenLength(0),
+  maxScenLength(0),
+  sc_first(NULL),
+  sc_len(NULL),
+  entryRow(NULL),
+  entryCol(NULL),
+  entryVal(NULL) {
+}
+
+/** Destructor */
+SmpsTree::~SmpsTree() {
+
+  delete[] parent;
+  delete[] period;
+  delete[] scenario;
+  delete[] probnd;
+  delete[] n_chd;
+  delete[] f_chd;
+  delete[] f_rw_nd;
+  delete[] f_cl_nd;
+  delete[] sc_first;
+  delete[] sc_len;
+  delete[] entryRow;
+  delete[] entryCol;
+  delete[] entryVal;
 }
 
 /**
@@ -100,9 +137,6 @@ int SmpsTree::readStocFile(string stocFileName) {
     stocType = getStocType(buffer);
   }
 
-  // store the file position at this point
-  int filePos = stoc.tellg();
-
   // first pass: do a quick scan of the rest of the file
   if (stocType == TYPE_INDEP)
     scanIndepType(stoc);
@@ -111,20 +145,73 @@ int SmpsTree::readStocFile(string stocFileName) {
   else
     rv = stocType;
 
-  // restore the file position
-  stoc.clear();
-  stoc.seekg(filePos);
-
-  // second pass: extract all the information from the file
-  if (stocType == TYPE_INDEP)
-    readIndepType(stoc);
-  else if (stocType == TYPE_BLOCKS)
-    readBlocksType(stoc);
-  else
-    rv = stocType;
-
   // close the input file
   stoc.close();
+
+  scenLength = maxScenLength = getMaxReals();
+
+  int *br_sce = new int[maxScens];
+  int *iwork1 = new int[maxScenLength];
+  int *iwork2 = new int[maxScenLength];
+  int *iwork3 = new int[4 * maxScenLength];
+  int *iwork4 = new int[maxScenLength];
+  char *scenam = new char[8*maxScens];
+  double *dwork  = new double[maxScenLength];
+  double *prb_rl = new double[maxScenLength];
+  char nameb[10];
+
+  parent   = new int[maxNodes];
+  period   = new int[maxNodes];
+  scenario = new int[maxNodes];
+  n_chd    = new int[maxNodes];
+  f_chd    = new int[maxNodes];
+  f_rw_nd  = new int[maxNodes + 1];
+  f_cl_nd  = new int[maxNodes + 1];
+  probnd   = new double[maxNodes];
+
+  sc_first = new int[maxScens];
+  sc_len   = new int[maxScens];
+  entryRow = new int[maxScenLength];
+  entryCol = new int[maxScenLength];
+  entryVal = new double[maxScenLength];
+
+  // initialise to zero
+  memset(entryRow, 0, maxScenLength * sizeof(int));
+  memset(entryCol, 0, maxScenLength * sizeof(int));
+
+  int maxRows = nRows;
+  int maxCols = nCols;
+  int maxPeriods = nPeriods;
+
+  char *perNames = convertPeriodNames();
+
+  // reset SmpsTree::stocFile if a stocFileName has been given
+  if (stocFileName != "")
+    stocFile = stocFileName;
+
+  // read the stoc file
+  char stocfile[100] = "";
+  strcpy(stocfile, stocFile.c_str());
+  RDSTCH(&rv, &maxScens, &nScens, &maxNodes, &nNodes, stocfile,
+	 br_sce, probnd, parent, n_chd, f_chd, scenario,
+	 period, &nPeriods, &maxPeriods, perNames,
+	 &scenLength, &maxScenLength, entryCol, entryRow,
+	 sc_first, sc_len, entryVal,
+	 &nCols, &nRows, rwname, clname, &maxCols, &maxRows,
+	 hdclcd, hdrwcd, lnkclcd, lnkrwcd, nameb,
+	 iwork1, iwork2, iwork3, iwork4, dwork,
+	 prb_rl, scenam, begPeriodCol, begPeriodRow);
+
+  /* clean up */
+  delete[] perNames;
+  delete[] br_sce;
+  delete[] iwork1;
+  delete[] iwork2;
+  delete[] iwork3;
+  delete[] iwork4;
+  delete[] dwork;
+  delete[] prb_rl;
+  delete[] scenam;
 
   return rv;
 }
