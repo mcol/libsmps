@@ -168,6 +168,14 @@ int SmpsCore::readCoreFile(string coreFileName) {
   if (coreFileName != "")
     coreFile = coreFileName;
 
+  // check that the file exists
+  char core[100] = "";
+  strcpy(core, coreFile.c_str());
+  if (access(core, R_OK)) {
+    cerr << "Could not open file '"  << coreFile << "'." << endl;
+    return ERROR_FILE_NOT_FOUND;
+  }
+
   countRows();
   maxm = nRows + 1, maxn = 5 * nRows;
   maxnza = (maxm*maxn/1000 > maxn*10) ? maxm*maxn/1000 : maxn*10;
@@ -194,8 +202,6 @@ int SmpsCore::readCoreFile(string coreFileName) {
   int    *irow = (int *) calloc(maxn, sizeof(int));
 
   // read the core file
-  char core[100] = "";
-  strcpy(core, coreFile.c_str());
   RDMPS1(&rv, &iqp, &maxm, &maxn, &maxnza, &maxnzq, &nRows, &nCols, &nza, &nzq,
 	 &objRow, &iolog, &big, &dlobnd, &dupbnd, &objConstant,
 	 namec, nameb, namran, nambnd, nammps, core,
