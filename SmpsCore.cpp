@@ -418,3 +418,34 @@ int SmpsCore::convertNames(const char *rowname, const char *colname) {
 
   return 0;
 }
+
+/**
+ *  Create a single character array from the vector of strings of period names.
+ *
+ *  The vector of strings of period names read in the time file needs to
+ *  be converted into a single character array to be passed to rdstch().
+ */
+char* SmpsCore::convertPeriodNames() {
+
+  char *periods = new char[8 * nPeriods + 1];
+  char *tmp = new char[8 + 1];
+  char *pos = periods;
+
+  for (int i = 0; i < (int) periodNames.size(); i++) {
+
+    // extract the character string from the vector
+    sprintf(tmp, "%-8s", periodNames[i].c_str());
+
+    // copy the string in the array
+    memcpy(pos, tmp, 8 * sizeof(char));
+    pos += 8;
+  }
+
+  // add the final string delimiter
+  periods[8 * nPeriods] = '\0';
+
+  // clean up
+  delete[] tmp;
+
+  return periods;
+}

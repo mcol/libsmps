@@ -197,6 +197,9 @@ class SmpsCore {
   /** Convert the arrays of names from rdmps1 into vectors of strings */
   int convertNames(const char *rowname, const char *colname);
 
+  /** Create a character array from the vector of strings of period names */
+  char* convertPeriodNames(void);
+
 };
 
 
