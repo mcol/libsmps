@@ -188,6 +188,15 @@ class SmpsCore {
   /** List of the first column name of each period */
   vector<string> begPeriodCol;
 
+  /** List of row names read from the core file */
+  vector<string> rowNames;
+
+  /** List of column names read from the core file */
+  vector<string> colNames;
+
+  /** Convert the arrays of names from rdmps1 into vectors of strings */
+  int convertNames(const char *rowname, const char *colname);
+
 };
 
 

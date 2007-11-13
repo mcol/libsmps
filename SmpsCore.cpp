@@ -12,6 +12,7 @@
 #include <iostream>
 #include <string.h>
 #include <fstream>
+#include <sstream>
 #include "Smps.h"
 #include "Tokenizer.h"
 #include "Utils.h"
@@ -198,6 +199,15 @@ int SmpsCore::readCoreFile(string coreFileName) {
 	 rwname, clname, stavar, rwstat, hdrwcd, lnkrwcd, hdclcd, lnkclcd,
 	 rwnmbs, clpnts, irow, acoeff, rhs, ranges, bup, blo, relt);
 
+  if (rv)
+    goto TERMINATE;
+
+  // convert the character arrays into vectors of strings
+  convertNames(rwname, clname);
+
+ TERMINATE:
+
+  // clean up
   free(relt);
   free(irow);
 
@@ -284,4 +294,58 @@ int SmpsCore::readTimeFile(string timeFileName) {
   time.close();
 
   return rv;
+}
+
+/**
+ *  Convert an array of names from rdmps1 into a vector of strings.
+ *
+ *  Each name is exactly 8 characters long (rdmps1 deals only with
+ *  fixed format), so names may be padded with whitespace.
+ *  This function extracts each of the names and stores is as an entry
+ *  in a vector. During the extraction, the additional whitespace is
+ *  removed.
+ */
+int SmpsCore::convertNames(const char *rowname, const char *colname) {
+
+  string tmp;
+  stringstream stream(stringstream::in);
+  stringstream t(stringstream::in);
+  char *ttt = new char[9];
+
+  stream.str(rowname);
+  for (int i = 0; i < nRows + 1; i++) {   // +1 for objective row
+
+    // read exactly 8 characters, at the end of which put the string delimiter
+    stream.read(ttt, 8);
+    ttt[8] = '\0';
+
+    // create a stream out of the c string to get rid of extra whitespace
+    t.str(ttt);
+    t >> tmp;
+    t.clear();
+
+    // store the clean up string in the vector
+    rowNames.push_back(tmp);
+  }
+
+  stream.clear();
+  stream.str(colname);
+  for (int i = 0; i < nCols; i++) {
+
+    // read exactly 8 characters, at the end of which put the string delimiter
+    stream.read(ttt, 8);
+    ttt[8] = '\0';
+
+    // create a stream out of the c string to get rid of extra whitespace
+    t.str(ttt);
+    t >> tmp;
+    t.clear();
+
+    colNames.push_back(tmp);
+  }
+
+  // clean up
+  delete[] ttt;
+
+  return 0;
 }
