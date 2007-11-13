@@ -41,11 +41,11 @@ void setFamily(string testFamily);
 /** Check equality between two values. */
 template<class T>
 int checkEqual(const T& value, const T& expValue,
-	       const char valueName[], const char testName[] = NULL) {
+	       const string valueName, const string testName = "") {
 
   nTests++;
   if (value != expValue) {
-    if (testName)
+    if (testName != "")
       cout << " | Testing: " << testName << endl;
     cout << " | FAIL: " << valueName << ": " << value
 	 << " (exp: " << expValue << ")\n" << endl;

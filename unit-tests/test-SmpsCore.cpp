@@ -16,16 +16,11 @@
 
 
 static int
-testCountRows(const char CoreFile[], const int expRows) {
+testCountRows(const string CoreFile, const int expRows) {
 
   int rv;
+  const string FileName = SMPS_PATH + CoreFile;
 
-  char FileName[SMPS_FILENAME_MAX];
-  char SmpsPath[] = SMPS_PATH;
-  strcpy(FileName, SmpsPath);
-  strcat(FileName, CoreFile);
-
-  /* scan the stochastic file for the number of scenarios and the length */
   SmpsCore core(FileName);
   rv = core.countRows();
   if (rv) {
@@ -38,34 +33,27 @@ testCountRows(const char CoreFile[], const int expRows) {
 }
 
 static int
-testReadCoreFile(const char CoreFile[], const int expStages) {
+testReadCoreFile(const string CoreFile, const int expStages) {
 
   int rv;
-
-  char FileName[SMPS_FILENAME_MAX];
-  char SmpsPath[] = SMPS_PATH;
-  strcpy(FileName, SmpsPath);
-  strcat(FileName, CoreFile);
+  const string FileName = SMPS_PATH + CoreFile;
 
   SmpsCore core;
   rv = core.readCoreFile(FileName);
-  rv = checkEqual(rv, 0, "rv", CoreFile);
+  rv = checkEqual(rv, 0, "readCoreFile rv", CoreFile);
 
   return rv;
 }
 
 static int
-testReadTimeFile(const char TimeFile[], const int expStages) {
+testReadTimeFile(const string TimeFile, const int expStages) {
 
   int rv;
-
-  char FileName[SMPS_FILENAME_MAX];
-  char SmpsPath[] = SMPS_PATH;
-  strcpy(FileName, SmpsPath);
-  strcat(FileName, TimeFile);
+  const string FileName = SMPS_PATH + TimeFile;
 
   SmpsCore core;
   rv = core.readTimeFile(FileName);
+  rv = checkEqual(rv, 0, "readTimeFile rv", TimeFile);
   if (rv) {
     return TEST_ERROR;
   }

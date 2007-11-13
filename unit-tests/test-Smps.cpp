@@ -16,29 +16,25 @@
 
 
 static int
-testReadSmpsFile(const char SmpsFile[]) {
+testReadSmpsFile(const string SmpsFile) {
 
   int rv;
-
-  char FileName[SMPS_FILENAME_MAX];
-  char SmpsPath[] = SMPS_PATH;
-  strcpy(FileName, SmpsPath);
-  strcat(FileName, SmpsFile);
-
+  const string FileName = SMPS_PATH + SmpsFile;
   Smps smps(FileName);
-  rv = smps.readSmpsFile(FileName);
 
-  // here we only test that the operation was successful
-  rv = checkEqual(rv, 0, "rv", SmpsFile);
+  rv = smps.readSmpsFile(FileName);
+  rv = checkEqual(rv, 0, "readSmpsFile rv", SmpsFile);
+  if (rv)
+    return rv;
 
   rv = smps.readCoreFile();
-  rv = checkEqual(rv, 0, "rv", SmpsFile);
+  rv = checkEqual(rv, 0, "readCoreFile rv", SmpsFile);
 
   rv = smps.readTimeFile();
-  rv = checkEqual(rv, 0, "rv", SmpsFile);
+  rv = checkEqual(rv, 0, "readTimeFile rv", SmpsFile);
 
   rv = smps.readStocFile();
-  rv = checkEqual(rv, 0, "rv", SmpsFile);
+  rv = checkEqual(rv, 0, "readStocFile rv", SmpsFile);
 
   return rv;
 }

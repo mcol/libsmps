@@ -16,21 +16,19 @@
 
 
 static int
-testReadStocFile(const char StocFile[], const int expScens,
+testReadStocFile(const string StocFile, const int expScens,
 		 const int expNodes, const int expReals) {
 
   int rv;
-
-  char FileName[SMPS_FILENAME_MAX];
-  char SmpsPath[] = SMPS_PATH;
-  strcpy(FileName, SmpsPath);
-  strcat(FileName, StocFile);
+  const string FileName = SMPS_PATH + StocFile;
 
   Smps tree(FileName);
   tree.readSmpsFile();
   tree.readCoreFile();
   tree.readTimeFile();
+
   rv = tree.readStocFile();
+  rv = checkEqual(rv, 0, "readStocFile rv", StocFile);
   if (rv) {
     return TEST_ERROR;
   }

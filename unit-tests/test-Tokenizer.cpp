@@ -14,7 +14,7 @@
 
 
 static int
-testTokenizer(string line, string expToken,
+testTokenizer(const string line, const string expToken,
 	      const int expLength, const bool expMore = false) {
 
   int rv;
@@ -32,7 +32,7 @@ testTokenizer(string line, string expToken,
 }
 
 static int
-testCountTokens(string line, const int expTokens) {
+testCountTokens(const string line, const int expTokens) {
 
   int rv;
 
@@ -72,7 +72,9 @@ int unitTokenizer(void) {
   testCountTokens("two words", 2);
   testCountTokens("three words line", 3);
   testCountTokens("a line\twith tabs", 4);
+  testCountTokens("another line \t with tabs\n", 4);
   testCountTokens(" short line \t", 2);
+  testCountTokens(" short line \0 should not read this", 2);
 
   return 0;
 }
