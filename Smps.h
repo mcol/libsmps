@@ -182,11 +182,11 @@ class SmpsCore {
   /** List of the period names read from the time file */
   vector<string> periodNames;
 
-  /** List of the first row name of each period */
-  vector<string> begPeriodRow;
+  /** First row index of each period */
+  int *begPeriodRow;
 
-  /** List of the first column name of each period */
-  vector<string> begPeriodCol;
+  /** First column index of each period */
+  int *begPeriodCol;
 
   /** List of row names read from the core file */
   vector<string> rowNames;

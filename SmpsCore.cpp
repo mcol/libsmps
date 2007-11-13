@@ -50,7 +50,9 @@ SmpsCore::SmpsCore(string coreFileName, string timeFileName) :
   hdclcd(NULL),
   lnkrwcd(NULL),
   lnkclcd(NULL),
-  nPeriods(0) {
+  nPeriods(0),
+  begPeriodRow(NULL),
+  begPeriodCol(NULL) {
 }
 
 /** Destructor */
@@ -92,6 +94,8 @@ SmpsCore::~SmpsCore() {
     free(bup);
   if (blo)
     free(blo);
+  delete[] begPeriodRow;
+  delete[] begPeriodCol;
 }
 
 /** Count the number of rows declared in the core file */
@@ -222,6 +226,8 @@ int SmpsCore::readTimeFile(string timeFileName) {
   char rowName[SMPS_FIELD_SIZE], colName[SMPS_FIELD_SIZE];
   char perName[SMPS_FIELD_SIZE];
   bool foundName = false, foundPeriods = false;
+  vector<string> begPeriodRowName;
+  vector<string> begPeriodColName;
   int nTokens, rv = 0;
 
   // reset SmpsCore::timeFile if a timeFileName has been given
@@ -266,8 +272,8 @@ int SmpsCore::readTimeFile(string timeFileName) {
     if (nTokens == 3) {
       sscanf(buffer, "%s %s %s\n", colName, rowName, perName);
       periodNames.push_back(perName);
-      begPeriodRow.push_back(rowName);
-      begPeriodCol.push_back(colName);
+      begPeriodRowName.push_back(rowName);
+      begPeriodColName.push_back(colName);
       ++nPeriods;
     }
 
@@ -292,6 +298,69 @@ int SmpsCore::readTimeFile(string timeFileName) {
 
   // close the time file
   time.close();
+
+  bool found = false;
+  begPeriodRow = new int[nPeriods + 1];
+  begPeriodCol = new int[nPeriods + 1];
+
+  // try to match period data
+  for (int i = 0; i < nPeriods; i++) {
+
+#ifdef DEBUG_TIME_FILE
+    cout << "Searching match for row: >" << begPeriodRowName[i] << "<" << endl;
+#endif
+
+    // find row-period begin
+    for (int j = 0; j < nRows; j++) {
+
+      if (rowNames[j] == begPeriodRowName[i]) {
+
+	// allow the objective row to be a period start in the time file
+	if (j == objRow)
+	  j++;
+
+	// found first row of period i
+	begPeriodRow[i] = j;
+	found = true;
+	break;
+      }
+    }
+
+    if (!found) {
+      printf("Not found Row corresponding to start of period %d\n", i);
+      rv = 1;
+      goto TERMINATE;
+    }
+
+#ifdef DEBUG_TIME_FILE
+    cout << "Searching match for col: >" << begPeriodColName[i] << "<" << endl;
+#endif
+
+    // find col-period begin
+    found = false;
+    for (int j = 0; j < nCols; j++) {
+
+      if (colNames[j] == begPeriodColName[i]) {
+
+	// found first col of period i
+	begPeriodCol[i] = j;
+	found = true;
+	break;
+      }
+    }
+
+    if (!found) {
+      printf("Not found Col corresponding to start of period %d\n", i);
+      rv = 1;
+      goto TERMINATE;
+    }
+  }
+
+  // set the last elements
+  begPeriodRow[nPeriods] = nRows;
+  begPeriodCol[nPeriods] = nCols;
+
+ TERMINATE:
 
   return rv;
 }
