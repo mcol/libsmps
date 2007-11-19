@@ -74,9 +74,34 @@ class SmpsCore {
     return nRows;
   }
 
+  /** Retrieve the number of columns in the core file */
+  int getColumns(void) const {
+    return nCols;
+  }
+
   /** Retrieve the number of periods in the time file */
   int getPeriods(void) const {
     return nPeriods;
+  }
+
+  /** Return the number of rows of the given period */
+  int getNRowsPeriod(const int per) const {
+    return begPeriodRow[per + 1] - begPeriodRow[per];
+  }
+
+  /** Return the number of columns of the given period */
+  int getNColsPeriod(const int per) const {
+    return begPeriodCol[per + 1] - begPeriodCol[per];
+  }
+
+  /** Retrieve the index of the objective row */
+  int getObjRowIndex(void) const {
+    return objRow;
+  }
+
+  /** Return the variable type */
+  int getVarType(const int col) const {
+    return varType[col];
   }
 
   /** Give access to SmpsTree to the private members */
@@ -245,6 +270,51 @@ class SmpsTree : public SmpsCore {
   /** Retrieve the maximum number of realisations in the event tree */
   int getMaxReals(void) const {
     return maxReals;
+  }
+
+  /** Retrieve the parent of the given node */
+  int getParent(const int node) const {
+    return parent[node];
+  }
+
+  /** Return the index of the first child of the given node */
+  int getFirstChild(const int node) const {
+    return f_chd[node];
+  }
+
+  /** Return the number of children of the given node */
+  int getNChildren(const int node) const {
+    return nChildren[node];
+  }
+
+  /** Return the index of the first det. equivalent row of the given node */
+  int getFirstRowNode(const int node) const {
+    return f_rw_nd[node];
+  }
+
+  /** Return the index of the first det. equivalent column of the given node */
+  int getFirstColNode(const int node) const {
+    return f_cl_nd[node];
+  }
+
+  /** Retrieve the period that the given node belongs to */
+  int getPeriod(const int node) const {
+    return period[node];
+  }
+
+  /** Retrieve the index of the first row of the given period */
+  int getBegPeriodRow(const int per) const {
+    return begPeriodRow[per];
+  }
+
+  /** Retrieve the index of the first column of the given period */
+  int getBegPeriodCol(const int per) const {
+    return begPeriodCol[per];
+  }
+
+  /** Retrieve the scenario number for the given node */
+  int getScenario(const int node) const {
+    return scenario[node];
   }
 
  protected:
