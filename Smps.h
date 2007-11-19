@@ -323,6 +323,9 @@ class SmpsTree : public SmpsCore {
     return scenario[node];
   }
 
+  /** Print the stochastic tree information */
+  void printTree() const;
+
  protected:
 
   /** Name of the stochastic file */
