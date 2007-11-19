@@ -156,7 +156,7 @@ class SmpsCore {
   int *rwstat;
 
   /** Type of variables */
-  int *stavar;
+  int *varType;
 
   /** Array of row names */
   char *rwname;
@@ -263,9 +263,6 @@ class SmpsTree : public SmpsCore {
   /** Number of stages in the event tree */
   int nStages;
 
-  /** Number of diagonal blocks */
-  int nBlocks;
-
   /** Maximum number of nodes in the event tree */
   int maxNodes;
 
@@ -279,7 +276,7 @@ class SmpsTree : public SmpsCore {
   int *parent;
 
   /** Number of children of node */
-  int *n_chd;
+  int *nChildren;
 
   /** First child of node */
   int *f_chd;
@@ -295,15 +292,6 @@ class SmpsTree : public SmpsCore {
 
   /** Period (stage) that node belongs to */
   int *period;
-
-  /** Block that node belongs to */
-  int *block;
-
-  /** Ordering of nodes */
-  int *order;
-
-  /** Invertion of order of nodes (place of nd) */
-  int *revorder;
 
   /** Path probability of nodes */
   double *probnd;

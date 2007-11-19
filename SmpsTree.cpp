@@ -43,20 +43,16 @@ SmpsTree::SmpsTree(string stocFileName) :
   nNodes(0),
   nScens(1),
   nStages(0),
-  nBlocks(0),
   maxNodes(0),
   maxScens(1),
   maxReals(0),
   parent(NULL),
-  n_chd(NULL),
+  nChildren(NULL),
   f_chd(NULL),
   f_rw_nd(NULL),
   f_cl_nd(NULL),
   scenario(NULL),
   period(NULL),
-  block(NULL),
-  order(NULL),
-  revorder(NULL),
   probnd(NULL),
   scenLength(0),
   maxScenLength(0),
@@ -74,7 +70,7 @@ SmpsTree::~SmpsTree() {
   delete[] period;
   delete[] scenario;
   delete[] probnd;
-  delete[] n_chd;
+  delete[] nChildren;
   delete[] f_chd;
   delete[] f_rw_nd;
   delete[] f_cl_nd;
@@ -163,7 +159,7 @@ int SmpsTree::readStocFile(string stocFileName) {
   parent   = new int[maxNodes];
   period   = new int[maxNodes];
   scenario = new int[maxNodes];
-  n_chd    = new int[maxNodes];
+  nChildren= new int[maxNodes];
   f_chd    = new int[maxNodes];
   f_rw_nd  = new int[maxNodes + 1];
   f_cl_nd  = new int[maxNodes + 1];
@@ -193,7 +189,7 @@ int SmpsTree::readStocFile(string stocFileName) {
   char stocfile[100] = "";
   strcpy(stocfile, stocFile.c_str());
   RDSTCH(&rv, &maxScens, &nScens, &maxNodes, &nNodes, stocfile,
-	 br_sce, probnd, parent, n_chd, f_chd, scenario,
+	 br_sce, probnd, parent, nChildren, f_chd, scenario,
 	 period, &nPeriods, &maxPeriods, perNames,
 	 &scenLength, &maxScenLength, entryCol, entryRow,
 	 sc_first, sc_len, entryVal,

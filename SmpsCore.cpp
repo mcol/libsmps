@@ -43,7 +43,7 @@ SmpsCore::SmpsCore(string coreFileName, string timeFileName) :
   rhs(NULL),
   ranges(NULL),
   rwstat(NULL),
-  stavar(NULL),
+  varType(NULL),
   rwname(NULL),
   clname(NULL),
   hdrwcd(NULL),
@@ -64,8 +64,8 @@ SmpsCore::~SmpsCore() {
     free(clname);
   if (rwstat)
     free(rwstat);
-  if (stavar)
-    free(stavar);
+  if (varType)
+    free(varType);
   if (hdrwcd)
     free(hdrwcd);
   if (hdclcd)
@@ -183,7 +183,7 @@ int SmpsCore::readCoreFile(string coreFileName) {
   rwname  = (char *) calloc(8*(maxm+2), sizeof(char));
   clname  = (char *) calloc(8*(maxn+2), sizeof(char));
   rwstat  = (int *)  calloc(maxm, sizeof(int));
-  stavar  = (int *)  calloc(maxn, sizeof(int));
+  varType = (int *)  calloc(maxn, sizeof(int));
   hdrwcd  = (int *)  calloc(maxm+1, sizeof(int));
   hdclcd  = (int *)  calloc(maxn+1, sizeof(int));
   lnkrwcd = (int *)  calloc(maxm+1, sizeof(int));
@@ -206,7 +206,7 @@ int SmpsCore::readCoreFile(string coreFileName) {
 	 &objRow, &iolog, &big, &dlobnd, &dupbnd, &objConstant,
 	 namec, nameb, namran, nambnd, nammps, core,
 	 qdiag, qclpts, qrwnbs, qcoeff,
-	 rwname, clname, stavar, rwstat, hdrwcd, lnkrwcd, hdclcd, lnkclcd,
+	 rwname, clname, varType, rwstat, hdrwcd, lnkrwcd, hdclcd, lnkclcd,
 	 rwnmbs, clpnts, irow, acoeff, rhs, ranges, bup, blo, relt);
 
   if (rv)
