@@ -174,6 +174,8 @@ int SmpsTree::readStocFile(string stocFileName) {
   // initialise to zero
   memset(entryRow, 0, maxScenLength * sizeof(int));
   memset(entryCol, 0, maxScenLength * sizeof(int));
+  memset(nChildren, 0, maxNodes * sizeof(int));
+  memset(f_chd, 0, maxNodes * sizeof(int));
 
   int maxRows = nRows;
   int maxCols = nCols;
