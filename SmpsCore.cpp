@@ -455,3 +455,35 @@ char* SmpsCore::convertPeriodNames() {
 
   return periods;
 }
+
+/**
+ *  Determine the period of the given row.
+ *
+ *  Compares the given row with the period starts stored in begPeriodRow,
+ *  and returns the correct period  in [0, nPeriods-1], or -1 if row refers
+ *  to the objective row.
+ */
+int SmpsCore::getRowPeriod(const int row) const {
+
+  int period = -1;
+  while (begPeriodRow[period + 1] <= row)
+    ++period;
+
+  return period;
+}
+
+/**
+ *  Determine the period of the given column.
+ *
+ *  Compares the given column with the period starts stored in begPeriodCol,
+ *  and returns the correct period in [0, nPeriods-1], or -1 if col refers
+ *  to the right-hand side column.
+ */
+int SmpsCore::getColPeriod(const int col) const {
+
+  int period = -1;
+  while (begPeriodCol[period + 1] <= col)
+    ++period;
+
+  return period;
+}

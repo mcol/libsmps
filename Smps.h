@@ -84,6 +84,12 @@ class SmpsCore {
     return nPeriods;
   }
 
+  /** Determine the period for a given row */
+  int getRowPeriod(const int row) const;
+
+  /** Determine the period for a given column */
+  int getColPeriod(const int col) const;
+
   /** Return the number of rows of the given period */
   int getNRowsPeriod(const int per) const {
     return begPeriodRow[per + 1] - begPeriodRow[per];
