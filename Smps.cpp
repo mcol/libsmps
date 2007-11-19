@@ -29,6 +29,18 @@ int Smps::read(void) {
   if (rv)
     return rv;
 
+  rv = readCoreFile();
+  if (rv)
+    return rv;
+
+  rv = readTimeFile();
+  if (rv)
+    return rv;
+
+  rv = readStocFile();
+  if (rv)
+    return rv;
+
   return rv;
 }
 
