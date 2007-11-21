@@ -471,3 +471,25 @@ int SmpsCore::getColPeriod(const int col) const {
 
   return period;
 }
+
+/** Set the linked list for row access */
+void SmpsCore::setRowsLinkedList() {
+
+  int el, rw;
+
+  // reset the row headers
+  for (int row = 0; row < nRows; ++row)
+    rwhead[row] = -1;
+
+  // for all columns
+  for (int col = 0; col < nCols; ++col) {
+
+    // for all nonzero elements in this column
+    for (el = clpnts[col]; el < clpnts[col + 1]; ++el) {
+      rw = rwnmbs[el];
+      links[el]  = rwhead[rw];
+      rwhead[rw] = el;
+      clnmbs[el] = col;
+    }
+  }
+}

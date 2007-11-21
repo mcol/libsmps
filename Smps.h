@@ -231,6 +231,9 @@ class SmpsCore {
   /** Create a character array from the vector of strings of period names */
   char* convertPeriodNames(void);
 
+  /** Set the linked list for row access */
+  void setRowsLinkedList(void);
+
 };
 
 
