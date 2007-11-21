@@ -58,42 +58,24 @@ SmpsCore::SmpsCore(string coreFileName, string timeFileName) :
 /** Destructor */
 SmpsCore::~SmpsCore() {
 
-  if (rwname)
-    free(rwname);
-  if (clname)
-    free(clname);
-  if (rwstat)
-    free(rwstat);
-  if (varType)
-    free(varType);
-  if (hdrwcd)
-    free(hdrwcd);
-  if (hdclcd)
-    free(hdclcd);
-  if (lnkrwcd)
-    free(lnkrwcd);
-  if (lnkclcd)
-    free(lnkclcd);
-  if (rwnmbs)
-    free(rwnmbs);
-  if (clpnts)
-    free(clpnts);
-  if (rwhead)
-    free(rwhead);
-  if (links)
-    free(links);
-  if (clnmbs)
-    free(clnmbs);
-  if (acoeff)
-    free(acoeff);
-  if (ranges)
-    free(ranges);
-  if (rhs)
-    free(rhs);
-  if (bup)
-    free(bup);
-  if (blo)
-    free(blo);
+  delete[] rwname;
+  delete[] clname;
+  delete[] rwstat;
+  delete[] varType;
+  delete[] hdrwcd;
+  delete[] hdclcd;
+  delete[] lnkrwcd;
+  delete[] lnkclcd;
+  delete[] rwnmbs;
+  delete[] clpnts;
+  delete[] rwhead;
+  delete[] links;
+  delete[] clnmbs;
+  delete[] acoeff;
+  delete[] ranges;
+  delete[] rhs;
+  delete[] bup;
+  delete[] blo;
   delete[] begPeriodRow;
   delete[] begPeriodCol;
 }
@@ -180,26 +162,28 @@ int SmpsCore::readCoreFile(string coreFileName) {
   maxm = nRows + 1, maxn = 5 * nRows;
   maxnza = (maxm*maxn/1000 > maxn*10) ? maxm*maxn/1000 : maxn*10;
 
-  rwname  = (char *) calloc(8*(maxm+2), sizeof(char));
-  clname  = (char *) calloc(8*(maxn+2), sizeof(char));
-  rwstat  = (int *)  calloc(maxm, sizeof(int));
-  varType = (int *)  calloc(maxn, sizeof(int));
-  hdrwcd  = (int *)  calloc(maxm+1, sizeof(int));
-  hdclcd  = (int *)  calloc(maxn+1, sizeof(int));
-  lnkrwcd = (int *)  calloc(maxm+1, sizeof(int));
-  lnkclcd = (int *)  calloc(maxn+1, sizeof(int));
-  rwnmbs  = (int *)  calloc(maxnza, sizeof(int));
-  clpnts  = (int *)  calloc(maxn+1, sizeof(int));
-  rwhead  = (int *)  calloc(maxm, sizeof(int));
-  links   = (int *)  calloc(maxnza, sizeof(int));
-  clnmbs  = (int *)  calloc(maxnza, sizeof(int));
-  acoeff  = (double *) calloc(maxnza, sizeof(double));
-  ranges  = (double *) calloc(maxm, sizeof(double));
-  rhs     = (double *) calloc(maxm, sizeof(double));
-  bup     = (double *) calloc(maxn, sizeof(double));
-  blo     = (double *) calloc(maxn, sizeof(double));
-  double *relt = (double *) calloc(maxn, sizeof(double));
-  int    *irow = (int *) calloc(maxn, sizeof(int));
+  rwname  = new char[8 * (maxm + 2)];
+  clname  = new char[8 * (maxn + 2)];
+  rwstat  = new int[maxm];
+  rwhead  = new int[maxm];
+  varType = new int[maxn];
+  rwnmbs  = new int[maxnza];
+  links   = new int[maxnza];
+  clnmbs  = new int[maxnza];
+  clpnts  = new int[maxn + 1];
+  hdrwcd  = new int[maxm + 1];
+  hdclcd  = new int[maxn + 1];
+  lnkrwcd = new int[maxm + 1];
+  lnkclcd = new int[maxn + 1];
+  acoeff  = new double[maxnza];
+  ranges  = new double[maxm];
+  rhs     = new double[maxm];
+  bup     = new double[maxn];
+  blo     = new double[maxn];
+  double *relt = new double[maxn];
+  int    *irow = new int[maxn];
+  memset(rwname, 0, 8 * (maxm + 2) * sizeof(char));
+  memset(clname, 0, 8 * (maxn + 2) * sizeof(char));
 
   // read the core file
   RDMPS1(&rv, &iqp, &maxm, &maxn, &maxnza, &maxnzq, &nRows, &nCols, &nza, &nzq,
@@ -218,8 +202,8 @@ int SmpsCore::readCoreFile(string coreFileName) {
  TERMINATE:
 
   // clean up
-  free(relt);
-  free(irow);
+  delete[] relt;
+  delete[] irow;
 
   return rv;
 }
