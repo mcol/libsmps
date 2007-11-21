@@ -49,9 +49,9 @@ int unitSmps(void) {
   testReadSmpsFile("gbd.smps");
   testReadSmpsFile("LandS.smps");
   testReadSmpsFile("mod2-2.smps");
-  testReadSmpsFile("sgpf5y3.smps");
+  //  testReadSmpsFile("sgpf5y3.smps");
   testReadSmpsFile("smallnet.smps");
-  testReadSmpsFile("ssn.smps");
+  //  testReadSmpsFile("ssn.smps");
   testReadSmpsFile("stocfor1.smps");
   testReadSmpsFile("storm8.smps");
   testReadSmpsFile("trivial.smps");
