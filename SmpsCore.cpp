@@ -493,3 +493,53 @@ void SmpsCore::setRowsLinkedList() {
     }
   }
 }
+
+/** Allocate and return an array for the objective row */
+double* SmpsCore::getObjRow() const {
+
+  double *coreObj = new double[nCols];
+  memset(coreObj, 0, nCols * sizeof(double));
+
+  int row = rwhead[objRow];
+  while (row >= 0) {
+    coreObj[clnmbs[row]] = acoeff[row];
+    row = links[row];
+  }
+
+  return coreObj;
+}
+
+/** Count the number of nonzero elements in each period block */
+void SmpsCore::countNzPeriodBlocks(int *nzPeriod) {
+
+  int i, j, k;
+  int rowPeriod, colPeriod;
+
+  // initialize the vector
+  memset(nzPeriod, 0, nPeriods * nPeriods * sizeof(int));
+
+  /* for all columns */
+  for (i = 0; i < nCols; ++i) {
+
+    // keep track of current column-block
+    colPeriod = getColPeriod(i);
+
+    // for all nonzeros in this column
+    for (k = clpnts[i]; k < clpnts[i + 1]; ++k) {
+
+      rowPeriod = getRowPeriod(rwnmbs[k]);
+      if (rowPeriod >= 0)
+	nzPeriod[rowPeriod + colPeriod * nPeriods]++;
+    }
+  }
+
+#ifdef DEBUG
+  // print the row/col block nonzero matrix
+  printf("Nonzeros in period blocks of the core matrix:\n");
+  for (i = 0; i < nPeriods; ++i) {
+    for (j = 0; j < nPeriods; ++j)
+      printf("  %6d", nzPeriod[i + j * nPeriods]);
+    printf("\n");
+  }
+#endif
+}

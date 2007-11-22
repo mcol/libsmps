@@ -105,9 +105,35 @@ class SmpsCore {
     return objRow;
   }
 
+  /** Allocate and return an array for the objective row */
+  double* getObjRow(void) const;
+
   /** Return the variable type */
   int getVarType(const int col) const {
     return varType[col];
+  }
+
+  /** Return the right-hand side value for the given row */
+  double getRhs(const int row) const {
+    return rhs[row];
+  }
+
+  /** Return the upper bound value for the given variable */
+  double getUpperBound(const int col) const {
+    return bup[col];
+  }
+
+  /** Count the number of nonzeros in each period block */
+  void countNzPeriodBlocks(int *nzPeriod);
+
+  /** Retrieve the pointer to the beginning of a given row name */
+  const char* getBegRowName(const int row) const {
+    return &rwname[8 * row];
+  }
+
+  /** Retrieve the pointer to the beginning of a given column name */
+  const char* getBegColName(const int col) const {
+    return &clname[8 * col];
   }
 
   /** Give access to SmpsTree to the private members */
