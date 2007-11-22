@@ -509,6 +509,54 @@ double* SmpsCore::getObjRow() const {
   return coreObj;
 }
 
+/**
+ *  Change the numbering convention to C.
+ *
+ *  Changes the core data from Fortran to C numbering convention, orders
+ *  elements within columns, and sets up the row linked lists.
+ */
+void SmpsCore::processCore() {
+
+  int i, el, d1;
+  double d2;
+
+  // change to C numbering convention
+  for (i = 0; i <= nCols; ++i)
+    --clpnts[i];
+  for (i = 0; i < nza; ++i)
+    --rwnmbs[i];
+  --objRow;
+
+  // order entries within columns to have ascending row numbers
+  for (int j = 0; j < nCols; ++j) {
+
+    // for all elements in this column
+    for (el = clpnts[j]; el < clpnts[j + 1] - 1; ++el) {
+      for (i = el + 1; i < clpnts[j + 1]; ++i) {
+
+	if (rwnmbs[el] == rwnmbs[i])
+	  printf("Warning: duplicate entry in core matrix: col %d\n", j);
+
+	// check if the elements are not in the correct order
+	if (rwnmbs[el] > rwnmbs[i]) {
+
+	  // do a swap
+	  d1 = rwnmbs[el];
+	  rwnmbs[el] = rwnmbs[i];
+	  rwnmbs[i]  = d1;
+
+	  d2 = acoeff[el];
+	  acoeff[el] = acoeff[i];
+	  acoeff[i]  = d2;
+	}
+      }
+    }
+  }
+
+  // set row linked lists for the core matrix
+  setRowsLinkedList();
+}
+
 /** Count the number of nonzero elements in each period block */
 void SmpsCore::countNzPeriodBlocks(int *nzPeriod) {
 
