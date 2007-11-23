@@ -1,11 +1,11 @@
-/*
- *  Node.h
+/**
+ *  @file Node.h
  *
  *  Definition of the Node object.
  *
- *  Marco Colombo
- *  School of Mathematics
- *  University of Edinburgh
+ *  @author Marco Colombo,
+ *  School of Mathematics,
+ *  University of Edinburgh.
  *
  */
 

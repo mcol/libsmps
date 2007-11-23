@@ -1,11 +1,11 @@
-/*
- *  Smps.h
+/**
+ *  @file Smps.h
  *
- *  Common declarations for the Smps classes.
+ *  Common declarations for the SMPS classes.
  *
- *  Marco Colombo
- *  School of Mathematics
- *  University of Edinburgh
+ *  @author Marco Colombo,
+ *  School of Mathematics,
+ *  University of Edinburgh.
  *
  */
 
@@ -470,6 +470,7 @@ class Smps : public SmpsTree {
 
 extern "C" {
 
+/** Read a file in MPS format */
 void
 RDMPS1(int*, int*, int*, int*, int*, int*, int*, int*, int*, int*, int*, int*,
        double*, double*, double*, double*,
@@ -478,6 +479,7 @@ RDMPS1(int*, int*, int*, int*, int*, int*, int*, int*, int*, int*, int*, int*,
        int*, int*, int*, int*, int*, int*, int*,
        double*, double*, double*, double*, double*, double*);
 
+/** Read a stochastic file */
 void
 RDSTCH(int*, int*, int*, int*, int*, const char*,
        int*, double*, int*, int*, int*,

@@ -1,11 +1,11 @@
-/*
- *  Tokenizer.h
+/**
+ *  @file Tokenizer.h
  *
  *  Facilities to tokenize a line of text.
  *
- *  Marco Colombo
- *  School of Mathematics
- *  University of Edinburgh
+ *  @author Marco Colombo,
+ *  School of Mathematics,
+ *  University of Edinburgh.
  *
  */
 

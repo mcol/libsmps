@@ -1,11 +1,11 @@
-/*
- *  Utils.h
+/**
+ *  @file Utils.h
  *
  *  Various utility functions.
  *
- *  Marco Colombo
- *  School of Mathematics
- *  University of Edinburgh
+ *  @author Marco Colombo,
+ *  School of Mathematics,
+ *  University of Edinburgh.
  *
  */
 
