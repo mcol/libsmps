@@ -199,6 +199,9 @@ int SmpsCore::readCoreFile(string coreFileName) {
   // convert the character arrays into vectors of strings
   convertNames(rwname, clname);
 
+  // change the numbering convention from fortran to C
+  processCore();
+
  TERMINATE:
 
   // clean up
@@ -349,6 +352,9 @@ int SmpsCore::readTimeFile(string timeFileName) {
   // set the last elements
   begPeriodRow[nPeriods] = nRows;
   begPeriodCol[nPeriods] = nCols;
+
+  // take care of slacks
+  modifyCore();
 
  TERMINATE:
 
