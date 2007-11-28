@@ -591,3 +591,147 @@ void SmpsCore::countNzPeriodBlocks(int *nzPeriod) {
   }
 #endif
 }
+
+/**
+ *  Convert the inequality constraints to equalities by introducing slacks.
+ *
+ *  Modify the CORE matrix to convert all ">=" and "<=" constraints into
+ *  "=" constraints by introducing slack variables. Slacks are always added
+ *  to the last period that is used for this row.
+ */
+void SmpsCore::modifyCore() {
+
+  int i, j, nSlacks;
+  int new_col, new_nnz;
+
+  // count number of inequality rows in CORE matrix
+  for (i = 0, nSlacks = 0; i < nRows; ++i)
+    if (rwstat[i] == 2 || rwstat[i] == 3) ++nSlacks;
+
+  // new number of columns and nonzeros
+  nCols += nSlacks;
+  nza   += nSlacks;
+
+  // allocate the resized arrays
+  int *new_clpnts = new int[nCols + 1];
+  int *new_rwnmbs = new int[nza];
+  int *new_stavar = new int[nCols];
+  int *new_hdclcd = new int[nCols];
+  int *new_lnclcd = new int[nCols];
+  int *new_begPeriodCol = new int[nPeriods + 1];
+  char *new_clname   = new char[8 * nCols]; // was a calloc
+  double *new_acoeff = new double[nza];
+  double *new_blo    = new double[nCols];
+  double *new_bup    = new double[nCols];
+  memset(new_hdclcd, 0, nCols * sizeof(int));
+
+  nSlacks = 0;
+  new_col = 0;
+  new_nnz = 0;
+  new_begPeriodCol[0] = begPeriodCol[0];
+
+  // for all periods
+  for (int per = 0; per < nPeriods; ++per) {
+
+    // copy columns of this period
+    for (i = begPeriodCol[per]; i < begPeriodCol[per + 1]; ++i) {
+
+      new_clpnts[new_col] = new_nnz;
+      new_blo[new_col] = blo[i];
+      new_bup[new_col] = bup[i];
+      new_stavar[new_col] = varType[i];
+      for (j = 0; j < 8; ++j)
+	new_clname[8 * new_col + j] = clname[8 * i + j];
+      for (j = clpnts[i]; j < clpnts[i + 1]; ++j) {
+	new_acoeff[new_nnz] = acoeff[j];
+	new_rwnmbs[new_nnz] = rwnmbs[j];
+	++new_nnz;
+      }
+      ++new_col;
+    }
+
+    // add slacks for all inequality rows of this period
+    for (j = begPeriodRow[per]; j < begPeriodRow[per + 1]; ++j) {
+
+      if (rwstat[j] == 2 || rwstat[j] == 3) {
+
+	// ">=" constraint => add -1 | "<=" constraint => add +1
+	new_blo[new_col] = 0.0;
+	new_bup[new_col] = 1e31;
+	new_clpnts[new_col] = new_nnz;
+	new_stavar[new_col] = 1;
+	sprintf(&(new_clname[8 * new_col]), "SK%05d", j);
+	new_clname[8 * new_col + 7] = ' '; // delete the \0
+	new_acoeff[new_nnz] = (rwstat[j] == 2) ? -1.0 : 1.0;
+	new_rwnmbs[new_nnz] = j;
+
+	// now consider the row to be an equality
+	rwstat[j] = 1;
+	++new_col;
+	++new_nnz;
+	++nSlacks;
+      }
+    }
+    new_begPeriodCol[per + 1] = begPeriodCol[per + 1] + nSlacks;
+  }
+
+  // last column definitions
+  new_clpnts[new_col] = new_nnz;
+
+  char name[9];
+  int kcode;
+  int iolog;
+
+  // reset the column names linked list
+  for(i = 0; i < nCols; ++i) {
+
+    strncpy(name, new_clname + 8 * i, 8);
+    mycode_(&iolog, name, &kcode, &nCols);
+    new_lnclcd[i] = new_hdclcd[kcode - 1];
+    new_hdclcd[kcode - 1] = i + 1;
+  }
+
+  // free the old pointers
+  delete[] acoeff;
+  delete[] blo;
+  delete[] bup;
+  delete[] clpnts;
+  delete[] rwnmbs;
+  delete[] varType;
+  delete[] hdclcd;
+  delete[] lnkclcd;
+  delete[] begPeriodCol;
+  delete[] clname;
+
+  // set the new pointers
+  acoeff = new_acoeff;
+  blo    = new_blo;
+  bup    = new_bup;
+  clpnts = new_clpnts;
+  rwnmbs = new_rwnmbs;
+  clname = new_clname;
+  hdclcd = new_hdclcd;
+  lnkclcd = new_lnclcd;
+  varType = new_stavar;
+  begPeriodCol = new_begPeriodCol;
+
+#ifdef WITH_MPI
+  if (IS_ROOT_PAR)
+  printf("Added %d slacks to core matrix.\n", nSlacks);
+#endif
+
+#ifdef DEBUG
+  printf("Period starts are now:\n"
+	 " per    row    col\n");
+  for (i = 0; i < nPeriods; ++i)
+    printf("%4d %6d %6d\n", i + 1, begPeriodRow[i], begPeriodCol[i]);
+  printf(" end %6d %6d\n", begPeriodRow[i], begPeriodCol[i]);
+#endif
+
+  // recreate the row linked list for the core matrix
+  delete[] clnmbs;
+  delete[] links;
+  clnmbs = new int[nza + 1];
+  links  = new int[nza + 1];
+  setRowsLinkedList();
+}

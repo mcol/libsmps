@@ -263,6 +263,9 @@ class SmpsCore {
   /** Set the linked list for row access */
   void setRowsLinkedList(void);
 
+  /** Convert the inequality constraints to equalities */
+  void modifyCore(void);
+
 };
 
 
@@ -467,6 +470,7 @@ class Smps : public SmpsTree {
 
 #define RDMPS1      rdmps1_
 #define RDSTCH      rdstch_
+#define MYCODE      mycode_
 
 extern "C" {
 
@@ -487,6 +491,10 @@ RDSTCH(int*, int*, int*, int*, int*, const char*,
        int*, int*, double*, int*, int*, char*, char*, int*,
        int*, int*, int*, int*, int*, char*, int*, int*,
        int*, int*, double*, double*, char*,  int*, int*);
+
+/** Compute a hash code */
+void
+MYCODE(int*, const char*, int*, const int*);
 
 }
 
