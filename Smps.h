@@ -358,6 +358,9 @@ class SmpsTree : public SmpsCore {
     return scenario[node];
   }
 
+  /** Set the start rows and columns for each node */
+  void setNodeStarts(const int *order = NULL);
+
   /** Print the stochastic tree information */
   void printTree() const;
 

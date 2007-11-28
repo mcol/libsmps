@@ -200,6 +200,9 @@ int SmpsTree::readStocFile(string stocFileName) {
 	 iwork1, iwork2, iwork3, iwork4, dwork,
 	 prb_rl, scenam, begPeriodCol, begPeriodRow);
 
+  // set the start rows and columns for each node
+  setNodeStarts();
+
   /* clean up */
   delete[] perNames;
   delete[] br_sce;
@@ -444,6 +447,41 @@ int SmpsTree::readBlocksType(ifstream &stoc) {
   }
 
   return 0;
+}
+
+/**
+ *  Set the start rows and columns for each node.
+ *
+ *  This sets the arrays f_rw_nd and f_cl_nd with the index in the
+ *  deterministic equivalent matrix of the first row and column of
+ *  each node. If the nodes have been reordered, then the ordering
+ *  array must be provided.
+ */
+void SmpsTree::setNodeStarts(const int* order) {
+
+  int node, per;
+
+  // number of rows and columns in the deterministic equivalent
+  int ttm = 0, ttn = 0;
+
+  // for all nodes
+  for (int i = 0; i < nNodes; ++i) {
+
+    if (order)
+      node = order[i];
+    else
+      node = i;
+    per = period[node] - 1;
+
+    f_rw_nd[node] = ttm;
+    f_cl_nd[node] = ttn;
+
+    ttm += getNRowsPeriod(per);
+    ttn += getNColsPeriod(per);
+  }
+
+  f_rw_nd[nNodes] = ttm;
+  f_cl_nd[nNodes] = ttn;
 }
 
 /** Print the stochastic tree information */
