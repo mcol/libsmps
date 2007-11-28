@@ -509,6 +509,14 @@ double* SmpsCore::getObjRow() const {
   return coreObj;
 }
 
+/** Retrieve the sparse representation of the matrix */
+const SparseData SmpsCore::getSparseData() const {
+
+  SparseData data = {acoeff, rwnmbs, clpnts, clnmbs};
+
+  return data;
+}
+
 /**
  *  Change the numbering convention to C.
  *

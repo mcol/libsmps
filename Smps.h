@@ -49,6 +49,24 @@ enum ErrorCodes {
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 
+/** Essential sparse matrix representation */
+struct SparseData {
+
+  /** Nonzero elements of A */
+  const double *acoeff;
+
+  /** Row numbers of A */
+  const int *rwnmbs;
+
+  /** Pointers to starts of columns of A */
+  const int *clpnts;
+
+  /** Column numbers of elements of A */
+  const int *clnmbs;
+
+};
+
+
 /** The SmpsCore class */
 class SmpsCore {
 
@@ -108,6 +126,11 @@ class SmpsCore {
   /** Allocate and return an array for the objective row */
   double* getObjRow(void) const;
 
+  /** Return the constraint type */
+  int getRowType(const int row) const {
+    return rwstat[row];
+  }
+
   /** Return the variable type */
   int getVarType(const int col) const {
     return varType[col];
@@ -135,6 +158,9 @@ class SmpsCore {
   const char* getBegColName(const int col) const {
     return &clname[8 * col];
   }
+
+  /** Retrieve the sparse representation of the matrix */
+  const SparseData getSparseData(void) const;
 
   /** Give access to SmpsTree to the private members */
   friend class SmpsTree;
@@ -356,6 +382,36 @@ class SmpsTree : public SmpsCore {
   /** Retrieve the scenario number for the given node */
   int getScenario(const int node) const {
     return scenario[node];
+  }
+
+  /** Return the index of the first scenario change for the given scenario */
+  const int getFirstEntryScen(const int scen) const {
+    return sc_first[scen];
+  }
+
+  /** Return the number of changes in the given scenario */
+  const int getLengthScen(const int scen) const {
+    return sc_len[scen];
+  }
+
+  /** Retrieve the pointer to the row indices of the scenario changes */
+  const int* getEntryRow(void) const {
+    return entryRow;
+  }
+
+  /** Retrieve the pointer to the column indices of the scenario changes */
+  const int* getEntryCol(void) const {
+    return entryCol;
+  }
+
+  /** Retrieve the pointer to the values of the scenario changes */
+  const double* getEntryVal(void) const {
+    return entryVal;
+  }
+
+  /** Return the probability associated to the given node */
+  const double getProbNode(const int node) const {
+    return probnd[node];
   }
 
   /** Set the start rows and columns for each node */
