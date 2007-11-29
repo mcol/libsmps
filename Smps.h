@@ -429,7 +429,7 @@ class SmpsTree : public SmpsCore {
   void setNodeStarts(const int *order = NULL);
 
   /** Print the stochastic tree information */
-  void printTree() const;
+  void printTree(void) const;
 
  protected:
 

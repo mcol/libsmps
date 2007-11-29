@@ -203,7 +203,7 @@ int SmpsTree::readStocFile(string stocFileName) {
   // set the start rows and columns for each node
   setNodeStarts();
 
-  /* clean up */
+  // clean up
   delete[] perNames;
   delete[] br_sce;
   delete[] iwork1;
@@ -525,7 +525,7 @@ void SmpsTree::printTree() const {
 
   printf("Tree information:\n");
   printf("   node parent scen n_chd  f_chd  per   prob\n");
-  for (int i = 0; i < nNodes; i++) {
+  for (int i = 0; i < nNodes; ++i) {
     printf("  %4i  %4i  %4i  %4i  %4i  %4i   %.4f\n", i + 1,
 	   parent[i], scenario[i], nChildren[i],
 	   f_chd[i],  period[i],   probnd[i]);

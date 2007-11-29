@@ -118,7 +118,7 @@ int SmpsCore::countRows() {
     }
     else if (nValuesRead == 2) {
       if (foundRows)
-	nRows++;
+	++nRows;
     }
 
     else {
@@ -299,20 +299,20 @@ int SmpsCore::readTimeFile(string timeFileName) {
   begPeriodCol = new int[nPeriods + 1];
 
   // try to match period data
-  for (int i = 0; i < nPeriods; i++) {
+  for (int i = 0; i < nPeriods; ++i) {
 
 #ifdef DEBUG_TIME_FILE
     cout << "Searching match for row: >" << begPeriodRowName[i] << "<" << endl;
 #endif
 
     // find row-period begin
-    for (int j = 0; j < nRows; j++) {
+    for (int j = 0; j < nRows; ++j) {
 
       if (rowNames[j] == begPeriodRowName[i]) {
 
 	// allow the objective row to be a period start in the time file
 	if (j == objRow)
-	  j++;
+	  ++j;
 
 	// found first row of period i
 	begPeriodRow[i] = j;
@@ -333,7 +333,7 @@ int SmpsCore::readTimeFile(string timeFileName) {
 
     // find col-period begin
     found = false;
-    for (int j = 0; j < nCols; j++) {
+    for (int j = 0; j < nCols; ++j) {
 
       if (colNames[j] == begPeriodColName[i]) {
 
@@ -377,10 +377,10 @@ int SmpsCore::convertNames(const char *rowname, const char *colname) {
   string tmp;
   stringstream stream(stringstream::in);
   stringstream t(stringstream::in);
-  char *ttt = new char[9];
+  char ttt[9];
 
   stream.str(rowname);
-  for (int i = 0; i < nRows + 1; i++) {   // +1 for objective row
+  for (int i = 0; i < nRows + 1; ++i) {   // +1 for objective row
 
     // read exactly 8 characters, at the end of which put the string delimiter
     stream.read(ttt, 8);
@@ -391,13 +391,13 @@ int SmpsCore::convertNames(const char *rowname, const char *colname) {
     t >> tmp;
     t.clear();
 
-    // store the clean up string in the vector
+    // store the cleaned up string in the vector
     rowNames.push_back(tmp);
   }
 
   stream.clear();
   stream.str(colname);
-  for (int i = 0; i < nCols; i++) {
+  for (int i = 0; i < nCols; ++i) {
 
     // read exactly 8 characters, at the end of which put the string delimiter
     stream.read(ttt, 8);
@@ -410,9 +410,6 @@ int SmpsCore::convertNames(const char *rowname, const char *colname) {
 
     colNames.push_back(tmp);
   }
-
-  // clean up
-  delete[] ttt;
 
   return 0;
 }
@@ -429,7 +426,7 @@ char* SmpsCore::convertPeriodNames() {
   char *tmp = new char[8 + 1];
   char *pos = periods;
 
-  for (int i = 0; i < (int) periodNames.size(); i++) {
+  for (int i = 0; i < (int) periodNames.size(); ++i) {
 
     // extract the character string from the vector
     sprintf(tmp, "%-8s", periodNames[i].c_str());
@@ -576,7 +573,6 @@ void SmpsCore::processCore() {
 /** Count the number of nonzero elements in each period block */
 void SmpsCore::countNzPeriodBlocks() {
 
-  int i, j, k;
   int rowPeriod, colPeriod;
 
   // don't execute it again if it was already run
@@ -587,26 +583,25 @@ void SmpsCore::countNzPeriodBlocks() {
   nzPeriod = new int[nPeriods * nPeriods];
   memset(nzPeriod, 0, nPeriods * nPeriods * sizeof(int));
 
-  /* for all columns */
-  for (i = 0; i < nCols; ++i) {
+  // for all columns
+  for (int i = 0; i < nCols; ++i) {
 
-    // keep track of current column-block
-    colPeriod = getColPeriod(i);
+    // keep track of current column block
+    colPeriod = getColPeriod(i) * nPeriods;
 
     // for all nonzeros in this column
-    for (k = clpnts[i]; k < clpnts[i + 1]; ++k) {
+    for (int k = clpnts[i]; k < clpnts[i + 1]; ++k) {
 
       rowPeriod = getRowPeriod(rwnmbs[k]);
       if (rowPeriod >= 0)
-	nzPeriod[rowPeriod + colPeriod * nPeriods]++;
+	nzPeriod[rowPeriod + colPeriod]++;
     }
   }
 
 #ifdef DEBUG
-  // print the row/col block nonzero matrix
   printf("Nonzeros in period blocks of the core matrix:\n");
-  for (i = 0; i < nPeriods; ++i) {
-    for (j = 0; j < nPeriods; ++j)
+  for (int i = 0; i < nPeriods; ++i) {
+    for (int j = 0; j < nPeriods; ++j)
       printf("  %6d", nzPeriod[i + j * nPeriods]);
     printf("\n");
   }

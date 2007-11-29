@@ -30,7 +30,7 @@ char* Tokenizer::getStartNextToken() {
 
   // find the next non-space character
   while (*pos == ' ' || *pos == '\t')
-    pos++;
+    ++pos;
 
   char *oldpos = pos;
 
@@ -57,11 +57,11 @@ char* Tokenizer::getStartNextToken() {
     length = p2 - pos;
     pos = p2;
     while (*pos == ' ' || *pos == '\t')
-      pos++;
+      ++pos;
   }
 
   if (oldpos[length - 1] == '\n')
-    length--;
+    --length;
 
   return oldpos;
 }
@@ -71,7 +71,7 @@ bool Tokenizer::hasMoreTokens() {
 
   // skip all whitespace characters
   while (*pos == ' ' || *pos == '\t' || *pos == '\n')
-    pos++;
+    ++pos;
 
   // the end of the line has been reached
   if (*pos == 0)

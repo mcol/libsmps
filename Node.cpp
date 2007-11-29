@@ -26,7 +26,7 @@ Node::~Node() {
 
   // free the space occupied by the children nodes
   for (vector<Node *>::iterator childNode = children.begin();
-       childNode != children.end(); childNode++) {
+       childNode != children.end(); ++childNode) {
     delete *childNode;
   }
 }
