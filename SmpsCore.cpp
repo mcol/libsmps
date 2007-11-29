@@ -52,7 +52,8 @@ SmpsCore::SmpsCore(string coreFileName, string timeFileName) :
   lnkclcd(NULL),
   nPeriods(0),
   begPeriodRow(NULL),
-  begPeriodCol(NULL) {
+  begPeriodCol(NULL),
+  nzPeriod(NULL) {
 }
 
 /** Destructor */
@@ -78,6 +79,7 @@ SmpsCore::~SmpsCore() {
   delete[] blo;
   delete[] begPeriodRow;
   delete[] begPeriodCol;
+  delete[] nzPeriod;
 }
 
 /** Count the number of rows declared in the core file */
@@ -572,12 +574,17 @@ void SmpsCore::processCore() {
 }
 
 /** Count the number of nonzero elements in each period block */
-void SmpsCore::countNzPeriodBlocks(int *nzPeriod) {
+void SmpsCore::countNzPeriodBlocks() {
 
   int i, j, k;
   int rowPeriod, colPeriod;
 
-  // initialize the vector
+  // don't execute it again if it was already run
+  if (nzPeriod)
+    return;
+
+  // allocate and initialize the vector
+  nzPeriod = new int[nPeriods * nPeriods];
   memset(nzPeriod, 0, nPeriods * nPeriods * sizeof(int));
 
   /* for all columns */

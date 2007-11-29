@@ -118,6 +118,11 @@ class SmpsCore {
     return begPeriodCol[per + 1] - begPeriodCol[per];
   }
 
+  /** Return the number of nonzeros in the given period block */
+  int getNzPeriod(const int rowBlock, const int colBlock) const {
+    return nzPeriod[rowBlock + nPeriods * colBlock];
+  }
+
   /** Retrieve the index of the objective row */
   int getObjRowIndex(void) const {
     return objRow;
@@ -147,7 +152,7 @@ class SmpsCore {
   }
 
   /** Count the number of nonzeros in each period block */
-  void countNzPeriodBlocks(int *nzPeriod);
+  void countNzPeriodBlocks(void);
 
   /** Retrieve the pointer to the beginning of a given row name */
   const char* getBegRowName(const int row) const {
@@ -271,6 +276,9 @@ class SmpsCore {
   /** First column index of each period */
   int *begPeriodCol;
 
+  /** The number of nonzeros in each period block */
+  int *nzPeriod;
+
   /** List of row names read from the core file */
   vector<string> rowNames;
 
@@ -338,6 +346,9 @@ class SmpsTree : public SmpsCore {
   int getMaxReals(void) const {
     return maxReals;
   }
+
+  /** Count the number of nonzeros in the deterministic equivalent matrix */
+  int countNonzeros(void);
 
   /** Retrieve the parent of the given node */
   int getParent(const int node) const {

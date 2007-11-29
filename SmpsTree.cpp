@@ -450,6 +450,42 @@ int SmpsTree::readBlocksType(ifstream &stoc) {
 }
 
 /**
+ *  Count the number of nonzeros in the deterministic equivalent matrix.
+ *
+ *  @note The nonzeros in the objective row are not considered.
+ */
+int SmpsTree::countNonzeros() {
+
+  int nzTotal = 0;
+
+  // count the number of nonzeros in each period block, if not already there
+  if (!nzPeriod)
+    countNzPeriodBlocks();
+
+  // count the number of nonzero elements
+  for (int per = 0; per < nPeriods; ++per) {
+
+    int nnPer = 0, nzPer = 0;
+
+    // number of nodes in the period
+    for (int node = 0; node < nNodes; ++node) {
+      if (period[node] == per + 1)
+        ++nnPer;
+    }
+
+    // number of nonzeros in the period
+    for (int j = 0; j < nPeriods; ++j) {
+      nzPer += nzPeriod[per + j * nPeriods];
+    }
+
+    // total nonzeros
+    nzTotal += nnPer * nzPer;
+  }
+
+  return nzTotal;
+}
+
+/**
  *  Set the start rows and columns for each node.
  *
  *  This sets the arrays f_rw_nd and f_cl_nd with the index in the
