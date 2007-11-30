@@ -177,9 +177,9 @@ int SmpsTree::readStocFile(string stocFileName) {
   memset(nChildren, 0, maxNodes * sizeof(int));
   memset(f_chd, 0, maxNodes * sizeof(int));
 
-  int maxRows = nRows;
-  int maxCols = nCols;
-  int maxPeriods = nPeriods;
+  int maxRows = getRows();
+  int maxCols = getColumns();
+  int maxPers = getPeriods();
 
   char *perNames = convertPeriodNames();
 
@@ -192,10 +192,10 @@ int SmpsTree::readStocFile(string stocFileName) {
   strcpy(stocfile, stocFile.c_str());
   RDSTCH(&rv, &maxScens, &nScens, &maxNodes, &nNodes, stocfile,
 	 br_sce, probnd, parent, nChildren, f_chd, scenario,
-	 period, &nPeriods, &maxPeriods, perNames,
+	 period, &maxPers, &maxPers, perNames,
 	 &scenLength, &maxScenLength, entryCol, entryRow,
 	 sc_first, sc_len, entryVal,
-	 &nCols, &nRows, rwname, clname, &maxCols, &maxRows,
+	 &maxCols, &maxRows, rwname, clname, &maxCols, &maxRows,
 	 hdclcd, hdrwcd, lnkclcd, lnkrwcd, nameb,
 	 iwork1, iwork2, iwork3, iwork4, dwork,
 	 prb_rl, scenam, begPeriodCol, begPeriodRow);
@@ -457,13 +457,14 @@ int SmpsTree::readBlocksType(ifstream &stoc) {
 int SmpsTree::countNonzeros() {
 
   int nzTotal = 0;
+  int nPeriod = getPeriods();
 
   // count the number of nonzeros in each period block, if not already there
   if (!nzPeriod)
     countNzPeriodBlocks();
 
   // count the number of nonzero elements
-  for (int per = 0; per < nPeriods; ++per) {
+  for (int per = 0; per < nPeriod; ++per) {
 
     int nnPer = 0, nzPer = 0;
 
@@ -474,8 +475,8 @@ int SmpsTree::countNonzeros() {
     }
 
     // number of nonzeros in the period
-    for (int j = 0; j < nPeriods; ++j) {
-      nzPer += nzPeriod[per + j * nPeriods];
+    for (int j = 0; j < nPeriod; ++j) {
+      nzPer += nzPeriod[per + j * nPeriod];
     }
 
     // total nonzeros

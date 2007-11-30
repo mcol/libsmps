@@ -22,7 +22,7 @@ testCountRows(const string CoreFile, const int expRows) {
   const string FileName = SMPS_PATH + CoreFile;
 
   SmpsCore core(FileName);
-  rv = core.countRows();
+  rv = core.readCoreFile();
   if (rv) {
     return TEST_ERROR;
   }

@@ -99,9 +99,6 @@ class SmpsCore {
   /** Read the time file */
   int readTimeFile(string timeFileName = "");
 
-  /** Count the number of rows declared in the core file */
-  int countRows(void);
-
   /** Retrieve the number of rows in the core file */
   int getRows(void) const {
     return nRows;
@@ -179,6 +176,16 @@ class SmpsCore {
     return &clname[8 * col];
   }
 
+  /** Retrieve the index of the first row of the given period */
+  int getBegPeriodRow(const int per) const {
+    return begPeriodRow[per];
+  }
+
+  /** Retrieve the index of the first column of the given period */
+  int getBegPeriodCol(const int per) const {
+    return begPeriodCol[per];
+  }
+
   /** Retrieve the sparse representation of the matrix */
   const SparseData getSparseData(void) const;
 
@@ -192,6 +199,9 @@ class SmpsCore {
 
   /** Name of the time file */
   string timeFile;
+
+  /** Create a character array from the vector of strings of period names */
+  char* convertPeriodNames(void);
 
  private:
 
@@ -300,11 +310,11 @@ class SmpsCore {
   /** List of column names read from the core file */
   vector<string> colNames;
 
+  /** Count the number of rows declared in the core file */
+  int countRows(void);
+
   /** Convert the arrays of names from rdmps1 into vectors of strings */
   int convertNames(const char *rowname, const char *colname);
-
-  /** Create a character array from the vector of strings of period names */
-  char* convertPeriodNames(void);
 
   /** Change the numbering convention to C */
   void processCore(void);
@@ -393,16 +403,6 @@ class SmpsTree : public SmpsCore {
   /** Retrieve the period that the given node belongs to */
   int getPeriod(const int node) const {
     return period[node];
-  }
-
-  /** Retrieve the index of the first row of the given period */
-  int getBegPeriodRow(const int per) const {
-    return begPeriodRow[per];
-  }
-
-  /** Retrieve the index of the first column of the given period */
-  int getBegPeriodCol(const int per) const {
-    return begPeriodCol[per];
   }
 
   /** Retrieve the scenario number for the given node */
