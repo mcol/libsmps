@@ -49,6 +49,21 @@ enum ErrorCodes {
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
 
+/** Data used to divide the solution according to the nodes */
+struct NodeInfo {
+
+  /** Number of nodes in the tree */
+  int nNodes;
+
+  /** Starting row index for each node in the solution */
+  int *nRowsNode;
+
+  /** Starting column index for each node in the solution */
+  int *nColsNode;
+
+};
+
+
 /** Essential sparse matrix representation */
 struct SparseData {
 
@@ -430,6 +445,9 @@ class SmpsTree : public SmpsCore {
 
   /** Print the stochastic tree information */
   void printTree(void) const;
+
+  /** Return information on the nodes necessary for printing the solution */
+  const NodeInfo* getNodeInfo(void) const;
 
  protected:
 

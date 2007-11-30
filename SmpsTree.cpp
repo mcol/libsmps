@@ -531,3 +531,27 @@ void SmpsTree::printTree() const {
 	   f_chd[i],  period[i],   probnd[i]);
   }
 }
+
+/** Return information on the nodes necessary for printing the solution */
+const NodeInfo* SmpsTree::getNodeInfo() const {
+
+  int *nRowsNode = new int[nNodes + 1];
+  int *nColsNode = new int[nNodes + 1];
+
+  nRowsNode[0] = nColsNode[0] = 0;
+
+  for (int i = 1; i < nNodes; i++) {
+    nRowsNode[i] = nRowsNode[i - 1] + f_rw_nd[i] - f_rw_nd[i - 1];
+    nColsNode[i] = nColsNode[i - 1] + f_cl_nd[i] - f_cl_nd[i - 1];
+  }
+
+  nRowsNode[nNodes] = f_rw_nd[nNodes];
+  nColsNode[nNodes] = f_cl_nd[nNodes];
+
+  NodeInfo *info = new NodeInfo;
+  info->nNodes = nNodes;
+  info->nRowsNode= nRowsNode;
+  info->nColsNode = nColsNode;
+
+  return info;
+}
