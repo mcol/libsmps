@@ -7,7 +7,6 @@ CC = g++
 OBJECTS := \
 	generateSmps.o \
 	main.o \
-	options.o \
 	SmpsOops.o \
 	$(NULL)
 
@@ -20,6 +19,7 @@ DEPENDS := \
 	$(HEADERS) \
 	$(LIBOOPS) \
 	../libsmps.a \
+	../interface/libinterface.a \
 	$(NULL)
 
 LIBS	+= \
@@ -27,6 +27,7 @@ LIBS	+= \
 	$(LAPACKLIB) \
 	$(METISLIB) \
 	-L .. -lsmps -lmps \
+	-L ../interface -linterface \
 	$(NULL)
 
 OUTPUT	:= x2oops
@@ -36,4 +37,5 @@ include $(DEPTH)/mkfhost/rules.mk
 # has to be below rules.mk because it adds!
 INCLUDE += \
         -I .. \
+	-I ../interface \
         $(NULL)

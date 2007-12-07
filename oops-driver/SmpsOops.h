@@ -14,10 +14,11 @@
 
 #include "oops/oops.h"
 #include "Smps.h"
-#include "options.h"
+#include "interface.h"
 
 
-// forward declaration
+// forward declarations
+class OptionsOops;
 struct SmpsReturn;
 
 
@@ -36,7 +37,7 @@ class SmpsOops {
   int read(void);
 
   /** Solve the problem instance */
-  int solve(const opt_st *options, HopdmOptions *hopdm_options);
+  int solve(const OptionsOops &opt, HopdmOptions *hopdm_options);
 
   int getSolution(primal_dual_pb *Prob, SmpsReturn *Ret);
 
@@ -144,6 +145,36 @@ struct SmpsReturn {
 
   /** f_cl_pd array from SmpsTime structure */
   int *time_f_cl_pd;
+
+};
+
+
+/** Command line options for the Oops interface */
+class OptionsOops : public Options {
+
+  /** Whether a warmstart strategy should be used */
+  int _useWarmstart;
+
+  /** The value of the cutoff level (for multistage problems) */
+  int _cutoffLevel;
+
+ public:
+
+  /** Constructor */
+  OptionsOops(const int argc = 0, const char *argv[] = NULL);
+
+  /** Parse the command line options */
+  int parse(void);
+
+  /** Retrieve the value of the useWarmstart option */
+  int useWarmstart(void) const {
+    return _useWarmstart;
+  }
+
+  /** Retrieve the value of the cutoffValue option */
+  int cutoffLevel(void) const {
+    return _cutoffLevel;
+  }
 
 };
 

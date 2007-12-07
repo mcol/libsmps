@@ -139,3 +139,25 @@ void SmpsOops::addChildrenToList(const int node, int *next) {
     addChildrenToList((*next) - 1, next);
   }
 }
+
+/** Constructor */
+OptionsOops::OptionsOops(const int argc, const char *argv[]) :
+  Options(argc, argv),
+  _useWarmstart(0),
+  _cutoffLevel(1) {
+}
+
+/** Parse the command line options */
+int OptionsOops::parse() {
+
+  // add the specialised options
+  Options::addOption("-w", "use a warmstart strategy",
+		     &_useWarmstart);
+  Options::addOption("-l", "cutoff level (for multistage programs)",
+		     &_cutoffLevel, true);
+
+  // parse the common options
+  int rv = Options::parse();
+
+  return rv;
+}

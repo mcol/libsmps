@@ -20,7 +20,8 @@ FILE *printout;
 double tt_end;
 
 static primal_dual_pb* defineProblem(SmpsReturn *Pb);
-static void setupOutputFile(opt_st *options);
+static void setupOutputFile(OptionsOops &opt);
+
 
 /** Driver routine for the SMPS interface to OOPS */
 int main(const int argc, const char *argv[]) {
@@ -29,8 +30,9 @@ int main(const int argc, const char *argv[]) {
   InitLippPar(argc, argv);
 
   // parse the command line options
-  opt_st *options = parseOptions(argc, argv);
-  if (!options)
+  OptionsOops opt(argc, argv);
+  int rv = opt.parse();
+  if (rv)
     return 1;
 
 #ifdef WITH_TIME
@@ -38,29 +40,27 @@ int main(const int argc, const char *argv[]) {
 #endif
 
   // decide where the output is going to appear
-  setupOutputFile(options);
+  setupOutputFile(opt);
 
   // create an object for the problem
-  SmpsOops data(options->smpsFile);
+  SmpsOops data(opt.getSmpsFile(), opt.cutoffLevel());
 
   // read the smps files
-  int rv = data.read();
-  if (rv) {
-    freeOptions(options);
+  rv = data.read();
+  if (rv)
     return 1;
-  }
 
   HopdmOptions *hopdm_options = NewHopdmOptions();
 
   // solve the problem
-  data.solve(options, hopdm_options);
+  data.solve(opt, hopdm_options);
 
 #ifdef WITH_TIME
   reportTimes(stdout);
 #endif
 
   // close the output file
-  if (options->OutputToFile == 1)
+  if (opt.outputToFile())
     fclose(printout);
 
   // clean up
@@ -76,14 +76,13 @@ int main(const int argc, const char *argv[]) {
 /**
  *  Call OOPS to solve the problem.
  *
- *  @param options:
- *         Pointer to the options structure.
+ *  @param opt:
+ *         Command line options.
  *  @param hopdm_options:
  *         Pointer to the options for the solver.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
-int SmpsOops::solve(const opt_st *options,
-		    HopdmOptions *hopdm_options) {
+int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
 
   // generate the problem
   SmpsReturn *prob = generateSmps();
@@ -102,7 +101,7 @@ int SmpsOops::solve(const opt_st *options,
 #endif
 
   // write the deterministic equivalent in mps format
-  if (options->WriteMps) {
+  if (opt.writeMps()) {
     FILE *fout = fopen("smps.mps", "w");
     Write_MpsFile(fout, pdProb->AlgAug, pdProb->b, pdProb->c, pdProb->u, 0,
 		  prob->colnames, prob->rownames);
@@ -114,7 +113,7 @@ int SmpsOops::solve(const opt_st *options,
   // options for the complete problem
   hopdm_options->glopt->conv_tol = 1.e-4;
 
-  if (options->DontSolve) {
+  if (opt.dontSolve()) {
     printf("Problem not solved by request.\n");
     goto TERMINATE;
   }
@@ -134,7 +133,7 @@ int SmpsOops::solve(const opt_st *options,
   // report statistics
   fprintf(printout, "Elapsed time: %.10g seconds.\n", tt_end - tt_start);
 
-  if (options->PrintSolution)
+  if (opt.printSolution())
     getSolution(pdProb, prob);
 
   // clean up
@@ -191,14 +190,15 @@ primal_dual_pb* defineProblem(SmpsReturn *Pb) {
  *  Sets the global variable @c printout to decide where the output from
  *  OOPS is going to appear.
  *
- *  @param  options: Pointer to an opt_st structure.
+ *  @param opt:
+ *         Command line options.
  */
-void setupOutputFile(opt_st *options) {
+void setupOutputFile(OptionsOops &opt) {
 
   char filename[20];
 
   // redirect the output to a file
-  if (options->OutputToFile == 1) {
+  if (opt.outputToFile()) {
 
 #ifdef WITH_MPI
     sprintf(filename, "output%d.dat", MYID_PAR);
@@ -254,6 +254,11 @@ int SmpsOops::getSolution(primal_dual_pb *Prob, SmpsReturn *Ret) {
 
   // print the solution
   const NodeInfo *info = getNodeInfo();
+
+#ifdef WITH_MPI
+  if (IS_ROOT_PAR)
+#endif
+    printSolution(info, x->elts, y->elts, r->elts, z->elts);
 
   // clean up
   delete[] info->nRowsNode;
