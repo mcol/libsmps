@@ -20,9 +20,9 @@ DEFINE  = \
 	$(INCLUDE) \
 	$(NULL)
 
-OBJECTS = \
-	SmpsCplex.o \
-	main.o \
+SOURCES	:= \
+	SmpsCplex.cpp \
+	main.cpp \
 	$(NULL)
 
 HEADERS = \

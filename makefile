@@ -4,13 +4,13 @@ include $(DEPTH)/mkincl
 
 CC = g++
 
-OBJECTS := \
-	Node.o \
-	Smps.o \
-	SmpsCore.o \
-	SmpsTree.o \
-	Tokenizer.o \
-	Utils.o \
+SOURCES	:= \
+	Node.cpp \
+	Smps.cpp \
+	SmpsCore.cpp \
+	SmpsTree.cpp \
+	Tokenizer.cpp \
+	Utils.cpp \
 	$(NULL)
 
 HEADERS := \

@@ -7,9 +7,9 @@ DEFINE  = \
 	$(INCLUDE) \
 	$(NULL)
 
-OBJECTS = \
-	interface.o \
-	options.o \
+SOURCES	:= \
+	interface.cpp \
+	options.cpp \
 	$(NULL)
 
 HEADERS = \

@@ -4,10 +4,10 @@ include $(DEPTH)/mkincl
 
 CC = g++
 
-OBJECTS := \
-	generateSmps.o \
-	main.o \
-	SmpsOops.o \
+SOURCES	:= \
+	generateSmps.cpp \
+	main.cpp \
+	SmpsOops.cpp \
 	$(NULL)
 
 HEADERS := \
