@@ -294,6 +294,21 @@ int SmpsCore::readTimeFile(string timeFileName) {
   // close the time file
   time.close();
 
+  rv = findTimeCoreMatches(begPeriodRowName, begPeriodColName);
+  if (rv)
+    return rv;
+
+  // take care of slacks
+  modifyCore();
+
+  return rv;
+}
+
+/** Match the names from the time file to those of the core file */
+int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
+				  const vector<string> &begPeriodColName)  {
+
+  int rv = 0;
   bool found = false;
   begPeriodRow = new int[nPeriods + 1];
   begPeriodCol = new int[nPeriods + 1];
@@ -354,9 +369,6 @@ int SmpsCore::readTimeFile(string timeFileName) {
   // set the last elements
   begPeriodRow[nPeriods] = nRows;
   begPeriodCol[nPeriods] = nCols;
-
-  // take care of slacks
-  modifyCore();
 
  TERMINATE:
 

@@ -322,6 +322,10 @@ class SmpsCore {
   /** Set the linked list for row access */
   void setRowsLinkedList(void);
 
+  /** Match the names from the time file to those of the core file */
+  int findTimeCoreMatches(const vector<string> &begPeriodRowName,
+			  const vector<string> &begPeriodColName);
+
   /** Convert the inequality constraints to equalities */
   void modifyCore(void);
 
