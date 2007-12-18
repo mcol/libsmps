@@ -257,8 +257,8 @@ int SmpsTree::scanIndepType(ifstream &stoc) {
 
   int rv, nBlocks = 0;
   char buffer[SMPS_LINE_MAX];
-  char rowName[SMPS_FIELD_SIZE], curRow[SMPS_FIELD_SIZE] = "";
-  char colName[SMPS_FIELD_SIZE], curCol[SMPS_FIELD_SIZE] = "";
+  char rowName[SMPS_FIELD_SIZE], colName[SMPS_FIELD_SIZE];
+  string curRow = "", curCol = "";
 
   // number of nodes for the current stage
   int nNodesStage = 1;
@@ -284,12 +284,11 @@ int SmpsTree::scanIndepType(ifstream &stoc) {
       ++nBlocks;
 
       // check if the name of the block or of the period matches
-      if ((strcmp(colName, curCol) != 0) ||
-	  (strcmp(rowName, curRow) != 0)) {
+      if ((colName != curCol) || (rowName != curRow)) {
 
 	// store the new names of row and period
-	strcpy(curRow, rowName);
-	strcpy(curCol, colName);
+	curRow = rowName;
+	curCol = colName;
 
 	nNodesStage *= nBlocks;
 	maxNodes += nNodesStage;
@@ -343,8 +342,8 @@ int SmpsTree::scanBlocksType(ifstream &stoc) {
 
   int rv, nBlocks = 0;
   char buffer[SMPS_LINE_MAX], bl[SMPS_FIELD_SIZE];
-  char blockName[SMPS_FIELD_SIZE], curBlock[SMPS_FIELD_SIZE] = "";
-  char stageName[SMPS_FIELD_SIZE], curStage[SMPS_FIELD_SIZE] = "";
+  char blockName[SMPS_FIELD_SIZE], stageName[SMPS_FIELD_SIZE];
+  string curBlock = "", curStage = "";
   bool firstRealBlock = false;
 
   // number of nodes for the current stage
@@ -384,19 +383,19 @@ int SmpsTree::scanBlocksType(ifstream &stoc) {
       }
 
       // this block has a different name from the one read before
-      if (strcmp(blockName, curBlock) != 0)  {
+      if (blockName != curBlock)  {
 
 	firstRealBlock = true;
 	nRealsBlock = 0;
 
 	// store the new name
-	strcpy(curBlock, blockName);
+	curBlock = blockName;
 	nNodesStage *= nBlocks;
 	nBlocks = 0;
 
 	// this block refers to a new period
-	if (strcmp(stageName, curStage) != 0) {
-	  strcpy(curStage, stageName);
+	if (stageName != curStage) {
+	  curStage = stageName;
 	  maxNodes += nNodesStage;
 	}
       }
