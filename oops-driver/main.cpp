@@ -17,7 +17,7 @@
 
 
 FILE *printout;
-double tt_end;
+double tt_start, tt_end;
 
 static primal_dual_pb* defineProblem(SmpsReturn *Pb);
 static void setupOutputFile(OptionsOops &opt);
@@ -113,13 +113,13 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
   // options for the complete problem
   hopdm_options->glopt->conv_tol = 1.e-4;
 
+  hopdm_ret *ret;
+  PrintOptions *Prt = NewHopdmPrt(PRINT_ITER);
+
   if (opt.dontSolve()) {
     printf("Problem not solved by request.\n");
     goto TERMINATE;
   }
-
-  hopdm_ret *ret;
-  hopdm_prt_type *Prt = NewHopdmPrt(1);
 
   // start the clock
   tt_start = oopstime();
@@ -137,7 +137,6 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
     getSolution(pdProb, prob);
 
   // clean up
-  delete Prt;
   free(ret);
 
  TERMINATE:
@@ -145,6 +144,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
   // clean up
   FreePDProblem(pdProb);
   freeSmpsReturn(prob);
+  delete Prt;
 
   return 0;
 }

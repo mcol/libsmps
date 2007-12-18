@@ -10,6 +10,7 @@
  *
  */
 
+#include <assert.h>
 #include "SmpsOops.h"
 
 

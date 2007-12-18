@@ -139,7 +139,7 @@ int SmpsCore::readCoreFile(string coreFileName) {
   double big = 1.e31;
   double dlobnd = 0.0, dupbnd = big;
   int maxm, maxn;
-  int maxnza, maxnzq;
+  int maxnza, maxnzq = 0;
 
   // rdrhs assumes these are initialised like this
   char nameb[10]  = "        ";
