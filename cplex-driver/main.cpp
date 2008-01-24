@@ -101,6 +101,15 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
     goto TERMINATE;
   }
 
+  // write the deterministic equivalent in mps format
+  if (opt.writeMps()) {
+    status = CPXwriteprob(env, lp, "smps.mps", NULL);
+    if (status) {
+      fprintf(stderr, "Failed to write the mps file.\n");
+      return 1;
+    }
+  }
+
   // leave early if we don't have to solve the problem
   if (opt.dontSolve()) {
     printf("Problem not solved by request.\n");
@@ -123,15 +132,6 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
   if (status) {
     fprintf(stderr, "Failed to obtain the solution.\n");
     goto TERMINATE;
-  }
-
-  // write the deterministic equivalent in mps format
-  if (opt.writeMps()) {
-    status = CPXwriteprob(env, lp, "smps.mps", NULL);
-    if (status) {
-      fprintf(stderr, "Failed to write the mps file.\n");
-      return 1;
-    }
   }
 
  TERMINATE:
@@ -263,7 +263,7 @@ int setRowType(int *rowCode, char *rowType, const int nRows)  {
 
 /** Retrieve the solution information */
 int SmpsCplex::getSolution(CPXENVptr env, CPXLPptr lp,
-			  const OptionsCplex &opt) {
+			   const OptionsCplex &opt) {
 
   int status, solstat, iters;
   double obj;
