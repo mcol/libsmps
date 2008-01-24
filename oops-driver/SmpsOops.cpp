@@ -39,7 +39,7 @@ int SmpsOops::read() {
     return rv;
 
   // reorder the nodes according to the level
-  orderNodes();
+  rv = orderNodes();
 
   return rv;
 }
@@ -63,7 +63,16 @@ const NodeInfo* SmpsOops::getNodeInfo() const {
  *                      BLOCK = 0: root BLOCK (i.e. rankCor)
  *                      BLOCK = 1 -- TREE->nBlocks are diagonal parts
  */
-void SmpsOops::orderNodes() {
+int SmpsOops::orderNodes() {
+
+  int nPeriods = smps.getPeriods();
+
+  // check that the required cutoff level is feasible
+  if (level <= 0 || level >= nPeriods) {
+    printf("The cutoff level must be positive and smaller than "
+           "the number of stages (%d).\n",  nPeriods);
+    return 1;
+  }
 
   // current node in the new list which is being followed
   int node = 0;
@@ -121,6 +130,8 @@ void SmpsOops::orderNodes() {
 
   // reset the period starts
   smps.setNodeStarts(order);
+
+  return 0;
 }
 
 /** Add all children of node order[node] to the list starting at entry next */

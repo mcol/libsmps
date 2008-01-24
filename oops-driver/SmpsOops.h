@@ -65,7 +65,7 @@ class SmpsOops {
   const NodeInfo* getNodeInfo(void) const;
 
   /** Order the nodes according to the cutoff level */
-  void orderNodes(void);
+  int orderNodes(void);
 
   /** Apply the scenario changes */
   int applyScenarios(SmpsReturn *Ret,
