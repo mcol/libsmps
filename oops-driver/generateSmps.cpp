@@ -76,7 +76,7 @@ SmpsReturn* SmpsOops::generateSmps() {
   // whole matrices A/Q
   Algebra *AlgA, *AlgQ;
 
-  SmpsReturn *Ret = (SmpsReturn *) calloc(1, sizeof(SmpsReturn));
+  SmpsReturn *Ret = new SmpsReturn;
 
   int i, j, k;
 
@@ -461,10 +461,10 @@ SmpsReturn* SmpsOops::generateSmps() {
   Ret->u = NewDenseVector(ttn, "UB");
 
   // rankcor part
-  Algebra **RightColEntries = (Algebra**) calloc((nBlocks + 1), sizeof(Algebra *));
+  Algebra **RightColEntries = (Algebra**) malloc((nBlocks + 1) * sizeof(Algebra *));
 
   // diagonal algebras
-  Algebra **DiagEntries = (Algebra**) calloc((nBlocks + 2), sizeof(Algebra *));
+  Algebra **DiagEntries = (Algebra**) malloc((nBlocks + 2) * sizeof(Algebra *));
 
   // bottom algebras (set to zero)
   Algebra **Bottom = (Algebra**) malloc((nBlocks + 1) * sizeof(Algebra *));
@@ -704,7 +704,7 @@ void freeSmpsReturn(SmpsReturn *ret) {
     delete[] ret->colnames[i];
   delete[] ret->colnames;
 
-  free(ret);
+  delete ret;
 }
 
 /**
