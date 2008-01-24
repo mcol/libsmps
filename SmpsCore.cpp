@@ -173,10 +173,10 @@ int SmpsCore::readCoreFile(string coreFileName) {
   links   = new int[maxnza];
   clnmbs  = new int[maxnza];
   clpnts  = new int[maxn + 1];
-  hdrwcd  = new int[maxm + 1];
-  hdclcd  = new int[maxn + 1];
-  lnkrwcd = new int[maxm + 1];
-  lnkclcd = new int[maxn + 1];
+  hdrwcd  = new int[maxm];
+  hdclcd  = new int[maxn];
+  lnkrwcd = new int[maxm];
+  lnkclcd = new int[maxn];
   acoeff  = new double[maxnza];
   ranges  = new double[maxm];
   rhs     = new double[maxm];
@@ -184,8 +184,8 @@ int SmpsCore::readCoreFile(string coreFileName) {
   blo     = new double[maxn];
   double *relt = new double[maxn];
   int    *irow = new int[maxn];
-  memset(rwname, 0, 8 * (maxm + 2) * sizeof(char));
-  memset(clname, 0, 8 * (maxn + 2) * sizeof(char));
+  memset(rwname, 0, 8 * (maxm + 2));
+  memset(clname, 0, 8 * (maxn + 2));
 
   // read the core file
   RDMPS1(&rv, &iqp, &maxm, &maxn, &maxnza, &maxnzq, &nRows, &nCols, &nza, &nzq,
@@ -444,7 +444,7 @@ char* SmpsCore::convertPeriodNames() {
     sprintf(tmp, "%-8s", periodNames[i].c_str());
 
     // copy the string in the array
-    memcpy(pos, tmp, 8 * sizeof(char));
+    memcpy(pos, tmp, 8);
     pos += 8;
   }
 
@@ -714,7 +714,7 @@ void SmpsCore::modifyCore() {
   for(i = 0; i < nCols; ++i) {
 
     strncpy(name, new_clname + 8 * i, 8);
-    mycode_(&iolog, name, &kcode, &nCols);
+    MYCODE(&iolog, name, &kcode, &nCols);
     new_lnclcd[i] = new_hdclcd[kcode - 1];
     new_hdclcd[kcode - 1] = i + 1;
   }

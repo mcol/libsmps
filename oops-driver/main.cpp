@@ -1,5 +1,5 @@
 /*
- *  main.c
+ *  main.cpp
  *
  *  Driver for the SMPS interface to Oops.
  *
@@ -89,7 +89,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
 
   // check the validity of the arguments
   if (!prob) {
-    cout << "oopsSolve: No problem defined." << endl;
+    cout << "No problem defined." << endl;
     return 1;
   }
 

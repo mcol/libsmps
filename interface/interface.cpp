@@ -457,7 +457,7 @@ void printSolution(const NodeInfo *info,
  *   (LO defines lower bound, UB defines upper bound)
  *  ENDATA
  */
-int writeMps(char *filename, ProbData *PROB) {
+int writeMps(const char *filename, ProbData *PROB) {
 
   /* format of the mps strings */
   const char cl_row_format[] = " %c  R%-7d\n";
