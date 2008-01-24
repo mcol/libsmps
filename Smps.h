@@ -158,6 +158,11 @@ class SmpsCore {
     return rhs[row];
   }
 
+  /** Return the lower bound value for the given variable */
+  double getLowerBound(const int col) const {
+    return blo[col];
+  }
+
   /** Return the upper bound value for the given variable */
   double getUpperBound(const int col) const {
     return bup[col];

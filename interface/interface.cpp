@@ -99,8 +99,8 @@ ProbData *setupMatrix(Smps &smps) {
     for (i = 0; i < smps.getNColsPeriod(period); ++i) {
 
       obj[f_cl_nd + i] = 0.0;
+      blo[f_cl_nd + i] = smps.getLowerBound(f_cl_pd + i);
       bup[f_cl_nd + i] = smps.getUpperBound(f_cl_pd + i);
-      //      blo[f_cl_nd + i] = smps.blo(f_cl_pd + i);
     }
 
     // index in core corresponding to the beginning of this period
