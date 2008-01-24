@@ -41,11 +41,11 @@ int main(const int argc, const char *argv[]) {
     goto TERMINATE;
 
   // solve the problem
-  data.solve(opt);
+  rv = data.solve(opt);
 
  TERMINATE:
 
-  return 0;
+  return rv;
 }
 
 /** Solve the problem */
