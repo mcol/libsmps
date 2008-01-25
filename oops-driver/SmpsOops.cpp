@@ -72,10 +72,6 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
   // setup the primal-dual problem
   primal_dual_pb *pdProb = setupProblem(prob);
 
-#ifdef REP_MEM
-  reportMem();
-#endif
-
   // write the deterministic equivalent in mps format
   if (opt.writeMps()) {
     FILE *fout = fopen("smps.mps", "w");
