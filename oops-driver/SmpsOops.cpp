@@ -258,12 +258,12 @@ int SmpsOops::orderNodes() {
   while (smps.getPeriod(order[node]) < level) {
 
     // add children of current node to list
-    for (int i = 0; i < smps.getNChildren(order[node]); i++) {
+    for (int i = 0; i < smps.getNChildren(order[node]); ++i) {
       order[nx_nd] = smps.getFirstChild(order[node]) + i - 1;
       block[nx_nd] = 0;
-      nx_nd++;
+      ++nx_nd;
     }
-    node++;
+    ++node;
   }
 
   /* now all nodes up to period indicated by level are on the lists
@@ -275,11 +275,11 @@ int SmpsOops::orderNodes() {
 
     // each node in this list is a seed for a diagonal block
     addChildrenToList(node, &nx_nd);
-    node++;
+    ++node;
   }
 
   // generate reverse order of nodes
-  for (int i = 0; i < nNodes; i++)
+  for (int i = 0; i < nNodes; ++i)
     revorder[order[i]] = i;
 
 #ifdef DEBUG_ORDER
@@ -287,7 +287,7 @@ int SmpsOops::orderNodes() {
   printf("Found %d diagonal blocks.\n", nBlocks);
   printf("Reporting new order of nodes in big Matrix:\n");
   printf("   pos  node   per  block\n");
-  for (int i = 0; i < nNodes; i++)
+  for (int i = 0; i < nNodes; ++i)
     printf("  %3d   %3d   %3d   %3d\n", i, order[i],
 	   smps.getPeriod(order[i]), block[i]);
 #endif
@@ -304,9 +304,9 @@ void SmpsOops::addChildrenToList(const int node, int *next) {
   int i;
   const int ordNode = order[node];
 
-  for (i = 0; i < smps.getNChildren(ordNode); i++) {
+  for (i = 0; i < smps.getNChildren(ordNode); ++i) {
     if (smps.getPeriod(ordNode) == level)
-      nBlocks++;
+      ++nBlocks;
 
     order[*next] = smps.getFirstChild(ordNode) + i - 1;
     block[*next] = nBlocks;

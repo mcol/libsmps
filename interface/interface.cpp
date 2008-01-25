@@ -384,15 +384,15 @@ void printSolution(const NodeInfo *info,
 
   int i, j, node;
 
-  for (node = 0; node < info->nNodes; node++) {
+  for (node = 0; node < info->nNodes; ++node) {
 
     printf("\t---   Node %2d   ---\n", node + 1);
 
-    for (i = info->nRowsNode[node]; i < info->nRowsNode[node + 1]; i++) {
+    for (i = info->nRowsNode[node]; i < info->nRowsNode[node + 1]; ++i) {
       printf("Row %d:  Slack = %10f  Dual = %10f\n", i, slacks[i], dual[i]);
     }
 
-    for (j = info->nColsNode[node]; j < info->nColsNode[node + 1]; j++) {
+    for (j = info->nColsNode[node]; j < info->nColsNode[node + 1]; ++j) {
       printf("Column %d:  Value = %10f  Reduced cost = %10f\n",
 	     j, primal[j], rcosts[j]);
     }
@@ -402,21 +402,21 @@ void printSolution(const NodeInfo *info,
   int nRows = info->nRowsNode[info->nNodes];
   int nCols = info->nColsNode[info->nNodes];
 
-  for (i = 0, node = 0; i < nRows; i++) {
+  for (i = 0, node = 0; i < nRows; ++i) {
 
     if (i == info->nRowsNode[node]) {
       printf("\t---   Node %2d   ---\n", node + 1);
-      node++;
+      ++node;
     }
 
     printf("Row %d:  Slack = %10f  Dual = %10f\n", i, slacks[i], dual[i]);
   }
 
-  for (j = 0, node = 0; j < nCols; j++) {
+  for (j = 0, node = 0; j < nCols; ++j) {
 
     if (j == info->nColsNode[node]) {
       printf("\t---   Node %2d   ---\n", node + 1);
-      node++;
+      ++node;
     }
 
     printf("Column %d:  Value = %10f  Reduced cost = %10f\n",
@@ -493,12 +493,12 @@ int writeMps(const char *filename, ProbData *PROB) {
   /* ROWS section */
   fprintf(out, "ROWS\n");
   fprintf(out, " N  OBJ\n");
-  for (row = 0; row < PROB->ttm; row++)
+  for (row = 0; row < PROB->ttm; ++row)
     fprintf(out, row_format, rowtype[PROB->rws[row]], row);
 
   /* COLUMNS section */
   fprintf(out, "COLUMNS\n");
-  for (col = 0; col < PROB->ttn; col++) {
+  for (col = 0; col < PROB->ttn; ++col) {
 
     int j;
 
@@ -507,7 +507,7 @@ int writeMps(const char *filename, ProbData *PROB) {
       fprintf(out, obj_format, col, PROB->obj[col]);
 
     /* write the other rows */
-    for (j = PROB->clpnts[col]; j < PROB->clpnts[col + 1]; j++) {
+    for (j = PROB->clpnts[col]; j < PROB->clpnts[col + 1]; ++j) {
 
       row = PROB->rwnmbs[j];
       fprintf(out, col_format, col, row, PROB->acoeff[j]);
@@ -516,13 +516,13 @@ int writeMps(const char *filename, ProbData *PROB) {
 
   /* RHS section */
   fprintf(out, "RHS\n");
-  for (row = 0; row < PROB->ttm; row++)
+  for (row = 0; row < PROB->ttm; ++row)
     if (PROB->rhs[row] != 0.)
       fprintf(out, rhs_format, row, PROB->rhs[row]);
 
   /* BOUNDS section */
   fprintf(out, "BOUNDS\n");
-  for (col = 0; col < PROB->ttn; col++) {
+  for (col = 0; col < PROB->ttn; ++col) {
     if (PROB->blo[col] != 0.)
       fprintf(out, lob_format, col, PROB->blo[col]);
     if (PROB->bup[col] < 1e31)
