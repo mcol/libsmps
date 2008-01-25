@@ -16,7 +16,6 @@
 
 
 double tt_start, tt_end;
-static primal_dual_pb* defineProblem(SmpsReturn *Pb);
 
 
 /** Constructor */
@@ -71,7 +70,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
   }
 
   // setup the primal-dual problem
-  primal_dual_pb *pdProb = defineProblem(prob);
+  primal_dual_pb *pdProb = setupProblem(prob);
 
 #ifdef REP_MEM
   reportMem();
@@ -127,18 +126,18 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
 }
 
 /**
- *  Set up the OOPS Algebras and Vectors and build the primal-dual problem.
+ *  Set up the Oops algebras and vectors and build the primal-dual problem.
  *
  *  @param Pb:
  *         Pointer to an SmpsReturn structure.
  *  @return Pointer to a primal_dual_pb structure containing the problem
- *          to be solved by OOPS.
+ *          to be solved by Oops.
  *
  *  @note
  *  InitAlgebrasNew assumes that a callback function is set up for all
  *  SparseMatrix leaves of A and Q.
  */
-primal_dual_pb* defineProblem(SmpsReturn *Pb) {
+primal_dual_pb* SmpsOops::setupProblem(SmpsReturn *Pb) {
 
   Algebra *A = Pb->AlgA;
   Algebra *Q = Pb->AlgQ;

@@ -61,6 +61,9 @@ class SmpsOops {
   /** Generate the deterministic equivalent for the smps instance */
   SmpsReturn* generateSmps(void);
 
+  /** Set up the Oops algebras and vectors and build the primal-dual problem */
+  primal_dual_pb* setupProblem(SmpsReturn *Pb);
+
   /** Return information on the nodes necessary for printing the solution */
   const NodeInfo* getNodeInfo(void) const;
 
