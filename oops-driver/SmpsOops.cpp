@@ -198,8 +198,6 @@ int SmpsOops::getSolution(primal_dual_pb *Prob, SmpsReturn *Ret) {
     printSolution(info, x->elts, y->elts, r->elts, z->elts);
 
   // clean up
-  delete[] info->nRowsNode;
-  delete[] info->nColsNode;
   delete info;
 
   FreeDenseVector(x);
@@ -236,7 +234,7 @@ int SmpsOops::orderNodes() {
   // check that the required cutoff level is feasible
   if (level <= 0 || level >= nPeriods) {
     printf("The cutoff level must be positive and smaller than "
-           "the number of stages (%d).\n",  nPeriods);
+           "the number of stages (%d).\n", nPeriods);
     return 1;
   }
 
