@@ -517,13 +517,13 @@ int writeMps(const char *filename, ProbData *PROB) {
   /* RHS section */
   fprintf(out, "RHS\n");
   for (row = 0; row < PROB->ttm; ++row)
-    if (PROB->rhs[row] != 0.)
+    if (PROB->rhs[row] > 0.)
       fprintf(out, rhs_format, row, PROB->rhs[row]);
 
   /* BOUNDS section */
   fprintf(out, "BOUNDS\n");
   for (col = 0; col < PROB->ttn; ++col) {
-    if (PROB->blo[col] != 0.)
+    if (PROB->blo[col] > 0.)
       fprintf(out, lob_format, col, PROB->blo[col]);
     if (PROB->bup[col] < 1e31)
       fprintf(out, upb_format, col, PROB->bup[col]);
