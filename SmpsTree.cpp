@@ -135,14 +135,18 @@ int SmpsTree::readStocFile(string stocFileName) {
 
   // first pass: do a quick scan of the rest of the file
   if (stocType == TYPE_INDEP)
-    scanIndepType(stoc);
+    rv = scanIndepType(stoc);
   else if (stocType == TYPE_BLOCKS)
-    scanBlocksType(stoc);
+    rv = scanBlocksType(stoc);
   else
     rv = stocType;
 
   // close the input file
   stoc.close();
+
+  // early return if something has gone wrong
+  if (rv)
+    return rv;
 
   scenLength = maxScenLength = getMaxReals();
 
@@ -230,7 +234,8 @@ int getStocType(char *buffer) {
 
   // check that the distribution is discrete
   if (strcmp(distr, "DISCRETE") != 0) {
-    return TYPE_NOT_IMPLEMENTED;
+    fprintf(stderr, "Error: Distribution '%s' not recognised.\n", distr);
+    return TYPE_NOT_RECOGNISED;
   }
 
   if (strcmp(type, "BLOCKS") == 0) {
