@@ -713,51 +713,47 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
   const int ordNode = order[node];
   const int per = smps.getPeriod(ordNode) - 1;
   const int blk = block[node];
-  int k, child;
+  int k, child, index;
   SparseSimpleMatrix *sparse;
 
-  // copy the information for this node into the deterministic equivalent
+  // rank corrector
   if (colBlk == 0 && is_col_diag[coreCol] == 0) {
 
-    for (k = p_pd_rw[per]; k < p_pd_rw[per + 1]; ++k) {
-
-      sparse = (SparseSimpleMatrix *) RC[blk]->Matrix;
-      sparse->element[sparse->nb_el] = data.acoeff[k];
-      sparse->row_nbs[sparse->nb_el] = data.rwnmbs[k]
-	- smps.getBegPeriodRow(per) + smps.getFirstRowNode(ordNode)
-	- f_rw_blk[blk];
-
-      /*
-      printf(" %2d  - %2d :> %2d, %2d, %2d, %2d  ", per, ordNode,
-             data.rwnmbs[k], smps.getBegPeriodRow(per),
-             smps.getFirstRowNode(ordNode), f_rw_blk[blk]);
-      printf(":: %lf  %d\n", sparse->element[sparse->nb_el],
-	     sparse->row_nbs[sparse->nb_el]);
-      */
-
-      sparse->nb_el++;
-      sparse->col_len[rnkCol - 1]++;
-
-      assert(sparse->nb_el <= sparse->max_nb_el);
-    }
+    sparse = (SparseSimpleMatrix *) RC[blk]->Matrix;
+    index  = rnkCol;
   }
+
+  // diagonal
   else {
     if (blk != colBlk && p_pd_rw[per] != p_pd_rw[per + 1]) {
       printf("Entry in non diagonal part of diagonal\n");
       exit(1);
     }
-    for (k = p_pd_rw[per]; k < p_pd_rw[per + 1]; ++k) {
 
-      sparse = (SparseSimpleMatrix *) DG[blk]->Matrix;
-      sparse->element[sparse->nb_el] = data.acoeff[k];
-      sparse->row_nbs[sparse->nb_el] = data.rwnmbs[k]
-	- smps.getBegPeriodRow(per) + smps.getFirstRowNode(ordNode)
-	- f_rw_blk[blk];
-      sparse->nb_el++;
-      sparse->col_len[sparse->nb_col - 1]++;
+    sparse = (SparseSimpleMatrix *) DG[blk]->Matrix;
+    index  = sparse->nb_col;
+  }
 
-      assert(sparse->nb_el <= sparse->max_nb_el);
-    }
+  // copy the information for this node into the deterministic equivalent
+  for (k = p_pd_rw[per]; k < p_pd_rw[per + 1]; ++k) {
+
+    sparse->element[sparse->nb_el] = data.acoeff[k];
+    sparse->row_nbs[sparse->nb_el] = data.rwnmbs[k]
+      - smps.getBegPeriodRow(per) + smps.getFirstRowNode(ordNode)
+      - f_rw_blk[blk];
+
+    /*
+    printf(" %2d  - %2d :> %2d, %2d, %2d, %2d  ", per, ordNode,
+	   data.rwnmbs[k], smps.getBegPeriodRow(per),
+	   smps.getFirstRowNode(ordNode), f_rw_blk[blk]);
+    printf(":: %lf  %d\n", sparse->element[sparse->nb_el],
+	   sparse->row_nbs[sparse->nb_el]);
+    */
+
+    sparse->nb_el++;
+    sparse->col_len[index - 1]++;
+
+    assert(sparse->nb_el <= sparse->max_nb_el);
   }
 
   const int firstChild = smps.getFirstChild(ordNode) - 1;
