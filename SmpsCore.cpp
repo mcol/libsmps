@@ -309,7 +309,7 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
 				  const vector<string> &begPeriodColName)  {
 
   int rv = 0;
-  bool found = false;
+  bool found;
   begPeriodRow = new int[nPeriods + 1];
   begPeriodCol = new int[nPeriods + 1];
 
@@ -321,6 +321,7 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
 #endif
 
     // find row-period begin
+    found = false;
     for (int j = 0; j < nRows; ++j) {
 
       if (rowNames[j] == begPeriodRowName[i]) {
