@@ -20,17 +20,6 @@ setupRhs(const Smps &smps, SmpsReturn *Ret, const int *order);
 static void
 setupObjective(const Smps &smps, SmpsReturn *Ret, const int *order);
 
-static void
-backOrderRowVector(double *x, const int mode, SmpsReturn *Ret);
-
-static void
-backOrderColVector(double *x, const int mode, SmpsReturn *Ret);
-
-static void
-forwardOrderRowVector(double *x, const int mode, const SmpsReturn *Ret);
-
-static void
-forwardOrderColVector(double *x, const int mode, const SmpsReturn *Ret);
 
 /**
  *  Generate the OOPS structures for the SMPS problem.
@@ -138,21 +127,6 @@ SmpsReturn* SmpsOops::generateSmps() {
   const SparseData data = smps.getSparseData();
 
   SparseSimpleMatrix *sparse;
-
-  /* These values need to be copied so that they are still available after
-     the SMPS data structures have been freed at the end of the problem
-     generation phase. */
-  Ret->tree_order   = new int[nNodes];
-  Ret->tree_period  = new int[nNodes];
-  Ret->time_f_cl_pd = new int[nPeriods + 1];
-
-  for (i = 0; i < nNodes; ++i) {
-    Ret->tree_period[i] = smps.getPeriod(i);
-    Ret->tree_order[i]  = order[i];
-  }
-
-  for (i = 0; i <= nPeriods; ++i)
-    Ret->time_f_cl_pd[i] = smps.getBegPeriodCol(i);
 
   printf(" --------------- generateSmps --------------\n");
 
@@ -688,9 +662,6 @@ void freeSmpsReturn(SmpsReturn *ret) {
   FreeDenseVector(ret->u);
 
   delete[] ret->is_col_diag;
-  delete[] ret->tree_order;
-  delete[] ret->tree_period;
-  delete[] ret->time_f_cl_pd;
 
   for (i = 0; i < ret->ttm; ++i)
     delete[] ret->rownames[i];
@@ -1248,13 +1219,13 @@ void SmpsOops::reorderObjective(DenseVector *obj, DenseVector *upb,
 }
 
 /**
- *  Copy a Vector into a reordered DenseVector.
+ *  Copy a Vector into a depth-first ordered DenseVector.
  *
  *  Copies a Vector as used by OOPS into a DenseVector corresponding to a
  *  depth-first ordering of the scenario tree.
  */
-void SmpsVectorToDense(Vector *x, DenseVector *dx,
-		       SmpsReturn *Ret, const int rowcol) {
+void SmpsOops::SmpsVectorToDense(Vector *x, DenseVector *dx,
+				 SmpsReturn *Ret, const int rowcol) {
 
   SetExactVector(x);
   CopyToDenseVector(x, dx);
@@ -1267,7 +1238,7 @@ void SmpsVectorToDense(Vector *x, DenseVector *dx,
 }
 
 /**
- *  Copy a DenseVector into a reordered Vector.
+ *  Copy a depth-first ordered DenseVector into a Vector.
  *
  *  Copies a DenseVector corresponding to a depth-first ordering of the
  *  scenario tree into a Vector as used by OOPS.
@@ -1277,8 +1248,8 @@ void SmpsVectorToDense(Vector *x, DenseVector *dx,
  *  those columns that are not linking periods are placed in separate
  *  diagonal block, rather than in the RankCor block.
  */
-void SmpsDenseToVector(DenseVector *dx, Vector *x,
-		       SmpsReturn *Ret, const int rowcol) {
+void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
+				 SmpsReturn *Ret, const int rowcol) {
 
   // should attempt to leave the original element order intact
 
@@ -1316,23 +1287,18 @@ void SmpsDenseToVector(DenseVector *dx, Vector *x,
  *  Needed from main method (passed through SmpsReturn *Ret)
  *  - nb_col_rnk:  number of columns in actual rankcor (Rnk) part
  *  - nb_col_diag: number of columns in diag rankcor (D0) part
- *  - ncol_ttrc:   total number of columns in RankCor (D0|Rnk)
- *  - nrow_rc:     total number of rows in RankCor
  */
-void backOrderColVector(double *x, const int mode, SmpsReturn *Ret) {
+void SmpsOops::backOrderColVector(double *x, const int mode,
+				  const SmpsReturn *Ret) {
 
-  int i, col, coreCol, offset;
-  int nx_col_d0, nx_col_rc;
-  int cu_nd_cl, cu_pd_cl;
-  int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
-  int ttn = Ret->ttn;
+  int col, offset;
 
-  int *period  = Ret->tree_period;
-  int *order   = Ret->tree_order;
-  int *begPeriodCol = Ret->time_f_cl_pd;
-  double *dtmp = new double[Ret->ttn];
+  // total number of columns in RankCor (D0|Rnk)
+  const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
+  const int ttn = Ret->ttn;
+  double *dtmp  = new double[ttn];
 
-  for (i = 0; i < ttn; ++i)
+  for (int i = 0; i < ttn; ++i)
     dtmp[i] = x[i];
 
   // copy entries into the combined rankcor slot
@@ -1341,18 +1307,17 @@ void backOrderColVector(double *x, const int mode, SmpsReturn *Ret) {
      The complete RankCor (D0Rnk) is made up from the nodes listed in
      order[0-??]
   */
-  nx_col_d0 = 0;                      // next column to take from D0
-  nx_col_rc = ttn - Ret->nb_col_rnk;  // next column to take from Rnk
+  int nx_col_d0 = 0;                      // next column to take from D0
+  int nx_col_rc = ttn - Ret->nb_col_rnk;  // next column to take from Rnk
 
-  coreCol  = 0; // column in core corresponding to the current column
-  cu_nd_cl = 0; // node of the current column
-  cu_pd_cl = period[order[0]] - 1; // the period of the current column
+  int coreCol  = 0; // column in core corresponding to the current column
+  int cu_nd_cl = 0; // node of the current column
+  int cu_pd_cl = smps.getPeriod(order[0]); // period of the current column
 
 #if 0
   printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",
-	 cu_nd_cl, order[cu_nd_cl], cu_pd_cl,
-	 begPeriodCol[period[order[cu_nd_cl]] - 1],
-	 begPeriodCol[period[order[cu_nd_cl]]] - 1);
+	 cu_nd_cl, order[cu_nd_cl], cu_pd_cl - 1,
+	 coreCol, smps.getBegPeriodCol(cu_pd_cl) - 1);
 #endif
 
   // start writing the (D0Rnk) part
@@ -1364,17 +1329,16 @@ void backOrderColVector(double *x, const int mode, SmpsReturn *Ret) {
   for (col = 0, coreCol = 0; col < ncol_ttrc; ++col, ++coreCol) {
 
     // find the column in the original core that this belongs to
-    if (coreCol >= begPeriodCol[period[order[cu_nd_cl]]]) {
+    if (coreCol >= smps.getBegPeriodCol(cu_pd_cl)) {
 
       // if this is past the last column in this node
       ++cu_nd_cl;
-      cu_pd_cl = period[order[cu_nd_cl]] - 1;
-      coreCol = begPeriodCol[cu_pd_cl];
+      cu_pd_cl = smps.getPeriod(order[cu_nd_cl]);
+      coreCol = smps.getBegPeriodCol(cu_pd_cl - 1);
 #if 0
       printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",
-	     cu_nd_cl, order[cu_nd_cl], cu_pd_cl,
-	     begPeriodCol[period[order[cu_nd_cl]] - 1],
-	     begPeriodCol[period[order[cu_nd_cl]]] - 1);
+	     cu_nd_cl, order[cu_nd_cl], cu_pd_cl - 1,
+	     coreCol, smps.getBegPeriodCol(cu_pd_cl) - 1);
 #endif
     }
 
@@ -1418,24 +1382,18 @@ void backOrderColVector(double *x, const int mode, SmpsReturn *Ret) {
  *  Needed from main method (passed through SmpsReturn *Ret)
  *  - nb_col_rnk:  number of columns in actual rankcor (Rnk) part
  *  - nb_col_diag: number of columns in diag rankcor (D0) part
- *  - nrow_rc:     total number of rows in RankCor
  */
-void forwardOrderColVector(double *x, const int mode, const SmpsReturn *Ret) {
+void SmpsOops::forwardOrderColVector(double *x, const int mode,
+				     const SmpsReturn *Ret) {
 
-  int i, col, coreCol, offset;
-  int nx_col_d0, nx_col_rc;
-  int cu_nd_cl, cu_pd_cl;
+  int col, offset;
 
   // total number of columns in RankCor (D0|Rnk)
-  int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
+  const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
+  const int ttn = Ret->ttn;
+  double *dtmp  = new double[ttn];
 
-  int ttn = Ret->ttn;
-  int *period  = Ret->tree_period;
-  int *order   = Ret->tree_order;
-  int *begPeriodCol = Ret->time_f_cl_pd;
-  double *dtmp = new double[Ret->ttn];
-
-  for (i = 0; i < ttn; ++i)
+  for (int i = 0; i < ttn; ++i)
     dtmp[i] = x[i];
 
   // copy entries from the combined rankcor slot into OOPS RankCor and
@@ -1447,18 +1405,17 @@ void forwardOrderColVector(double *x, const int mode, const SmpsReturn *Ret) {
   */
 
   // set the start of the D0 and Rnk blocks
-  nx_col_d0 = 0;                           // next column in D0
-  nx_col_rc = ttn - Ret->nb_col_rnk;       // next column in Rnk
+  int nx_col_d0 = 0;                      // next column in D0
+  int nx_col_rc = ttn - Ret->nb_col_rnk;  // next column in Rnk
 
-  coreCol  = 0; // column in core corresponding to the current column
-  cu_nd_cl = 0; // node of the current column
-  cu_pd_cl = period[order[0]] - 1; // the period of the current column
+  int coreCol  = 0; // column in core corresponding to the current column
+  int cu_nd_cl = 0; // node of the current column
+  int cu_pd_cl = smps.getPeriod(order[0]); // period of the current column
 
 #if 0
   printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",
-	 cu_nd_cl, order[cu_nd_cl], cu_pd_cl,
-	 begPeriodCol[period[order[cu_nd_cl]] - 1],
-	 begPeriodCol[period[order[cu_nd_cl]]] - 1);
+	 cu_nd_cl, order[cu_nd_cl], cu_pd_cl - 1,
+	 coreCol, smps.getBegPeriodCol(cu_pd_cl) - 1);
 #endif
 
   // set where the D0Rnk block is to be found in the original vector
@@ -1471,17 +1428,16 @@ void forwardOrderColVector(double *x, const int mode, const SmpsReturn *Ret) {
   for (col = 0, coreCol = 0; col < ncol_ttrc; ++col, ++coreCol) {
 
     // find the column in the original core that this belongs to
-    if (coreCol >= begPeriodCol[period[order[cu_nd_cl]]]) {
+    if (coreCol >= smps.getBegPeriodCol(cu_pd_cl)) {
 
       // if this is past the last column in this node
       ++cu_nd_cl;
-      cu_pd_cl = period[order[cu_nd_cl]] - 1;
-      coreCol = begPeriodCol[cu_pd_cl];
+      cu_pd_cl = smps.getPeriod(order[cu_nd_cl]);
+      coreCol = smps.getBegPeriodCol(cu_pd_cl - 1);
 #if 0
       printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",
-	     cu_nd_cl, order[cu_nd_cl], cu_pd_cl,
-	     begPeriodCol[period[order[cu_nd_cl]] - 1],
-	     begPeriodCol[period[order[cu_nd_cl]]] - 1);
+	     cu_nd_cl, order[cu_nd_cl], cu_pd_cl - 1,
+	     coreCol, smps.getBegPeriodCol(cu_pd_cl) - 1);
 #endif
     }
 
@@ -1508,34 +1464,35 @@ void forwardOrderColVector(double *x, const int mode, const SmpsReturn *Ret) {
 }
 
 /** Reorder the rows (if in mode 1, as they are already in order in mode 0) */
-void backOrderRowVector(double *x, const int mode, SmpsReturn *Ret) {
-
-  int i, ttm = Ret->ttm;
+void SmpsOops::backOrderRowVector(double *x, const int mode,
+				  const SmpsReturn *Ret) {
 
   // nothing needs to be done
   if (mode == 0)
     return;
 
+  int i;
+  const int ttm = Ret->ttm, nRowsRnkc = Ret->nb_row_rnk;
   double *dtmp = new double[ttm];
 
   for (i = 0; i < ttm; ++i)
     dtmp[i] = x[i];
 
   // first copy the rows from the rankcor part (at end of matrix)
-  for (i = 0; i < Ret->nb_row_rnk; ++i) {
-    x[i] = dtmp[ttm - Ret->nb_row_rnk + i];
+  for (i = 0; i < nRowsRnkc; ++i) {
+    x[i] = dtmp[ttm - nRowsRnkc + i];
   }
 
   // now copy the rest
-  for (i = Ret->nb_row_rnk; i < ttm; ++i) {
-    x[i] = dtmp[i - Ret->nb_row_rnk];
+  for (i = nRowsRnkc; i < ttm; ++i) {
+    x[i] = dtmp[i - nRowsRnkc];
   }
 
   // clean up
   delete[] dtmp;
 }
 
-/* -------------------------------------------------------------------------
+/**
  * forwardOrderRowVector
  *
  * Order the rows from the SMPS depth-first order into the order that is used
@@ -1551,15 +1508,16 @@ void backOrderRowVector(double *x, const int mode, SmpsReturn *Ret) {
  * @param Ret:
  *        Information about the problem with respect to which the
  *        reordering should be done
- * ------------------------------------------------------------------------- */
-void forwardOrderRowVector(double *x, const int mode, const SmpsReturn *Ret) {
-
-  int i, ttm = Ret->ttm;
+ */
+void SmpsOops::forwardOrderRowVector(double *x, const int mode,
+				     const SmpsReturn *Ret) {
 
   // nothing needs to be done
   if (mode == 0)
     return;
 
+  int i;
+  const int ttm = Ret->ttm, nRowsRnkc = Ret->nb_row_rnk;
   double *dtmp = new double[ttm];
 
   for (i = 0; i < ttm; ++i)
@@ -1567,13 +1525,13 @@ void forwardOrderRowVector(double *x, const int mode, const SmpsReturn *Ret) {
 
   // the rankcor rows are at the beginning of the vector, they should
   // be re-ordered to the end
-  for (i = 0; i < Ret->nb_row_rnk; ++i) {
-    x[ttm-Ret->nb_row_rnk + i] = dtmp[i];
+  for (i = 0; i < nRowsRnkc; ++i) {
+    x[ttm - nRowsRnkc + i] = dtmp[i];
   }
 
   // now copy the rest
-  for (i = Ret->nb_row_rnk; i < ttm; ++i) {
-    x[i - Ret->nb_row_rnk] = dtmp[i];
+  for (i = nRowsRnkc; i < ttm; ++i) {
+    x[i - nRowsRnkc] = dtmp[i];
   }
 
   // clean up

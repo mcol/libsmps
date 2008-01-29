@@ -86,6 +86,19 @@ class SmpsOops {
 			   const int node, const int colBlk,
 			   const int rnkCol, const int coreCol);
 
+  /** Copy a Vector into a depth-first ordered DenseVector */
+  void SmpsVectorToDense(Vector *v, DenseVector *dv,
+			 SmpsReturn *Ret, const int ordering);
+
+  /** Copy a depth-first ordered DenseVector into a Vector */
+  void SmpsDenseToVector(DenseVector *dv, Vector *v,
+			 SmpsReturn *Ret, const int ordering);
+
+  void backOrderRowVector(double *x, const int mode, const SmpsReturn *Ret);
+  void backOrderColVector(double *x, const int mode, const SmpsReturn *Ret);
+  void forwardOrderRowVector(double *x, const int mode, const SmpsReturn *Ret);
+  void forwardOrderColVector(double *x, const int mode, const SmpsReturn *Ret);
+
 };
 
 
@@ -140,15 +153,6 @@ struct SmpsReturn {
       to the first diagonal block */
   int *is_col_diag;
 
-  /** Period array from SmpsTree structure */
-  int *tree_period;
-
-  /** Order array from SmpsTree structure */
-  int *tree_order;
-
-  /** f_cl_pd array from SmpsTime structure */
-  int *time_f_cl_pd;
-
 };
 
 
@@ -190,10 +194,5 @@ enum {
 
 /** Free the space allocated for the SmpsReturn structure */
 void freeSmpsReturn(SmpsReturn *ret);
-
-void SmpsVectorToDense(Vector *x, DenseVector *dx,
-		       SmpsReturn *Ret, const int rowcol);
-void SmpsDenseToVector(DenseVector *dx, Vector *x,
-		       SmpsReturn *Ret, const int rowcol);
 
 #endif /* _SMPS_OOPS_H_ */
