@@ -230,6 +230,7 @@ const NodeInfo* SmpsOops::getNodeInfo() const {
 int SmpsOops::orderNodes() {
 
   int nPeriods = smps.getPeriods();
+  int nNodes   = smps.getNodes();
 
   // check that the required cutoff level is feasible
   if (level <= 0 || level >= nPeriods) {
@@ -243,8 +244,6 @@ int SmpsOops::orderNodes() {
 
   // next node in the new list that is being built
   int nx_nd = 1;
-
-  int nNodes = smps.getNodes();
 
   block    = new int[nNodes];
   order    = new int[nNodes];
@@ -266,9 +265,9 @@ int SmpsOops::orderNodes() {
     ++node;
   }
 
-  /* now all nodes up to period indicated by level are on the lists
-      nx_nd points to the next free position in the list,
-      node points to the first node of period = level in the list */
+  // now all nodes up to the cutoff level are on the lists
+  // nx_nd points to the next free position in the list
+  // node points to the first node of period = level in the list
 
   // now follow depth first
   while (smps.getPeriod(order[node]) == level && node < nNodes) {
@@ -298,13 +297,12 @@ int SmpsOops::orderNodes() {
   return 0;
 }
 
-/** Add all children of node order[node] to the list starting at entry next */
+/** Add all children of order[node] to the list starting at entry next */
 void SmpsOops::addChildrenToList(const int node, int *next) {
 
-  int i;
   const int ordNode = order[node];
 
-  for (i = 0; i < smps.getNChildren(ordNode); ++i) {
+  for (int i = 0; i < smps.getNChildren(ordNode); ++i) {
     if (smps.getPeriod(ordNode) == level)
       ++nBlocks;
 

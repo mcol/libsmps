@@ -97,7 +97,10 @@ SmpsReturn* SmpsOops::generateSmps() {
   int b_cu_blk_cl;
 
   // number of periods
-  int nPeriods = smps.getPeriods();
+  const int nPeriods = smps.getPeriods();
+
+  // number of nodes in the event tree
+  const int nNodes = smps.getNodes();
 
   // pointer to start of period information in core for this column
   int *p_pd_rw = new int[nPeriods + 1];
@@ -121,13 +124,6 @@ SmpsReturn* SmpsOops::generateSmps() {
   // nonzeros in RnkC, Diag parts for certain periods in core
   int *rnkc_nz_pd = new int[nPeriods];
   int *diag_nz_pd = new int[nPeriods];
-
-  // first row/col of given block (in big matrix before reordering)
-  int *f_rw_blk = new int[nBlocks + 2];
-  int *f_cl_blk = new int[nBlocks + 2];
-
-  // number of nodes in the event tree
-  int nNodes = smps.getNodes();
 
   // dimensions of the deterministic equivalent
   int ttm = Ret->ttm = smps.getFirstRowNode(nNodes);
@@ -158,9 +154,6 @@ SmpsReturn* SmpsOops::generateSmps() {
   for (i = 0; i <= nPeriods; ++i)
     Ret->time_f_cl_pd[i] = smps.getBegPeriodCol(i);
 
-  Ret->is_col_diag = new int[f_cldiag];
-  is_col_diag = Ret->is_col_diag;
-
   printf(" --------------- generateSmps --------------\n");
 
   /*
@@ -176,7 +169,7 @@ SmpsReturn* SmpsOops::generateSmps() {
      part of the matrix. However some of them have no entries in rows
      corresponding to other time periods, and they can be treated differently.
 
-     This block identifies these columns (is_col_diag[i]) and counts them.
+     This code identifies these columns (is_col_diag[i]) and counts them.
      Since periods other than the first one might be in the rank corrector,
      and non-first period columns of the core matrix will be repeated according
      to the scenario tree, we will need to count how many RankCor columns go
@@ -192,6 +185,8 @@ SmpsReturn* SmpsOops::generateSmps() {
   */
 
   {
+    is_col_diag = Ret->is_col_diag = new int[f_cldiag];
+
     int *nzpddg0 = new int[nPeriods];
     int *nzpddg  = (int *) calloc(level, sizeof(int));
     int *clpddg  = (int *) calloc(level, sizeof(int));
@@ -209,16 +204,13 @@ SmpsReturn* SmpsOops::generateSmps() {
       // set cu_pd_cl to correct period block of CORE matrix
       cu_pd_cl = smps.getColPeriod(i);
 
-      /* count nonzeros in columns and distribution into row period blocks:
-	 - nzpddg0[0 - no time periods-1]: nonzeros for this col in row periods
-	 - is_col_diag[i]: 1 if no entries in row-blocks assoc with diagonals
-	 - clpddg[0 - no time periods-1]: tot number of columns that have no
-	                                  entries in rows associated with
-                                          diagonal blocks
-	 - nzpddg[0 - no time periods-1]: total number of entries in above
-	                                  columns sorted by which row-periods
-		                          they occur in
-      */
+      // count nonzeros in columns and distribution into row period blocks:
+      // - is_col_diag[i]: 1 if no entries in row-blocks assoc with diagonals
+      // - nzpddg0[0 - nPeriods-1]: nonzeros for this column in row periods
+      // - clpddg[0 - nPeriods-1]: total number of columns that have no entries
+      //                           in rows associated with diagonal blocks
+      // - nzpddg[0 - nPeriods-1]: total number of entries in above columns
+      //                           sorted by which row-periods they occur in
 
       for (j = 0; j < level; ++j)
 	nzpddg0[j] = 0;
@@ -343,7 +335,7 @@ SmpsReturn* SmpsOops::generateSmps() {
             /   \    /   \      /   \    /   \
            7     8  9     10  11    12  13   14
 
-   And cut-off level = 2 then the resulting matrix looks like this
+   And cutoff level = 2 then the resulting matrix looks like this
 
        [ root  1   2   3   7   8   4   9  10   5  11  12   6  13  14 ]
 
@@ -429,6 +421,7 @@ SmpsReturn* SmpsOops::generateSmps() {
     */
   }
 
+  rnkc_m_blk[0] = diag_m_blk[0];
   rnkc_n_blk[0] = diag_n_blk[0] - cldg0;
   diag_n_blk[0] = cldg0;
 
@@ -437,9 +430,13 @@ SmpsReturn* SmpsOops::generateSmps() {
   Ret->nb_col_rnk  = rnkc_n_blk[0];
   Ret->nb_col_diag = diag_n_blk[0];
 
-  rnkc_m_blk[0] = diag_m_blk[0];
+  // first row/col of given block (in big matrix before reordering)
+  int *f_rw_blk = new int[nBlocks + 2];
+  int *f_cl_blk = new int[nBlocks + 2];
+
   f_rw_blk[0] = 0;
   f_cl_blk[0] = rnkc_n_blk[0];
+
   for (i = 1; i <= nBlocks; ++i) {
     rnkc_m_blk[i] = diag_m_blk[i];
     rnkc_n_blk[i] = rnkc_n_blk[0];
@@ -541,7 +538,6 @@ SmpsReturn* SmpsOops::generateSmps() {
   // for all columns in the deterministic equivalent
   for (i = 0; i < ttn; ++i) {
 
-    int coreCol;
     int perNode = smps.getPeriod(order[cu_nd_cl]);
 
     if (i - b_cu_blk_cl >= smps.getNColsPeriod(perNode - 1)) {
@@ -565,7 +561,7 @@ SmpsReturn* SmpsOops::generateSmps() {
     }
 
     // corresponding column in the core matrix
-    coreCol = i - b_cu_blk_cl + smps.getBegPeriodCol(cu_pd_cl);
+    int coreCol = i - b_cu_blk_cl + smps.getBegPeriodCol(cu_pd_cl);
 
     // scan through column and set p_pd_rw[pd]:
     // pointers to start of period information in CORE matrix
@@ -746,7 +742,7 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
   const int ordNode = order[node];
   const int per = smps.getPeriod(ordNode) - 1;
   const int blk = block[node];
-  int k, child, firstChild, lastChild;
+  int k, child;
   SparseSimpleMatrix *sparse;
 
   // copy the information for this node into the deterministic equivalent
@@ -793,8 +789,8 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
     }
   }
 
-  firstChild = smps.getFirstChild(ordNode) - 1;
-  lastChild  = firstChild + smps.getNChildren(ordNode);
+  const int firstChild = smps.getFirstChild(ordNode) - 1;
+  const int lastChild  = firstChild + smps.getNChildren(ordNode);
   for (child = firstChild; child < lastChild; ++child) {
     setNodeChildrenRnkc(RC, DG, p_pd_rw, f_rw_blk, is_col_diag,
 			data, revorder[child], colBlk, rnkCol, coreCol);
@@ -1171,7 +1167,7 @@ void SmpsOops::reorderObjective(DenseVector *obj, DenseVector *upb,
 				int *is_col_diag, const int rnkn,
 				char **colnames) {
 
-  int i, col, coreCol, firstColDiag, firstColNode;
+  int col, coreCol, firstColDiag, firstColNode;
   int node = 0, nb_el = 0;
   int ttn = smps.getFirstColNode(smps.getNodes());
 
@@ -1187,7 +1183,7 @@ void SmpsOops::reorderObjective(DenseVector *obj, DenseVector *upb,
   firstColDiag = smps.getFirstColNode(node);
 
   // copy objective and bounds into temporary arrays
-  for (i = 0; i < ttn; ++i) {
+  for (int i = 0; i < ttn; ++i) {
     objCopy[i] = obj->elts[i];
     upbCopy[i] = upb->elts[i];
     clnCopy[i] = colnames[i];
@@ -1274,11 +1270,11 @@ void SmpsVectorToDense(Vector *x, DenseVector *dx,
  *  Copy a DenseVector into a reordered Vector.
  *
  *  Copies a DenseVector corresponding to a depth-first ordering of the
- *  scenario tree into a Vector as used by  OOPS.
+ *  scenario tree into a Vector as used by OOPS.
  *
  *  Reorders the elements according to the reordering used by OOPS:
  *  first period entries are placed at the end rather than at the beginning,
- *  those columns that are not linking periods are placed in  separate
+ *  those columns that are not linking periods are placed in separate
  *  diagonal block, rather than in the RankCor block.
  */
 void SmpsDenseToVector(DenseVector *dx, Vector *x,
@@ -1298,7 +1294,7 @@ void SmpsDenseToVector(DenseVector *dx, Vector *x,
   if (rowcol == ORDER_COL)
     backOrderColVector(dx->elts, 1, Ret);
   else
-    backOrderRowVector(dx->elts,1, Ret);
+    backOrderRowVector(dx->elts, 1, Ret);
 }
 
 /**
