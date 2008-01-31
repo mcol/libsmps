@@ -142,6 +142,8 @@ int SmpsTree::readStocFile(string stocFileName) {
   case TYPE_BLOCKS:
     rv = scanBlocksType(stoc);
     break;
+  case TYPE_SCENARIOS:
+    break;
 
   default:
     rv = stocType;
@@ -253,6 +255,10 @@ int getStocType(const char *buffer) {
 
   else if (strcmp(type, "BLOCKS") == 0) {
     return TYPE_BLOCKS;
+  }
+
+  else if (strcmp(type, "SCENARIOS") == 0) {
+    return TYPE_SCENARIOS;
   }
 
   else {

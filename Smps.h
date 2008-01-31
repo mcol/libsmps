@@ -31,6 +31,7 @@ using namespace std;
 enum StocType {
   TYPE_INDEP = 1,
   TYPE_BLOCKS,
+  TYPE_SCENARIOS,
   TYPE_NOT_IMPLEMENTED,
   TYPE_NOT_RECOGNISED,
   LAST_TYPE
