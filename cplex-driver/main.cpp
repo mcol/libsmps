@@ -1,5 +1,5 @@
 /*
- *  main.c
+ *  main.cpp
  *
  *  Driver for the SMPS interface to Cplex.
  *
@@ -301,8 +301,6 @@ int SmpsCplex::getSolution(CPXENVptr env, CPXLPptr lp,
   if (opt.printSolution()) {
     const NodeInfo *info = getNodeInfo();
     printSolution(info, primal, dual, slack, rcosts);
-    delete[] info->nRowsNode;
-    delete[] info->nColsNode;
     delete info;
   }
 
