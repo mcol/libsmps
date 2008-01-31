@@ -386,8 +386,9 @@ void printSolution(const NodeInfo *info,
 
   for (node = 0; node < info->nNodes; ++node) {
 
-    printf("\t---   Node %2d   ---\n", node + 1);
-
+    printf("\t---   Node %2d (%dx%d)  ---\n", node + 1,
+	   info->nRowsNode[node + 1] - info->nRowsNode[node],
+	   info->nColsNode[node + 1] - info->nColsNode[node]);
     for (i = info->nRowsNode[node]; i < info->nRowsNode[node + 1]; ++i) {
       printf("Row %d:  Slack = %10f  Dual = %10f\n", i, slacks[i], dual[i]);
     }
