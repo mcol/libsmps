@@ -35,7 +35,7 @@
 #define DEBUG_SMPSTREE  0
 
 static int
-getStocType(char *buffer);
+getStocType(const char *buffer);
 
 /** Constructor */
 SmpsTree::SmpsTree(string stocFileName) :
@@ -134,12 +134,18 @@ int SmpsTree::readStocFile(string stocFileName) {
   }
 
   // first pass: do a quick scan of the rest of the file
-  if (stocType == TYPE_INDEP)
+  switch(stocType) {
+
+  case TYPE_INDEP:
     rv = scanIndepType(stoc);
-  else if (stocType == TYPE_BLOCKS)
+    break;
+  case TYPE_BLOCKS:
     rv = scanBlocksType(stoc);
-  else
+    break;
+
+  default:
     rv = stocType;
+  }
 
   // close the input file
   stoc.close();
@@ -222,34 +228,31 @@ int SmpsTree::readStocFile(string stocFileName) {
   return rv;
 }
 
-int getStocType(char *buffer) {
+/** Find out the format of the stochastic file */
+int getStocType(const char *buffer) {
 
   char type[SMPS_FIELD_SIZE], distr[SMPS_FIELD_SIZE];
 
-  sscanf(buffer, "%s %s\n", type, distr);
+  int nValuesRead = sscanf(buffer, "%s %s\n", type, distr);
 
 #if DEBUG_SMPSTREE
   printf(" | Type: %s\n", type);
-  printf(" | Distribution: %s\n", distr);
 #endif
 
-  // check that the distribution is discrete
-  if (strcmp(distr, "DISCRETE") != 0) {
-    fprintf(stderr, "Error: Distribution '%s' not recognised.\n", distr);
-    return TYPE_NOT_RECOGNISED;
+  if (nValuesRead > 1) {
+    // check that the distribution is discrete
+    if (strcmp(distr, "DISCRETE") != 0 || strcmp(distr, "") == 0 ) {
+      fprintf(stderr, "Error: Distribution '%s' not recognised.\n", distr);
+      return TYPE_NOT_RECOGNISED;
+    }
   }
 
-  if (strcmp(type, "BLOCKS") == 0) {
-    return TYPE_BLOCKS;
-  }
-
-  else if (strcmp(type, "INDEP") == 0) {
+  if (strcmp(type, "INDEP") == 0) {
     return TYPE_INDEP;
   }
 
-  else if (strcmp(type, "SCEN") == 0) {
-    fprintf(stderr, "Error: SCENARIOS format not implemented.\n");
-    return TYPE_NOT_IMPLEMENTED;
+  else if (strcmp(type, "BLOCKS") == 0) {
+    return TYPE_BLOCKS;
   }
 
   else {
