@@ -545,6 +545,9 @@ class SmpsTree : public SmpsCore {
   /** Read a stochastic file in BLOCKS DISCRETE format */
   int readBlocksType(ifstream &file);
 
+  /** Scan a stochastic file in SCENARIOS format */
+  int scanScenariosType(ifstream &stoc);
+
 };
 
 

@@ -143,6 +143,7 @@ int SmpsTree::readStocFile(string stocFileName) {
     rv = scanBlocksType(stoc);
     break;
   case TYPE_SCENARIOS:
+    rv = scanScenariosType(stoc);
     break;
 
   default:
@@ -458,6 +459,77 @@ int SmpsTree::readBlocksType(ifstream &stoc) {
     rv = readSmpsLine(stoc, buffer);
     if (rv)
       continue;
+  }
+
+  return 0;
+}
+
+/** Scan a stochastic file in SCENARIOS format */
+int SmpsTree::scanScenariosType(ifstream &stoc) {
+
+  int rv, branchPeriod;
+  char buffer[SMPS_LINE_MAX], sc[SMPS_FIELD_SIZE], perName[SMPS_FIELD_SIZE];
+  char scenName[SMPS_FIELD_SIZE], fromName[SMPS_FIELD_SIZE];
+  maxScens = 0;
+
+  // read the file
+  while (!stoc.eof()) {
+
+    // read a line from the file
+    rv = readSmpsLine(stoc, buffer);
+    if (rv)
+      continue;
+
+    Tokenizer line(buffer);
+    int nTokens = line.countTokens();
+
+    // scenario declaration line
+    if (nTokens == 5) {
+
+      // this is a line of the form
+      //  SC SCEN_A    'ROOT'    0.09           PERIOD1
+      sscanf(buffer, "%s %s %s %*f %s\n", sc, scenName, fromName, perName);
+
+      // check that the format is the one expected
+      if (strcmp(sc, "SC") != 0) {
+	cerr << "Something wrong with this line?" << endl
+	     << ">" << buffer << "<" << endl;
+	return ERROR_STOC_FORMAT;
+      }
+
+      // we have found a new scenario
+      ++maxScens;
+
+      // find out at what period this scenario branches
+      branchPeriod = matchPeriodName(perName);
+      if (branchPeriod < 0) {
+	cerr << "Period >" << perName << "< not declared in the time file."
+	     << endl;
+	return ERROR_STOC_FORMAT;
+      }
+
+      maxNodes += nPeriods - branchPeriod;
+    }
+
+    // realisation line
+    else if (nTokens == 3) {
+
+    }
+
+    // we reached the ENDATA section
+    else if (nTokens == 1 && strncmp(buffer, "ENDATA", 6) == 0) {
+
+      maxReals = maxScens + 1;
+
+      break;
+    }
+
+    // we cannot parse this line
+    else {
+      cerr << "Something wrong with this line?" << endl
+	   << ">" << buffer << "<" << endl;
+      return ERROR_STOC_FORMAT;
+    }
   }
 
   return 0;
