@@ -301,6 +301,9 @@ class SmpsCore {
   /** List of the period names read from the time file */
   vector<string> periodNames;
 
+  /**  Retrieve the index corresponding to the given period name */
+  int matchPeriodName(const string& name);
+
   /** First row index of each period */
   int *begPeriodRow;
 

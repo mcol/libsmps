@@ -459,6 +459,42 @@ char* SmpsCore::convertPeriodNames() {
 }
 
 /**
+ *  Retrieve the index corresponding to the given period name.
+ *
+ *  The required period name is matched against the names read from the
+ *  time file. If a match is found, the corresponding index is returned.
+ *
+ *  @param name:
+ *         Name of the period to be matched.
+ *  @return The index of the period, or -1 if no match is found.
+ */
+int SmpsCore::matchPeriodName(const string& name) {
+
+#ifdef DEBUG_TIME_FILE
+  cout << "Match for: >" << name << "<";
+#endif
+
+  for (int i = 0; i < (int) periodNames.size(); ++i) {
+
+    // we have found a match
+    if (periodNames[i] == name) {
+
+#ifdef DEBUG_TIME_FILE
+      cout << " found at index: " << i << endl;
+#endif
+
+      return i;
+    }
+  }
+
+#ifdef DEBUG_TIME_FILE
+  cout << " not found" << endl;
+#endif
+
+  return -1;
+}
+
+/**
  *  Determine the period of the given row.
  *
  *  Compares the given row with the period starts stored in begPeriodRow,
