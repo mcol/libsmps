@@ -593,7 +593,7 @@ RDSTCH(int*, int*, int*, int*, int*, const char*,
        int*, double*, int*, int*, int*,
        int*, int*, int*, int*, char*, int*, int*, int*, int*,
        int*, int*, double*, int*, int*, char*, char*, int*,
-       int*, int*, int*, int*, int*, char*, int*, int*,
+       int*, int*, int*, int*, int*, int*, int*,
        int*, int*, double*, double*, char*,  int*, int*);
 
 /** Compute a hash code */

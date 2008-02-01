@@ -167,7 +167,6 @@ int SmpsTree::readStocFile(string stocFileName) {
   char *scenam = new char[8*maxScens];
   double *dwork  = new double[maxScenLength];
   double *prb_rl = new double[maxScenLength];
-  char nameb[10];
 
   parent   = new int[maxNodes];
   period   = new int[maxNodes];
@@ -209,7 +208,7 @@ int SmpsTree::readStocFile(string stocFileName) {
 	 &scenLength, &maxScenLength, entryCol, entryRow,
 	 sc_first, sc_len, entryVal,
 	 &maxCols, &maxRows, rwname, clname, &maxCols, &maxRows,
-	 hdclcd, hdrwcd, lnkclcd, lnkrwcd, nameb,
+	 hdclcd, hdrwcd, lnkclcd, lnkrwcd,
 	 iwork1, iwork2, iwork3, iwork4, dwork,
 	 prb_rl, scenam, begPeriodCol, begPeriodRow);
 
