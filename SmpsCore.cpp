@@ -647,7 +647,7 @@ void SmpsCore::countNzPeriodBlocks() {
     }
   }
 
-#ifdef DEBUG
+#ifdef DEBUG_SMPSCORE
   printf("Nonzeros in period blocks of the core matrix:\n");
   for (int i = 0; i < nPeriods; ++i) {
     for (int j = 0; j < nPeriods; ++j)
@@ -785,7 +785,7 @@ void SmpsCore::modifyCore() {
   printf("Added %d slacks to core matrix.\n", nSlacks);
 #endif
 
-#ifdef DEBUG
+#ifdef DEBUG_SMPSCORE
   printf("Period starts are now:\n"
 	 " per    row    col\n");
   for (i = 0; i < nPeriods; ++i)

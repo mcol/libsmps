@@ -32,8 +32,6 @@
  *  but not always all are listed.
  */
 
-#define DEBUG_SMPSTREE  0
-
 static int
 getStocType(const char *buffer);
 
@@ -216,6 +214,10 @@ int SmpsTree::readStocFile(string stocFileName) {
   if (!rv)
     setNodeStarts();
 
+#ifdef DEBUG
+  printTree();
+#endif
+
   // clean up
   delete[] perNames;
   delete[] br_sce;
@@ -237,7 +239,7 @@ int getStocType(const char *buffer) {
 
   int nValuesRead = sscanf(buffer, "%s %s\n", type, distr);
 
-#if DEBUG_SMPSTREE
+#ifdef DEBUG_SMPS_TREE
   printf(" | Type: %s\n", type);
 #endif
 
