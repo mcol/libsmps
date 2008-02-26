@@ -211,12 +211,15 @@ int SmpsTree::readStocFile(string stocFileName) {
 	 prb_rl, scenam, begPeriodCol, begPeriodRow);
 
   // set the start rows and columns for each node
-  if (!rv)
+  if (!rv) {
+
     setNodeStarts();
 
 #ifdef DEBUG
-  printTree();
+    if (nNodes <= 100)
+      printTree();
 #endif
+  }
 
   // clean up
   delete[] perNames;
