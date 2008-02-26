@@ -518,12 +518,11 @@ int SmpsTree::scanScenariosType(ifstream &stoc) {
     // realisation line
     else if (nTokens == 3) {
 
+      ++maxReals;
     }
 
     // we reached the ENDATA section
     else if (nTokens == 1 && strncmp(buffer, "ENDATA", 6) == 0) {
-
-      maxReals = maxScens + 1;
 
       break;
     }
