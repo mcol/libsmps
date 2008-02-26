@@ -39,7 +39,7 @@ class Options {
   int _printSolution;
 
   /** Name of the smps file */
-  string smpsFile;
+  string _smpsFile;
 
   /** Definition of each option */
   struct OptionAtom {
@@ -82,8 +82,8 @@ class Options {
   int parse(void);
 
   /** Retrieve the name of the smps file */
-  string getSmpsFile(void) const {
-    return smpsFile;
+  string smpsFile(void) const {
+    return _smpsFile;
   }
 
   /** Retrieve the value of the dontSolve option */

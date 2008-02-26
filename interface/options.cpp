@@ -22,7 +22,7 @@ Options::Options(const int argc, const char *argv[]) :
   _outputToFile(0),
   _writeMps(0),
   _printSolution(0),
-  smpsFile("") {
+  _smpsFile("") {
 
   // add the common options
   addOption("-m", "write the deterministic equivalent in MPS format",
@@ -53,7 +53,7 @@ int Options::parse() {
   if (strcmp(vArgs[1], "-f") == 0) {
 
     // store the filename
-    smpsFile = string(vArgs[2]);
+    _smpsFile = string(vArgs[2]);
   }
   else {
     cerr << "A problem must be specified with the -f option." << endl;

@@ -33,7 +33,7 @@ int main(const int argc, const char *argv[]) {
     return 1;
 
   // create an object for the problem
-  SmpsCplex data(opt.getSmpsFile());
+  SmpsCplex data(opt.smpsFile());
 
   // read the smps files
   rv = data.read();

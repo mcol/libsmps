@@ -38,7 +38,7 @@ int main(const int argc, const char *argv[]) {
   setupOutputFile(opt);
 
   // create an object for the problem
-  SmpsOops data(opt.getSmpsFile(), opt.cutoffLevel());
+  SmpsOops data(opt.smpsFile(), opt.cutoffLevel());
 
   // read the smps files
   rv = data.read();
