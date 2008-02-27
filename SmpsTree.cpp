@@ -611,11 +611,12 @@ void SmpsTree::setNodeStarts(const int* order) {
 void SmpsTree::printTree() const {
 
   printf("Tree information:\n");
-  printf("   node parent scen n_chd  f_chd  per   prob\n");
+  printf("   node parent scen n_chd  f_chd  per   prob   |  rows  cols\n");
   for (int i = 0; i < nNodes; ++i) {
-    printf("  %4i  %4i  %4i  %4i  %4i  %4i   %.4f\n", i + 1,
+    printf("  %4i  %4i  %4i  %4i  %4i  %4i   %.4f  | %4i  %4i\n", i + 1,
 	   parent[i], scenario[i], nChildren[i],
-	   f_chd[i],  period[i],   probnd[i]);
+	   f_chd[i],  period[i],   probnd[i],
+	   f_rw_nd[i + 1] - f_rw_nd[i], f_cl_nd[i + 1] - f_cl_nd[i]);
   }
 }
 
