@@ -552,16 +552,18 @@ int SmpsTree::countNonzeros() {
   if (!nzPeriod)
     countNzPeriodBlocks();
 
+  // number of nodes in each period
+  int *nnPer = new int[nPeriod];
+  memset(nnPer, 0, nPeriod * sizeof(int));
+
+  // count the number of nodes in each period
+  for (int node = 0; node < nNodes; ++node)
+    ++nnPer[period[node] - 1];
+
   // count the number of nonzero elements
   for (int per = 0; per < nPeriod; ++per) {
 
-    int nnPer = 0, nzPer = 0;
-
-    // number of nodes in the period
-    for (int node = 0; node < nNodes; ++node) {
-      if (period[node] == per + 1)
-        ++nnPer;
-    }
+    int nzPer = 0;
 
     // number of nonzeros in the period
     for (int j = 0; j < nPeriod; ++j) {
@@ -569,8 +571,11 @@ int SmpsTree::countNonzeros() {
     }
 
     // total nonzeros
-    nzTotal += nnPer * nzPer;
+    nzTotal += nnPer[per] * nzPer;
   }
+
+  // clean up
+  delete[] nnPer;
 
   return nzTotal;
 }
