@@ -593,11 +593,8 @@ void SmpsTree::setNodeStarts(const int* order) {
   // for all nodes
   for (int i = 0; i < nNodes; ++i) {
 
-    if (order)
-      node = order[i];
-    else
-      node = i;
-    per = period[node] - 1;
+    node = order ? order[i] :  i;
+    per  = period[node] - 1;
 
     f_rw_nd[node] = ttm;
     f_cl_nd[node] = ttn;
