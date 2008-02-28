@@ -156,6 +156,7 @@ int SmpsTree::readStocFile(string stocFileName) {
     return rv;
 
   scenLength = maxScenLength = getMaxReals();
+  ++maxScenLength;
 
   int *br_sce = new int[maxScens];
   int *iwork1 = new int[maxScenLength];
