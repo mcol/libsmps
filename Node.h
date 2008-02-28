@@ -47,11 +47,11 @@ class Node {
 
   /** Set the indices to the matrix data */
   void setMatrixPointers(const int row, const int col,
-			 const int nRows, const int nCols) {
+			 const int rows, const int cols) {
     _firstRow = row;
     _firstCol = col;
-    _nRows = nRows;
-    _nCols = nCols;
+    _nRows = rows;
+    _nCols = cols;
   }
 
   // Accessor functions
@@ -79,6 +79,26 @@ class Node {
   /** Return the probability associated to the node */
   double probNode(void) const {
     return _probNode;
+  }
+
+  /** Return the first row associated with this node */
+  int firstRow(void) const {
+    return _firstRow;
+  }
+
+  /** Return the first column associated with this node */
+  int firstCol(void) const {
+    return _firstCol;
+  }
+
+  /** Return the number of rows associated with this node */
+  int nRows(void) const {
+    return _nRows;
+  }
+
+  /** Return the number of columns associated with this node */
+  int nCols(void) const {
+    return _nCols;
   }
 
   /** Print some of the information of the node */
