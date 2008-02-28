@@ -221,8 +221,8 @@ int setupRhs(ProbData *PROB, Smps &smps) {
 
   int i, node, period;
 
-  double *rhs = (double *) calloc(PROB->ttm, sizeof(double));
-  int    *rws = (int *)    calloc(PROB->ttm, sizeof(int));
+  double *rhs = new double[PROB->ttm];
+  int    *rws = new int[PROB->ttm];
 
   // for all nodes
   for (node = 0; node < smps.getNodes(); ++node) {
@@ -370,8 +370,8 @@ int freeProbData(ProbData *PROB) {
   delete[] PROB->obj;
   delete[] PROB->blo;
   delete[] PROB->bup;
-  free(PROB->rhs);
-  free(PROB->rws);
+  delete[] PROB->rhs;
+  delete[] PROB->rws;
   free(PROB);
 
   return 0;
