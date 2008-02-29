@@ -225,7 +225,7 @@ const NodeInfo* SmpsOops::getNodeInfo() const {
  *  block[nd]     giving the BLOCK that block 'nd' in big matrix
  *                      belongs to.
  *                      BLOCK = 0: root BLOCK (i.e. rankCor)
- *                      BLOCK = 1 -- TREE->nBlocks are diagonal parts
+ *                      BLOCK = 1 -- nBlocks: diagonal parts
  */
 int SmpsOops::orderNodes() {
 
@@ -243,7 +243,7 @@ int SmpsOops::orderNodes() {
   int node = 0;
 
   // next node in the new list that is being built
-  int nx_nd = 1;
+  int next = 1;
 
   block    = new int[nNodes];
   order    = new int[nNodes];
@@ -258,22 +258,22 @@ int SmpsOops::orderNodes() {
 
     // add children of current node to list
     for (int i = 0; i < smps.getNChildren(order[node]); ++i) {
-      order[nx_nd] = smps.getFirstChild(order[node]) + i - 1;
-      block[nx_nd] = 0;
-      ++nx_nd;
+      order[next] = smps.getFirstChild(order[node]) + i - 1;
+      block[next] = 0;
+      ++next;
     }
     ++node;
   }
 
   // now all nodes up to the cutoff level are on the lists
-  // nx_nd points to the next free position in the list
   // node points to the first node of period = level in the list
+  // next points to the next free position in the list
 
   // now follow depth first
   while (smps.getPeriod(order[node]) == level && node < nNodes) {
 
     // each node in this list is a seed for a diagonal block
-    addChildrenToList(node, &nx_nd);
+    addChildrenToList(node, &next);
     ++node;
   }
 
