@@ -17,6 +17,7 @@ using namespace std;
 /** Constructor */
 Node::Node(const int nodeName) :
   _parent(NULL),
+  _next(NULL),
   _name(nodeName),
   _level(0),
   _scenario(0),

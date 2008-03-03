@@ -35,6 +35,11 @@ class Node {
 
   // Setters
 
+  /** Set the link to the next node in order */
+  void setNext(Node *nextNode) {
+    _next = nextNode;
+  }
+
   /** Set the scenario index */
   void setScen(const int scen) {
     _scenario = scen;
@@ -55,6 +60,11 @@ class Node {
   }
 
   // Accessor functions
+
+  /** Fast access to the next node in order */
+  Node* next() const {
+    return _next;
+  }
 
   /** Return the name of the node */
   int name(void) const {
@@ -108,6 +118,9 @@ class Node {
 
   /** Pointer to the parent node */
   Node *_parent;
+
+  /** Pointer to the next node in order */
+  Node *_next;
 
   /** Set of pointers to the children nodes */
   vector<Node*> _children;
