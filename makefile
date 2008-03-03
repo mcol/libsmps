@@ -24,6 +24,12 @@ DEPENDS := \
 	$(HEADERS) \
 	$(NULL)
 
+APPS	:= \
+	interface \
+	cplex-driver \
+	oops-driver \
+	$(NULL)
+
 LIBRARY := libsmps.a
 
 include $(DEPTH)/mkfhost/rules.mk
