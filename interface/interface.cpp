@@ -303,6 +303,8 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
 
 	  col = smps.getFirstColNode(scNode) + entryCol[corr] - 1
 	    - smps.getBegPeriodCol(pdc);
+	  assert(col <= smps.getTotCols());
+
 	  PROB->obj[col] = entryVal[corr] * smps.getProbNode(scNode);
 
 #ifdef DEBUG_SCEN
@@ -316,6 +318,8 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
 
 	  row = smps.getFirstRowNode(scNode) + entryRow[corr] - 1
 	    - smps.getBegPeriodRow(pdr);
+	  assert(row <= smps.getTotRows());
+
 	  PROB->rhs[row] = entryVal[corr];
 
 #ifdef DEBUG_SCEN
@@ -340,6 +344,9 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
 	  if (pdr != pdc)
 	    col += smps.getFirstColNode(smps.getParent(scNode) - 1)
 	      - smps.getFirstColNode(scNode);
+
+	  assert(row <= smps.getTotRows());
+	  assert(col <= smps.getTotCols());
 
 	  index = PROB->clpnts[col];
 	  while (PROB->rwnmbs[index] != row)

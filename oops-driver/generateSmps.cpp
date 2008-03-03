@@ -991,6 +991,8 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 
 	  col = smps.getFirstColNode(scNode) + entryCol[corr] - 1
 	    - smps.getBegPeriodCol(pdc);
+	  assert(col <= smps.getTotCols());
+
 	  Ret->c->elts[col] = entryVal[corr] * smps.getProbNode(scNode);
 
 #ifdef DEBUG_SCEN
@@ -1004,6 +1006,8 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 
 	  row = smps.getFirstRowNode(scNode) + entryRow[corr] - 1
 	    - smps.getBegPeriodRow(pdr);
+	  assert(row <= smps.getTotRows());
+
 	  Ret->b->elts[row] = entryVal[corr];
 
 #ifdef DEBUG_SCEN
@@ -1026,6 +1030,9 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 	  if (pdr != pdc)
 	    col += smps.getFirstColNode(smps.getParent(scNode) - 1)
 	      - smps.getFirstColNode(scNode);
+
+	  assert(row <= smps.getTotRows());
+	  assert(col <= smps.getTotCols());
 
 #ifdef DEBUG_SCEN
 	  printf("   Mtx entry: core row %3d col %3d, det.eq. row %3d col %3d",
