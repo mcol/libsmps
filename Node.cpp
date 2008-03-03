@@ -63,7 +63,7 @@ Node* Node::getChild(const int childNumber) const {
 }
 
 /** Print some of the information of the node */
-void Node::printNode() const {
+void Node::print() const {
 
   // node parent scen n_chd per prob | rows cols
   printf("  %4i  %4i  %4i  %4i  %4i   %.4f  | %4i  %4i\n",

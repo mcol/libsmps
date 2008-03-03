@@ -30,9 +30,6 @@ class Node {
   /** Add a node to the list of children */
   int addChildNode(Node *child);
 
-  /** Retrieve the child node at the given index */
-  Node *getChild(const int childNumber) const;
-
   // Setters
 
   /** Set the link to the next node in order */
@@ -70,6 +67,9 @@ class Node {
   Node* next() const {
     return _next;
   }
+
+  /** Retrieve the child node at the given index */
+  Node* getChild(const int childNumber) const;
 
   /** Return the name of the node */
   int name(void) const {
@@ -117,7 +117,7 @@ class Node {
   }
 
   /** Print some of the information of the node */
-  void printNode(void) const;
+  void print(void) const;
 
  private:
 
