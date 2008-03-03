@@ -115,8 +115,8 @@ SmpsReturn* SmpsOops::generateSmps() {
   int *diag_nz_pd = new int[nPeriods];
 
   // dimensions of the deterministic equivalent
-  int ttm = Ret->ttm = smps.getFirstRowNode(nNodes);
-  int ttn = Ret->ttn = smps.getFirstColNode(nNodes);
+  int ttm = Ret->ttm = smps.getTotRows();
+  int ttn = Ret->ttn = smps.getTotCols();
 
   // first row/col in the diagonal part of the deterministic equivalent
   int f_rwdiag = smps.getBegPeriodRow(level);
@@ -1136,7 +1136,7 @@ void SmpsOops::reorderObjective(DenseVector *obj, DenseVector *upb,
 
   int col, coreCol, firstColDiag, firstColNode;
   int node = 0, nb_el = 0;
-  int ttn = smps.getFirstColNode(smps.getNodes());
+  int ttn = smps.getTotCols();
 
   double *objCopy = (double *) malloc(ttn * sizeof(double));
   double *upbCopy = (double *) malloc(ttn * sizeof(double));

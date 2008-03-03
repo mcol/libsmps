@@ -52,8 +52,8 @@ ProbData *setupMatrix(Smps &smps) {
 
   int nNodes = smps.getNodes();
   int iob = smps.getObjRowIndex();
-  int ttm = smps.getFirstRowNode(nNodes);
-  int ttn = smps.getFirstColNode(nNodes);
+  int ttm = smps.getTotRows();
+  int ttn = smps.getTotCols();
 
   // count the number of nonzero elements
   int ttnz = smps.countNonzeros();
