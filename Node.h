@@ -61,6 +61,11 @@ class Node {
 
   // Accessor functions
 
+  /** Return the parent node */
+  Node* parent() const {
+    return _parent;
+  }
+
   /** Fast access to the next node in order */
   Node* next() const {
     return _next;
