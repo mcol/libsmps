@@ -1,11 +1,12 @@
 OOPS	:= ../..
 DEPTH	:= ..
+LIBDIR	:= $(DEPTH)/libs
 
 include $(OOPS)/mkincl
 
 LIBS	+= \
-	-L $(DEPTH) \
-	-lsmps -lmps \
+	-L $(LIBDIR) \
+	-lsmps -lstoc \
 	$(NULL)
 
 TESTOBJS := \

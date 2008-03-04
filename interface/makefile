@@ -1,5 +1,6 @@
 OOPS	:= ../..
 DEPTH	:= ..
+LIBDIR	:= $(DEPTH)/libs
 
 include $(OOPS)/mkincl
 
@@ -20,9 +21,10 @@ HEADERS = \
 
 DEPENDS = \
 	$(HEADERS) \
+	$(LIBDIR)/libsmps.a \
 	$(NULL)
 
-LIBRARY = libinterface.a
+LIBRARY = $(LIBDIR)/libinterface.a
 
 include $(OOPS)/mkfhost/rules.mk
 

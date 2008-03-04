@@ -1,5 +1,6 @@
 OOPS	:= ..
 DEPTH	:= .
+LIBDIR	:= $(DEPTH)/libs
 
 include $(OOPS)/mkincl
 
@@ -29,6 +30,6 @@ APPS	:= \
 	oops-driver \
 	$(NULL)
 
-LIBRARY := libsmps.a
+LIBRARY := $(LIBDIR)/libsmps.a
 
 include $(OOPS)/mkfhost/rules.mk

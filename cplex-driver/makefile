@@ -1,16 +1,15 @@
 OOPS	:= ../..
 DEPTH	:= ..
-INTERFACE = $(DEPTH)/interface
+LIBDIR	:= $(DEPTH)/libs
 
 include $(OOPS)/mkincl
 
 CPLEX   = /usr/local/ilog/cplex10
 
 LIBS	+= \
+	-L $(LIBDIR) \
 	-L $(CPLEX)/lib/static_pic \
-	-L $(INTERFACE) \
-	-L $(DEPTH) \
-	-linterface -lsmps -lmps \
+	-linterface -lsmps -lstoc \
 	-lilocplex -lcplex -lpthread \
 	$(NULL)
 
@@ -29,7 +28,8 @@ HEADERS = \
 
 DEPENDS = \
 	$(HEADERS) \
-	$(INTERFACE)/libinterface.a \
+	$(LIBDIR)/libsmps.a \
+	$(LIBDIR)/libinterface.a \
 	$(NULL)
 
 OUTPUT  = x2cplex

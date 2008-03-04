@@ -1,5 +1,6 @@
 OOPS	:= ../..
 DEPTH	:= ..
+LIBDIR	:= $(DEPTH)/libs
 
 include $(OOPS)/mkincl
 
@@ -7,9 +8,8 @@ LIBS	+= \
 	$(LIBOOPS) \
 	$(LAPACKLIB) \
 	$(METISLIB) \
-	-L $(DEPTH) \
-	-L ../interface -linterface \
-	-lsmps -lmps \
+	-L $(LIBDIR) \
+	-linterface -lsmps -lstoc \
 	$(NULL)
 
 SOURCES	:= \
@@ -26,8 +26,8 @@ HEADERS := \
 DEPENDS := \
 	$(HEADERS) \
 	$(LIBOOPS) \
-	../libsmps.a \
-	../interface/libinterface.a \
+	$(LIBDIR)/libsmps.a \
+	$(LIBDIR)/libinterface.a \
 	$(NULL)
 
 OUTPUT	:= x2oops
