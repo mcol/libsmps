@@ -115,8 +115,8 @@ SmpsReturn* SmpsOops::generateSmps() {
   int *diag_nz_pd = new int[nPeriods];
 
   // dimensions of the deterministic equivalent
-  int ttm = Ret->ttm = smps.getTotRows();
-  int ttn = Ret->ttn = smps.getTotCols();
+  int ttm = smps.getTotRows();
+  int ttn = smps.getTotCols();
 
   // first row/col in the diagonal part of the deterministic equivalent
   int f_rwdiag = smps.getBegPeriodRow(level);
@@ -643,7 +643,7 @@ SmpsReturn* SmpsOops::generateSmps() {
 }
 
 /** Free the space allocated for the SmpsReturn structure */
-void freeSmpsReturn(SmpsReturn *ret) {
+void SmpsOops::freeSmpsReturn(SmpsReturn *ret) {
 
   int i;
 
@@ -664,11 +664,11 @@ void freeSmpsReturn(SmpsReturn *ret) {
 
   delete[] ret->is_col_diag;
 
-  for (i = 0; i < ret->ttm; ++i)
+  for (i = 0; i < smps.getTotRows(); ++i)
     delete[] ret->rownames[i];
   delete[] ret->rownames;
 
-  for (i = 0; i < ret->ttn; ++i)
+  for (i = 0; i < smps.getTotCols(); ++i)
     delete[] ret->colnames[i];
   delete[] ret->colnames;
 
@@ -771,7 +771,7 @@ void setupRhs(const Smps &smps, SmpsReturn *Ret, const int *order) {
   int ordNode, firstRowNode, begRowPeriod, period;
   char scname[8], *p;
   DenseVector *rhs = Ret->b;
-  char **rownames  = Ret->rownames = new char*[Ret->ttm];
+  char **rownames  = Ret->rownames = new char*[smps.getTotRows()];
 
   // for all nodes in the tree
   for (int node = 0; node < smps.getNodes(); ++node) {
@@ -808,7 +808,7 @@ void setupObjective(const Smps &smps, SmpsReturn *Ret, const int *order) {
   double probNode;
   char buffer[50], scname[8], *p;
   DenseVector *obj = Ret->c, *upb = Ret->u;
-  char **colnames  = Ret->colnames = new char*[Ret->ttn];
+  char **colnames  = Ret->colnames = new char*[smps.getTotCols()];
 
   // copy the objective row from the core matrix
   double *coreObj = smps.getObjRow();
@@ -1301,7 +1301,7 @@ void SmpsOops::backOrderColVector(double *x, const int mode,
 
   // total number of columns in RankCor (D0|Rnk)
   const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
-  const int ttn = Ret->ttn;
+  const int ttn = smps.getTotCols();
   double *dtmp  = new double[ttn];
 
   for (int i = 0; i < ttn; ++i)
@@ -1396,7 +1396,7 @@ void SmpsOops::forwardOrderColVector(double *x, const int mode,
 
   // total number of columns in RankCor (D0|Rnk)
   const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
-  const int ttn = Ret->ttn;
+  const int ttn = smps.getTotCols();
   double *dtmp  = new double[ttn];
 
   for (int i = 0; i < ttn; ++i)
@@ -1478,7 +1478,7 @@ void SmpsOops::backOrderRowVector(double *x, const int mode,
     return;
 
   int i;
-  const int ttm = Ret->ttm, nRowsRnkc = Ret->nb_row_rnk;
+  const int ttm = smps.getTotRows(), nRowsRnkc = Ret->nb_row_rnk;
   double *dtmp = new double[ttm];
 
   for (i = 0; i < ttm; ++i)
@@ -1523,7 +1523,7 @@ void SmpsOops::forwardOrderRowVector(double *x, const int mode,
     return;
 
   int i;
-  const int ttm = Ret->ttm, nRowsRnkc = Ret->nb_row_rnk;
+  const int ttm = smps.getTotRows(), nRowsRnkc = Ret->nb_row_rnk;
   double *dtmp = new double[ttm];
 
   for (i = 0; i < ttm; ++i)

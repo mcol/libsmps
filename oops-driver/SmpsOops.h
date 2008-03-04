@@ -99,6 +99,9 @@ class SmpsOops {
   void forwardOrderRowVector(double *x, const int mode, const SmpsReturn *Ret);
   void forwardOrderColVector(double *x, const int mode, const SmpsReturn *Ret);
 
+  /** Free the space allocated for the SmpsReturn structure */
+  void freeSmpsReturn(SmpsReturn *ret);
+
 };
 
 
@@ -133,12 +136,6 @@ struct SmpsReturn {
 
   /* The following entries are for the ordering/re-ordering routines
      (these values have to be remembered from the generating phase) */
-
-  /** Rows of deterministic equivalent */
-  int ttm;
-
-  /** Columns of deterministic equivalent */
-  int ttn;
 
   /** Columns in Rnk part of RankCor */
   int nb_col_rnk;
@@ -191,8 +188,5 @@ enum {
   ORDER_ROW,
   ORDER_COL
 };
-
-/** Free the space allocated for the SmpsReturn structure */
-void freeSmpsReturn(SmpsReturn *ret);
 
 #endif /* _SMPS_OOPS_H_ */
