@@ -1,12 +1,12 @@
-DEPTH   := ../..
+OOPS	:= ../..
+DEPTH	:= ..
 
-include $(DEPTH)/mkincl
+include $(OOPS)/mkincl
 
-CC = g++
-
-LIBSMPS	:= ../libsmps.a ../libmps.a
-
-LIBS	+= $(LIBSMPS)
+LIBS	+= \
+	-L $(DEPTH) \
+	-lsmps -lmps \
+	$(NULL)
 
 TESTOBJS := \
 	test-Smps.o \
@@ -18,7 +18,7 @@ TESTOBJS := \
 	$(NULL)
 
 HEADERS := \
-	../Smps.h \
+	$(DEPTH)/Smps.h \
 	unit-tests.h \
 	$(NULL)
 
@@ -33,6 +33,6 @@ TESTEXE	:= xtests
 OBJECTS	:= $(TESTOBJS)
 OUTPUT	:= $(TESTEXE)
 
-include $(DEPTH)/mkfhost/rules.mk
+include $(OOPS)/mkfhost/rules.mk
 
-INCLUDE	+= -I ../
+INCLUDE	+= -I $(DEPTH)

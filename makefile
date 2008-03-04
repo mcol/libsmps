@@ -1,8 +1,7 @@
-DEPTH   := ..
+OOPS	:= ..
+DEPTH	:= .
 
-include $(DEPTH)/mkincl
-
-CC = g++
+include $(OOPS)/mkincl
 
 SOURCES	:= \
 	Node.cpp \
@@ -32,4 +31,4 @@ APPS	:= \
 
 LIBRARY := libsmps.a
 
-include $(DEPTH)/mkfhost/rules.mk
+include $(OOPS)/mkfhost/rules.mk

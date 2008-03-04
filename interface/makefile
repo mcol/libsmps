@@ -1,6 +1,7 @@
-DEPTH   = ../..
+OOPS	:= ../..
+DEPTH	:= ..
 
-include $(DEPTH)/mkincl
+include $(OOPS)/mkincl
 
 DEFINE  = \
         -DUNDERSCORE_F \
@@ -23,10 +24,10 @@ DEPENDS = \
 
 LIBRARY = libinterface.a
 
-include $(DEPTH)/mkfhost/rules.mk
+include $(OOPS)/mkfhost/rules.mk
 
 # has to be below rules.mk because it adds!
 INCLUDE += \
-	-I $(DEPTH)/include \
-        -I .. \
+	-I $(OOPS)/include \
+	-I $(DEPTH) \
         $(NULL)

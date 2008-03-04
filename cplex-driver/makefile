@@ -1,17 +1,15 @@
-DEPTH   = ../..
-INTERFACE = ../interface
+OOPS	:= ../..
+DEPTH	:= ..
+INTERFACE = $(DEPTH)/interface
 
-include $(DEPTH)/mkincl
+include $(OOPS)/mkincl
 
 CPLEX   = /usr/local/ilog/cplex10
 
-LIBDIRS += \
+LIBS	+= \
 	-L $(CPLEX)/lib/static_pic \
 	-L $(INTERFACE) \
-	-L .. \
-	$(NULL)
-
-LIBS    += $(LIBDIRS) \
+	-L $(DEPTH) \
 	-linterface -lsmps -lmps \
 	-lilocplex -lcplex -lpthread \
 	$(NULL)
@@ -33,16 +31,15 @@ DEPENDS = \
 	$(HEADERS) \
 	$(INTERFACE)/libinterface.a \
 	$(NULL)
-#	$(DEPTH)/libs/libinterface.a \
 
 OUTPUT  = x2cplex
 
-include $(DEPTH)/mkfhost/rules.mk
+include $(OOPS)/mkfhost/rules.mk
 
 # has to be below rules.mk because it adds!
 INCLUDE = \
 	-I $(CPLEX)/include \
-	-I $(DEPTH)/include \
-	-I ../interface \
-	-I .. \
+	-I $(OOPS)/include \
+	-I $(DEPTH)/interface \
+	-I $(DEPTH) \
 	$(NULL)

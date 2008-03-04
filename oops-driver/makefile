@@ -1,8 +1,16 @@
-DEPTH   := ../..
+OOPS	:= ../..
+DEPTH	:= ..
 
-include $(DEPTH)/mkincl
+include $(OOPS)/mkincl
 
-CC = g++
+LIBS	+= \
+	$(LIBOOPS) \
+	$(LAPACKLIB) \
+	$(METISLIB) \
+	-L $(DEPTH) \
+	-L ../interface -linterface \
+	-lsmps -lmps \
+	$(NULL)
 
 SOURCES	:= \
 	generateSmps.cpp \
@@ -12,7 +20,7 @@ SOURCES	:= \
 
 HEADERS := \
 	SmpsOops.h \
-	../Smps.h \
+	$(DEPTH)/Smps.h \
 	$(NULL)
 
 DEPENDS := \
@@ -22,20 +30,12 @@ DEPENDS := \
 	../interface/libinterface.a \
 	$(NULL)
 
-LIBS	+= \
-	$(LIBOOPS) \
-	$(LAPACKLIB) \
-	$(METISLIB) \
-	-L .. -lsmps -lmps \
-	-L ../interface -linterface \
-	$(NULL)
-
 OUTPUT	:= x2oops
 
-include $(DEPTH)/mkfhost/rules.mk
+include $(OOPS)/mkfhost/rules.mk
 
 # has to be below rules.mk because it adds!
 INCLUDE += \
-        -I .. \
-	-I ../interface \
+        -I $(DEPTH) \
+	-I $(DEPTH)/interface \
         $(NULL)
