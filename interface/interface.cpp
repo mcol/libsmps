@@ -59,7 +59,7 @@ ProbData *setupMatrix(Smps &smps) {
   int ttnz = smps.countNonzeros();
 
   assert(ttm >= smps.getRows() - 1);
-  assert(ttn >= smps.getColumns());
+  assert(ttn >= smps.getCols());
 
   // dimensions of the deterministic equivalent
   printf("Deterministic equivalent matrix is %dx%d, %d nonzeros.\n",

@@ -107,7 +107,7 @@ class SmpsCore {
   }
 
   /** Retrieve the number of columns in the core file */
-  int getColumns(void) const {
+  int getCols(void) const {
     return nCols;
   }
 

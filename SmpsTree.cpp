@@ -191,7 +191,7 @@ int SmpsTree::readStocFile(string stocFileName) {
   memset(f_chd, 0, maxNodes * sizeof(int));
 
   int maxRows = getRows();
-  int maxCols = getColumns();
+  int maxCols = getCols();
   int maxPers = getPeriods();
 
   char *perNames = convertPeriodNames();

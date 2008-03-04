@@ -536,6 +536,7 @@ SmpsReturn* SmpsOops::generateSmps() {
 
     // corresponding column in the core matrix
     int coreCol = i - b_cu_blk_cl + smps.getBegPeriodCol(cu_pd_cl);
+    assert(coreCol <= smps.getCols());
 
     // scan through column and set p_pd_rw[pd]:
     // pointers to start of period information in CORE matrix
@@ -1175,6 +1176,7 @@ void SmpsOops::reorderObjective(DenseVector *obj, DenseVector *upb,
 
     // find the corresponding column in the core matrix
     coreCol = col - firstColNode + smps.getBegPeriodCol(smps.getPeriod(node) - 1);
+    assert(coreCol <= smps.getCols());
     if (is_col_diag[coreCol] == 1) {
       obj->elts[nb_el] = objCopy[col];
       upb->elts[nb_el] = upbCopy[col];
@@ -1205,6 +1207,7 @@ void SmpsOops::reorderObjective(DenseVector *obj, DenseVector *upb,
 
     // find the corresponding column in the core matrix
     coreCol = col - firstColNode + smps.getBegPeriodCol(smps.getPeriod(node) - 1);
+    assert(coreCol <= smps.getCols());
     if (is_col_diag[coreCol] == 0) {
       obj->elts[nb_el] = objCopy[col];
       upb->elts[nb_el] = upbCopy[col];
