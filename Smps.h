@@ -15,6 +15,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include "Node.h"
 using namespace std;
 
 
@@ -355,6 +356,11 @@ class SmpsTree : public SmpsCore {
   /** Read the stochastic file */
   int readStocFile(string stocFileName = "");
 
+  /** Retrieve the root node of the event tree */
+  Node* getRootNode(void) const {
+    return root;
+  }
+
   /** Retrieve the number of nodes in the event tree */
   int getNodes(void) const {
     return nNodes;
@@ -478,6 +484,9 @@ class SmpsTree : public SmpsCore {
   string stocFile;
 
  private:
+
+  /** Root node of the event tree */
+  Node *root;
 
   /** Number of nodes in the event tree */
   int nNodes;

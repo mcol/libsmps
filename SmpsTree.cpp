@@ -38,6 +38,7 @@ getStocType(const char *buffer);
 /** Constructor */
 SmpsTree::SmpsTree(string stocFileName) :
   stocFile(stocFileName),
+  root(NULL),
   nNodes(0),
   nScens(1),
   nStages(0),
@@ -64,6 +65,7 @@ SmpsTree::SmpsTree(string stocFileName) :
 /** Destructor */
 SmpsTree::~SmpsTree() {
 
+  delete root;
   delete[] parent;
   delete[] period;
   delete[] scenario;
