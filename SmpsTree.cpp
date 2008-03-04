@@ -45,6 +45,8 @@ SmpsTree::SmpsTree(string stocFileName) :
   maxNodes(0),
   maxScens(1),
   maxReals(0),
+  ttRows(0),
+  ttCols(0),
   parent(NULL),
   nChildren(NULL),
   f_chd(NULL),
@@ -617,6 +619,10 @@ int SmpsTree::setNodeStarts(const int *order) {
 
   f_rw_nd[nNodes] = ttm;
   f_cl_nd[nNodes] = ttn;
+
+  // total number of rows and columns in the deterministic equivalent
+  ttRows = ttm;
+  ttCols = ttn;
 
   return 0;
 }

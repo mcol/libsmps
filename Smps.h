@@ -393,12 +393,12 @@ class SmpsTree : public SmpsCore {
 
   /** Retrieve the number of rows in the deterministic equivalent */
   int getTotRows(void) const {
-    return f_rw_nd[nNodes];
+    return ttRows;
   }
 
   /** Retrieve the number of columns in the deterministic equivalent */
   int getTotCols(void) const {
-    return f_cl_nd[nNodes];
+    return ttCols;
   }
 
   /** Count the number of nonzeros in the deterministic equivalent matrix */
@@ -505,6 +505,12 @@ class SmpsTree : public SmpsCore {
 
   /** Maximum number of realisations */
   int maxReals;
+
+  /** Number of rows in the deterministic equivalent */
+  int ttRows;
+
+  /** Number of columns in the deterministic equivalent */
+  int ttCols;
 
   /** Parent of node */
   int *parent;
