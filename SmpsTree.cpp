@@ -213,16 +213,20 @@ int SmpsTree::readStocFile(string stocFileName) {
 	 iwork1, iwork2, iwork3, iwork4, dwork,
 	 prb_rl, scenam, begPeriodCol, begPeriodRow);
 
-  // set the start rows and columns for each node
-  if (!rv) {
+  if (rv)
+    goto TERMINATE;
 
-    setNodeStarts();
+  // set the start rows and columns for each node
+  rv = setNodeStarts();
+  if (rv)
+    goto TERMINATE;
 
 #ifdef DEBUG
-    if (nNodes <= 100)
-      printTree();
+  if (nNodes <= 100)
+    printTree();
 #endif
-  }
+
+ TERMINATE:
 
   // clean up
   delete[] perNames;
@@ -591,7 +595,7 @@ int SmpsTree::countNonzeros() {
  *  each node. If the nodes have been reordered, then the ordering
  *  array must be provided.
  */
-void SmpsTree::setNodeStarts(const int* order) {
+int SmpsTree::setNodeStarts(const int *order) {
 
   int node, per;
 
@@ -613,6 +617,8 @@ void SmpsTree::setNodeStarts(const int* order) {
 
   f_rw_nd[nNodes] = ttm;
   f_cl_nd[nNodes] = ttn;
+
+  return 0;
 }
 
 /** Print the stochastic tree information */
