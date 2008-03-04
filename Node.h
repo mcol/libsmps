@@ -42,6 +42,11 @@ class Node {
     _scenario = scen;
   }
 
+  /** Set the block number */
+  void setBlock(const int blk) {
+    _block = blk;
+  }
+
   /** Set the path probability for this node */
   void setProb(const double prob) {
     _probNode = prob;
@@ -91,6 +96,11 @@ class Node {
     return _scenario;
   }
 
+  /** Return the block number of the node */
+  int block(void) const {
+    return _block;
+  }
+
   /** Return the probability associated to the node */
   double probNode(void) const {
     return _probNode;
@@ -138,6 +148,9 @@ class Node {
 
   /** Scenario this node belongs to */
   int _scenario;
+
+  /** Diagonal block this node belongs to */
+  int _block;
 
   /** Path probability of this node */
   double _probNode;

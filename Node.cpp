@@ -21,6 +21,7 @@ Node::Node(const int nodeName) :
   _name(nodeName),
   _level(0),
   _scenario(0),
+  _block(0),
   _probNode(0.0),
   _firstRow(0),
   _firstCol(0),
