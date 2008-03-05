@@ -41,7 +41,13 @@ ProbData* setupProblem(Smps &smps) {
 /** Setup the constraint matrix */
 ProbData *setupMatrix(Smps &smps) {
 
-  int node, period, col;
+  Node *node = smps.getRootNode();
+
+  // leave immediately if there is no root node
+  if (!node)
+    return NULL;
+
+  int period, col = 0;
   int curCol, nnzCol, snzCol, sIndex;
   int f_cl_nd, f_cl_pd;
   int *rwnmbs, *clpnts;
@@ -50,7 +56,6 @@ ProbData *setupMatrix(Smps &smps) {
   int cIndex = 0;   // index in the core matrix
   int dIndex = 0;   // index in the deterministic equivalent
 
-  int nNodes = smps.getNodes();
   int iob = smps.getObjRowIndex();
   int ttm = smps.getTotRows();
   int ttn = smps.getTotCols();
@@ -82,23 +87,21 @@ ProbData *setupMatrix(Smps &smps) {
   SparseData data = smps.getSparseData();
 
   // for all nodes
-  for (node = 0, col = 0; node < nNodes; ++node) {
-
-    int ordNode = node; //order[node];
+  do {
 
     // find which period this node belongs to
-    period = smps.getPeriod(ordNode) - 1;
+    period = node->level();
 
     // offset in row numbers between core and deterministic equivalent
-    int offset = smps.getFirstRowNode(ordNode) - smps.getBegPeriodRow(period);
+    int offset = node->firstRow() - smps.getBegPeriodRow(period);
     int offsetChild;
 
     // first column of the period for the deterministic equivalent and core
-    f_cl_nd = smps.getFirstColNode(ordNode);
+    f_cl_nd = node->firstCol();
     f_cl_pd = smps.getBegPeriodCol(period);
 
     // initialize objective and bounds
-    for (int i = 0; i < smps.getNColsPeriod(period); ++i) {
+    for (int i = 0; i < node->nCols(); ++i) {
 
       obj[f_cl_nd + i] = 0.0;
       blo[f_cl_nd + i] = smps.getLowerBound(f_cl_pd + i);
@@ -133,7 +136,7 @@ ProbData *setupMatrix(Smps &smps) {
 	// objective row
 	if (data.rwnmbs[cIndex] == iob) {
 
-	  obj[col] = data.acoeff[cIndex] * smps.getProbNode(ordNode);
+	  obj[col] = data.acoeff[cIndex] * node->probNode();
 	}
 	else {
 	  acoeff[dIndex] = data.acoeff[cIndex];
@@ -160,14 +163,13 @@ ProbData *setupMatrix(Smps &smps) {
       snzCol = nnzCol;
 
       // copy the linking blocks in the current period
-      for (int block = 0; block < smps.getNChildren(ordNode); ++block) {
+      for (int block = 0; block < node->nChildren(); ++block) {
 
-	int fChild = smps.getFirstChild(ordNode) - 1;
+	Node *fChild = node->getChild(0);
 
 	// determine the offset in row numbers for the children nodes
-	offsetChild = smps.getFirstRowNode(fChild)
-	  - smps.getBegPeriodRow(period + 1)
-	  + block * smps.getNRowsPeriod(period + 1);
+	offsetChild = fChild->firstRow() + block * fChild->nRows()
+	  - smps.getBegPeriodRow(period + 1);
 
 	// restore the row index of core and the number of nonzeros
 	cIndex = sIndex;
@@ -197,7 +199,7 @@ ProbData *setupMatrix(Smps &smps) {
 
     } // end while
 
-  } // end for
+  } while (node = node->next());
 
   assert(col == ttn);
 
@@ -225,27 +227,37 @@ ProbData *setupMatrix(Smps &smps) {
 /** Setup the right-hand side */
 int setupRhs(ProbData *PROB, const Smps &smps) {
 
+  Node *node = smps.getRootNode();
+
+  // leave immediately if there is no root node
+  if (!node)
+    return 1;
+
+  // allocate space for right-hand side and row types
   double *rhs = new double[PROB->ttm];
   int    *rws = new int[PROB->ttm];
 
-  // for all nodes
-  for (int node = 0; node < smps.getNodes(); ++node) {
 
-    int ordNode = node; //TREE->order[node];
+  // for all nodes
+  do {
 
     // find which period the node belongs to
-    int period = smps.getPeriod(ordNode) - 1;
+    int period = node->level();
+
+    // index of the first row
+    int firstRow = node->firstRow();
 
     // for all rows in this period
-    for (int i = 0; i < smps.getNRowsPeriod(period); ++i) {
+    for (int i = 0; i < node->nRows(); ++i) {
 
-      int index = smps.getFirstRowNode(ordNode) + i;
+      int index = firstRow + i;
       assert (index < PROB->ttm);
 
       rhs[index] = smps.getRhs(smps.getBegPeriodRow(period) + i);
       rws[index] = smps.getRowType(smps.getBegPeriodRow(period) + i);
     }
-  }
+
+  }  while (node = node->next());
 
   PROB->rhs = rhs;
   PROB->rws = rws;
@@ -256,31 +268,31 @@ int setupRhs(ProbData *PROB, const Smps &smps) {
 /** Apply the scenario corrections */
 int applyScenarios(ProbData *PROB, const Smps &smps) {
 
-  int scNode, period, firstEntry, lastEntry;
+  int period, firstEntry, lastEntry;
   int row, col, pdr, pdc, index;
   const int *entryRow = smps.getEntryRow();
   const int *entryCol = smps.getEntryCol();
   const double *entryVal = smps.getEntryVal();
+  Node *node = smps.getRootNode(), *scNode;
 
   // We start from the leaf nodes and traverse the tree up to the root,
   // applying the changes corresponding to the nodes in the scenario
   // only if the correction refers to the same period of the node.
 
-  // find the leaf nodes
-  for (int node = 0; node < smps.getNodes(); ++node) {
+  do {
 
     // skip the non leaf nodes
-    if (smps.getNChildren(node) > 0)
+    if (node->nChildren() > 0)
       continue;
 
     scNode = node;
-    period = smps.getPeriods() - 1;
+    period = node->level();
 
     // traverse all nodes from this leaf up to the root
     while (period >= 0) {
 
       // scenario the current node belongs to
-      int scen = smps.getScenario(scNode) - 1;
+      int scen = scNode->scenario();
 
       // index of the first change
       firstEntry = smps.getFirstEntryScen(scen) - 1;
@@ -301,11 +313,11 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
 	// if the change affects the objective
 	if (pdr < 0 && pdc == period) {
 
-	  col = smps.getFirstColNode(scNode) + entryCol[corr] - 1
+	  col = scNode->firstCol() + entryCol[corr] - 1
 	    - smps.getBegPeriodCol(pdc);
 	  assert(col <= smps.getTotCols());
 
-	  PROB->obj[col] = entryVal[corr] * smps.getProbNode(scNode);
+	  PROB->obj[col] = entryVal[corr] * scNode->probNode();
 
 #ifdef DEBUG_SCEN
 	  printf("   Obj entry: core col %3d, det.eq. col %3d, (%f)\n",
@@ -316,7 +328,7 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
 	// if the change affects the rhs
 	else if (pdc < 0 && pdr == period) {
 
-	  row = smps.getFirstRowNode(scNode) + entryRow[corr] - 1
+	  row = scNode->firstRow() + entryRow[corr] - 1
 	    - smps.getBegPeriodRow(pdr);
 	  assert(row <= smps.getTotRows());
 
@@ -334,16 +346,18 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
 	  assert((pdr == pdc) || (pdr == pdc + 1));
 
 	  // indices in the deterministic equivalent
-	  row = smps.getFirstRowNode(scNode) + entryRow[corr] - 1
+	  row = scNode->firstRow() + entryRow[corr] - 1
 	    - smps.getBegPeriodRow(pdr);
-	  col = smps.getFirstColNode(scNode) + entryCol[corr] - 1
+	  col = scNode->firstCol() + entryCol[corr] - 1
 	    - smps.getBegPeriodCol(pdc);
 
 	  // adjust the column index if the change is in a column that belongs
 	  // to the previous period
 	  if (pdr != pdc)
-	    col += smps.getFirstColNode(smps.getParent(scNode) - 1)
-	      - smps.getFirstColNode(scNode);
+	    col += scNode->parent()->firstCol() - scNode->firstCol();
+
+	  assert(row <= smps.getTotRows());
+	  assert(col <= smps.getTotCols());
 
 	  assert(row <= smps.getTotRows());
 	  assert(col <= smps.getTotCols());
@@ -360,13 +374,22 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
 #endif
 	  PROB->acoeff[index] = entryVal[corr];
 	}
+
+#ifdef DEBUG_SCEN
+	// the change is in a different period, so we don't apply it now
+	else {
+	  int pchange = (pdr > pdc) ? pdr: pdc;
+	  printf("   Ignored change in period %d (now is period %d)\n",
+		 pchange + 1, period + 1);
+	}
+#endif
       }
 
       // walk up the tree to the parent node at the previous period
-      scNode = smps.getParent(scNode) - 1;
+      scNode = scNode->parent();
       --period;
     }
-  }
+  } while (node = node->next());
 
   return 0;
 }

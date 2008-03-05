@@ -404,36 +404,6 @@ class SmpsTree : public SmpsCore {
   /** Count the number of nonzeros in the deterministic equivalent matrix */
   int countNonzeros(void);
 
-  /** Retrieve the parent of the given node */
-  int getParent(const int node) const {
-    return parent[node];
-  }
-
-  /** Return the index of the first child of the given node */
-  int getFirstChild(const int node) const {
-    return f_chd[node];
-  }
-
-  /** Return the number of children of the given node */
-  int getNChildren(const int node) const {
-    return nChildren[node];
-  }
-
-  /** Return the index of the first det. equivalent row of the given node */
-  int getFirstRowNode(const int node) const {
-    return f_rw_nd[node];
-  }
-
-  /** Return the index of the first det. equivalent column of the given node */
-  int getFirstColNode(const int node) const {
-    return f_cl_nd[node];
-  }
-
-  /** Retrieve the period that the given node belongs to */
-  int getPeriod(const int node) const {
-    return period[node];
-  }
-
   /** Retrieve the scenario number for the given node */
   int getScenario(const int node) const {
     return scenario[node];
@@ -464,13 +434,8 @@ class SmpsTree : public SmpsCore {
     return entryVal;
   }
 
-  /** Return the probability associated to the given node */
-  const double getProbNode(const int node) const {
-    return probnd[node];
-  }
-
   /** Set the start rows and columns for each node */
-  int setNodeStarts(const int *order = NULL);
+  int setNodeStarts();
 
   /** Print the stochastic tree information */
   void printTree(void) const;
@@ -512,29 +477,8 @@ class SmpsTree : public SmpsCore {
   /** Number of columns in the deterministic equivalent */
   int ttCols;
 
-  /** Parent of node */
-  int *parent;
-
-  /** Number of children of node */
-  int *nChildren;
-
-  /** First child of node */
-  int *f_chd;
-
-  /** First row of node (in det equiv matrix) */
-  int *f_rw_nd;
-
-  /** First col of node (in det equiv matrix) */
-  int *f_cl_nd;
-
   /** Scenario that node belongs to */
   int *scenario;
-
-  /** Period (stage) that node belongs to */
-  int *period;
-
-  /** Path probability of nodes */
-  double *probnd;
 
   /** Length of scenario correction list */
   int scenLength;

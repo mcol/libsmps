@@ -12,6 +12,7 @@
 #ifndef _SMPS_OOPS_H_
 #define _SMPS_OOPS_H_
 
+#include <queue>
 #include "oops/oops.h"
 #include "Smps.h"
 #include "interface.h"
@@ -52,12 +53,6 @@ class SmpsOops {
   /** Number of diagonal blocks in the deterministic equivalent */
   int nBlocks;
 
-  int *block;
-
-  int *order;
-
-  int *revorder;
-
   /** Generate the deterministic equivalent for the smps instance */
   SmpsReturn* generateSmps(void);
 
@@ -70,6 +65,9 @@ class SmpsOops {
   /** Order the nodes according to the cutoff level */
   int orderNodes(void);
 
+  /** Perform a recursive depth-first ordering of the node and its children */
+  void dfsNode(queue<Node*> &qOrder, Node *node);
+
   /** Apply the scenario changes */
   int applyScenarios(SmpsReturn *Ret,
 		     Algebra **DiagEntries, Algebra **RightColEntries,
@@ -78,12 +76,10 @@ class SmpsOops {
   void reorderObjective(DenseVector *obj, DenseVector *upb,
 			int *is_col_diag, const int rnkn, char **colnames);
 
-  void addChildrenToList(const int node, int *next);
-
   void setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
 			   int *p_pd_rw, int *f_rw_blk, int *is_col_diag,
 			   const SparseData &data,
-			   const int node, const int colBlk,
+			   const Node *node, const int colBlk,
 			   const int rnkCol, const int coreCol);
 
   /** Copy a Vector into a depth-first ordered DenseVector */

@@ -10,6 +10,7 @@
  */
 
 #include <iostream>
+#include <queue>
 #include "SmpsOops.h"
 #include "oops/oopstime.h"
 #include "oops/WriteMps.h"
@@ -22,18 +23,12 @@ double tt_start, tt_end;
 SmpsOops::SmpsOops(string smpsFile, const int lev) :
   smps(smpsFile),
   level(lev),
-  nBlocks(0),
-  block(NULL),
-  order(NULL),
-  revorder(NULL) {
+  nBlocks(0) {
 }
 
 /** Destructor */
 SmpsOops::~SmpsOops() {
 
-  delete[] block;
-  delete[] order;
-  delete[] revorder;
 }
 
 /** Read the smps files */
@@ -219,18 +214,15 @@ const NodeInfo* SmpsOops::getNodeInfo() const {
  *  The nodes of the event tree are reordered according to the cutoff level:
  *  - breadth-first until given level (so that these nodes come first)
  *  - depth-first afterwards          (to give diagonal structure in rest)
- * Sets the following elements of tree:
- *  order[nd]     giving the original position (name of node) that
- *                      is at block position 'nd' in the big matrix
- *  block[nd]     giving the BLOCK that block 'nd' in big matrix
- *                      belongs to.
- *                      BLOCK = 0: root BLOCK (i.e. rankCor)
- *                      BLOCK = 1 -- nBlocks: diagonal parts
  */
 int SmpsOops::orderNodes() {
 
   int nPeriods = smps.getPeriods();
-  int nNodes   = smps.getNodes();
+  Node *node = smps.getRootNode();
+
+  // leave immediately if there is no root node
+  if (!node)
+    return 1;
 
   // check that the required cutoff level is feasible
   if (level <= 0 || level >= nPeriods) {
@@ -239,77 +231,90 @@ int SmpsOops::orderNodes() {
     return 1;
   }
 
-  // current node in the new list which is being followed
-  int node = 0;
+  // queue of nodes to be followed
+  queue<Node*> qNodes;
 
-  // next node in the new list that is being built
-  int next = 1;
+  // queue of nodes in the new order
+  queue<Node*> qOrder;
 
-  block    = new int[nNodes];
-  order    = new int[nNodes];
-  revorder = new int[nNodes];
-  order[0] = 0;
-  block[0] = 0;
+  // start from the root
+  qNodes.push(node);
 
-  printf("Ordering %d nodes with %d levels in rnkcr.\n", nNodes, level);
+  // put the nodes up to the cutoff level in breadth-first order
+  do {
 
-  // make list of all nodes in rank corrector part (block 0)
-  while (smps.getPeriod(order[node]) < level) {
+    // take the first element from the queue
+    qNodes.pop();
 
-    // add children of current node to list
-    for (int i = 0; i < smps.getNChildren(order[node]); ++i) {
-      order[next] = smps.getFirstChild(order[node]) + i - 1;
-      block[next] = 0;
-      ++next;
+    // put the node in the reordered list
+    qOrder.push(node);
+
+    // add its children to the queue
+    for (int i = 0; i < node->nChildren(); ++i) {
+      qNodes.push(node->getChild(i));
     }
-    ++node;
+
+    // take the first node in the queue
+    node = qNodes.front();
+
+  } while (node->level() < level);
+
+  // now proceed in depth-first order
+  while (!qNodes.empty()) {
+
+    // take the first element in the queue
+    node = qNodes.front();
+    qNodes.pop();
+
+    // call a recursive function
+    dfsNode(qOrder, node);
   }
 
-  // now all nodes up to the cutoff level are on the lists
-  // node points to the first node of period = level in the list
-  // next points to the next free position in the list
+  // update the next links
 
-  // now follow depth first
-  while (smps.getPeriod(order[node]) == level && node < nNodes) {
+  // start from the root
+  node = smps.getRootNode();
 
-    // each node in this list is a seed for a diagonal block
-    addChildrenToList(node, &next);
-    ++node;
-  }
+  do {
 
-  // generate reverse order of nodes
-  for (int i = 0; i < nNodes; ++i)
-    revorder[order[i]] = i;
+    qOrder.pop();
+    node->setNext(qOrder.empty() ? NULL : qOrder.front());
+
+  } while (node = node->next());
 
 #ifdef DEBUG_ORDER
   // report order of nodes
   printf("Found %d diagonal blocks.\n", nBlocks);
   printf("Reporting new order of nodes in big Matrix:\n");
-  printf("   pos  node   per  block\n");
-  for (int i = 0; i < nNodes; ++i)
-    printf("  %3d   %3d   %3d   %3d\n", i, order[i],
-	   smps.getPeriod(order[i]), block[i]);
+  printf("  node   per  block\n");
+  node = smps.getRootNode();
+  do {
+    printf("  %3d   %3d   %3d\n",
+	   node->name(), node->level() + 1, node->block());
+  } while (node = node->next());
 #endif
 
   // reset the period starts
-  smps.setNodeStarts(order);
+  smps.setNodeStarts();
 
   return 0;
 }
 
-/** Add all children of order[node] to the list starting at entry next */
-void SmpsOops::addChildrenToList(const int node, int *next) {
+/** Perform a recursive depth-first ordering of the node and its children */
+void SmpsOops::dfsNode(queue<Node*> &qOrder, Node *node) {
 
-  const int ordNode = order[node];
+  // put the node in the reordered queue
+  qOrder.push(node);
 
-  for (int i = 0; i < smps.getNChildren(ordNode); ++i) {
-    if (smps.getPeriod(ordNode) == level)
-      ++nBlocks;
+  // count the number of diagonal blocks
+  if (node->level() == level)
+    ++nBlocks;
 
-    order[*next] = smps.getFirstChild(ordNode) + i - 1;
-    block[*next] = nBlocks;
-    (*next)++;
-    addChildrenToList((*next) - 1, next);
+  node->setBlock(nBlocks);
+
+  // traverse the children in depth-first order
+  for (int i = 0; i < node->nChildren(); i++) {
+    dfsNode(qOrder, node->getChild(i));
   }
 }
 

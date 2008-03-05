@@ -15,10 +15,10 @@
 
 
 static void
-setupRhs(const Smps &smps, SmpsReturn *Ret, const int *order);
+setupRhs(const Smps &smps, SmpsReturn *Ret);
 
 static void
-setupObjective(const Smps &smps, SmpsReturn *Ret, const int *order);
+setupObjective(const Smps &smps, SmpsReturn *Ret);
 
 
 /**
@@ -77,7 +77,7 @@ SmpsReturn* SmpsOops::generateSmps() {
 			 and form an additional diagonal block */
 
   // node/period/block of current row/col
-  int cu_nd_rw, cu_nd_cl, cu_pd_rw, cu_pd_cl, cu_blk_cl;
+  int cu_nd_cl, cu_pd_rw, cu_pd_cl, cu_blk_cl;
 
   // counter of cols added to RnkC so far
   int ncol_rc;
@@ -87,9 +87,6 @@ SmpsReturn* SmpsOops::generateSmps() {
 
   // number of periods
   const int nPeriods = smps.getPeriods();
-
-  // number of nodes in the event tree
-  const int nNodes = smps.getNodes();
 
   // pointer to start of period information in core for this column
   int *p_pd_rw = new int[nPeriods + 1];
@@ -223,23 +220,24 @@ SmpsReturn* SmpsOops::generateSmps() {
     cldg0 = 0;    // total columns in first diagonal
     cu_nd_cl = 0;
 
-    int ordNode = order[cu_nd_cl];
-    int perNode = smps.getPeriod(ordNode);
+    Node *node = smps.getRootNode();
 
-    // loop through all nodes correspoding to periods <= level
-    while (perNode <= level && cu_nd_cl < nNodes) {
+    do {
+
+      int perNode = node->level();
+      if (perNode >= level)
+	break;
 
 #ifdef DEBUG
       printf("Node %d period %d,  nz in diag %d, cols in diag %d\n",
-	     cu_nd_cl, perNode, nzpddg[perNode - 1], clpddg[perNode - 1]);
+	     cu_nd_cl, perNode, nzpddg[perNode], clpddg[perNode]);
 #endif
-      nzdg0 += nzpddg[perNode - 1];
-      cldg0 += clpddg[perNode - 1];
+      nzdg0 += nzpddg[perNode];
+      cldg0 += clpddg[perNode];
       ++cu_nd_cl;
 
-      ordNode = order[cu_nd_cl];
-      perNode = smps.getPeriod(ordNode);
-    }
+    } while (node = node->next());
+
     printf("Cols from RNKCR to DIAG[0]: %d (%d nonzeros).\n", cldg0, nzdg0);
 
     // clean up
@@ -380,20 +378,23 @@ SmpsReturn* SmpsOops::generateSmps() {
 	   i, rnkc_nz_pd[i], diag_nz_pd[i]);
   }
 
-  for (i = 0; i < nNodes; ++i) {
-    int blkNode = block[i];
-    int perNode = smps.getPeriod(order[i]) - 1;
-    // printf("%d  %d  %d\n", i, blkNode, perNode);
+  Node *node = smps.getRootNode();
+
+  do {
+
+    int blkNode = node->block();
+    int perNode = node->level();
     rnkc_nz_blk[blkNode] += rnkc_nz_pd[perNode];
     diag_nz_blk[blkNode] += diag_nz_pd[perNode];
     diag_m_blk[blkNode]  += smps.getNRowsPeriod(perNode);
     diag_n_blk[blkNode]  += smps.getNColsPeriod(perNode);
     /*
+    printf("%d  %d  %d  ", node->name(), blkNode, perNode);
     printf("* %6d %6d %6d %6d\n",
 	   rnkc_nz_blk[blkNode], diag_nz_blk[blkNode],
 	   diag_m_blk[blkNode],  diag_n_blk[blkNode]);
     */
-  }
+  } while (node = node->next());
 
   rnkc_m_blk[0] = diag_m_blk[0];
   rnkc_n_blk[0] = diag_n_blk[0] - cldg0;
@@ -502,31 +503,33 @@ SmpsReturn* SmpsOops::generateSmps() {
   //
 
   ncol_rc  = 0;     // col added to rankcor so far
-  cu_nd_rw = 0;     // node corresponding to current row
   cu_nd_cl = 0;     // node corresponding to current column
   cu_pd_rw = 0;     // period corresponding to current row
   cu_pd_cl = 0;     // period corresponding to current column
   b_cu_blk_cl = 0;  // first column in big matrix of current node
   cu_blk_cl = 0;
 
+  node = smps.getRootNode();
+
   // for all columns in the deterministic equivalent
   for (i = 0; i < ttn; ++i) {
 
-    int perNode = smps.getPeriod(order[cu_nd_cl]);
+    int perNode = node->level();
 
-    if (i - b_cu_blk_cl >= smps.getNColsPeriod(perNode - 1)) {
+    if (i - b_cu_blk_cl >= smps.getNColsPeriod(perNode)) {
 
       // first col of current node in big matrix
       b_cu_blk_cl = i;
 
       // current block
       ++cu_nd_cl;
+      node = node->next();
 
       // period of current node
-      cu_pd_cl = smps.getPeriod(order[cu_nd_cl]) - 1;
+      cu_pd_cl = node->level();
 
       // current part of big matrix
-      cu_blk_cl = block[cu_nd_cl];
+      cu_blk_cl = node->block();
 
       /*
       printf("Column %4d - node now %3d  stage now %d  block now %d\n",
@@ -559,9 +562,6 @@ SmpsReturn* SmpsOops::generateSmps() {
       ++cu_pd_rw;
     }
 
-    // set current node
-    cu_nd_rw = cu_nd_cl;
-
     // if RankCor Column
     if (cu_blk_cl == 0 && is_col_diag[coreCol] == 0) {
 
@@ -583,10 +583,10 @@ SmpsReturn* SmpsOops::generateSmps() {
     }
 
     // write all parts of this column in the correct RightColEntries,
-    // DiagEntries matrices by scanning through cu_nd_rw and its children
+    // DiagEntries matrices by scanning through the node and its children
     setNodeChildrenRnkc(RightColEntries, DiagEntries,
 			p_pd_rw, f_rw_blk, is_col_diag, data,
-			cu_nd_rw, cu_blk_cl, ncol_rc, coreCol);
+			node, cu_blk_cl, ncol_rc, coreCol);
   }
 
   assert(Ret->nb_col_rnk == ncol_rc);
@@ -601,10 +601,10 @@ SmpsReturn* SmpsOops::generateSmps() {
   }
 
   // setup the right-hand side
-  setupRhs(smps, Ret, order);
+  setupRhs(smps, Ret);
 
   // setup objective and bounds
-  setupObjective(smps, Ret, order);
+  setupObjective(smps, Ret);
 
   // apply scenario corrections
   applyScenarios(Ret, DiagEntries, RightColEntries, f_rw_blk, f_cl_blk);
@@ -708,13 +708,12 @@ void SmpsOops::freeSmpsReturn(SmpsReturn *ret) {
 void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
 				   int *p_pd_rw, int *f_rw_blk, int *is_col_diag,
 				   const SparseData &data,
-				   const int node, const int colBlk,
+				   const Node *node, const int colBlk,
 				   const int rnkCol, const int coreCol) {
 
-  const int ordNode = order[node];
-  const int per = smps.getPeriod(ordNode) - 1;
-  const int blk = block[node];
-  int k, child, index;
+  const int per = node->level();
+  const int blk = node->block();
+  int index;
   SparseSimpleMatrix *sparse;
 
   // rank corrector
@@ -736,17 +735,17 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
   }
 
   // copy the information for this node into the deterministic equivalent
-  for (k = p_pd_rw[per]; k < p_pd_rw[per + 1]; ++k) {
+  for (int k = p_pd_rw[per]; k < p_pd_rw[per + 1]; ++k) {
 
     sparse->element[sparse->nb_el] = data.acoeff[k];
     sparse->row_nbs[sparse->nb_el] = data.rwnmbs[k]
-      - smps.getBegPeriodRow(per) + smps.getFirstRowNode(ordNode)
+      - smps.getBegPeriodRow(per) + node->firstRow()
       - f_rw_blk[blk];
 
     /*
     printf(" %2d  - %2d :> %2d, %2d, %2d, %2d  ", per, ordNode,
 	   data.rwnmbs[k], smps.getBegPeriodRow(per),
-	   smps.getFirstRowNode(ordNode), f_rw_blk[blk]);
+	   node->firstRow(), f_rw_blk[blk]);
     printf(":: %lf  %d\n", sparse->element[sparse->nb_el],
 	   sparse->row_nbs[sparse->nb_el]);
     */
@@ -757,34 +756,37 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
     assert(sparse->nb_el <= sparse->max_nb_el);
   }
 
-  const int firstChild = smps.getFirstChild(ordNode) - 1;
-  const int lastChild  = firstChild + smps.getNChildren(ordNode);
-  for (child = firstChild; child < lastChild; ++child) {
+  for (int i = 0; i < node->nChildren(); ++i) {
     setNodeChildrenRnkc(RC, DG, p_pd_rw, f_rw_blk, is_col_diag,
-			data, revorder[child], colBlk, rnkCol, coreCol);
+			data, node->getChild(i), colBlk, rnkCol, coreCol);
   }
 }
 
 /** Set up the right-hand side */
-void setupRhs(const Smps &smps, SmpsReturn *Ret, const int *order) {
+void setupRhs(const Smps &smps, SmpsReturn *Ret) {
 
-  int ordNode, firstRowNode, begRowPeriod, period;
+  int firstRowNode, begRowPeriod, period;
   char scname[8], *p;
   DenseVector *rhs = Ret->b;
-  char **rownames  = Ret->rownames = new char*[smps.getTotRows()];
+  Node *node = smps.getRootNode();
 
-  // for all nodes in the tree
-  for (int node = 0; node < smps.getNodes(); ++node) {
+  // leave immediately if there is no root node
+  if (!node)
+    return;
 
-    ordNode = order[node];
-    period  = smps.getPeriod(ordNode) - 1;
-    firstRowNode = smps.getFirstRowNode(ordNode);
+  char **rownames = Ret->rownames = new char*[smps.getTotRows()];
+
+  // for all nodes in the tree in order
+  do {
+
+    period = node->level();
+    firstRowNode = node->firstRow();
     begRowPeriod = smps.getBegPeriodRow(period);
 
-    sprintf(scname, "_S%03d", node);
+    sprintf(scname, "_S%03d", node->name());
 
     // copy the information for this node
-    for (int i = 0; i < smps.getNRowsPeriod(period); ++i) {
+    for (int i = 0; i < node->nRows(); ++i) {
 
       rhs->elts[firstRowNode + i] = smps.getRhs(begRowPeriod + i);
 
@@ -798,34 +800,39 @@ void setupRhs(const Smps &smps, SmpsReturn *Ret, const int *order) {
       printf("%s\n", rownames[firstRowNode + i]);
       */
     }
-  }
+
+  } while (node = node->next());
 }
 
 /** Set up the objective and the bounds */
-void setupObjective(const Smps &smps, SmpsReturn *Ret, const int *order) {
+void setupObjective(const Smps &smps, SmpsReturn *Ret) {
 
-  int row, ordNode, firstColNode, begColPeriod, period;
-  double probNode;
+  int row, firstColNode, begColPeriod, period;
   char buffer[50], scname[8], *p;
   DenseVector *obj = Ret->c, *upb = Ret->u;
-  char **colnames  = Ret->colnames = new char*[smps.getTotCols()];
+  Node *node = smps.getRootNode();
+
+  // leave immediately if there is no root node
+  if (!node)
+    return;
+
+  char **colnames = Ret->colnames = new char*[smps.getTotCols()];
 
   // copy the objective row from the core matrix
   double *coreObj = smps.getObjRow();
 
   // for all nodes in the tree
-  for (int node = 0; node < smps.getNodes(); ++node) {
+  do {
 
-    ordNode = order[node];
-    period  = smps.getPeriod(ordNode) - 1;
-    firstColNode = smps.getFirstColNode(ordNode);
+    period  = node->level();
+    firstColNode = node->firstCol();
     begColPeriod = smps.getBegPeriodCol(period);
-    probNode = smps.getProbNode(ordNode);
+    double probNode = node->probNode();
 
-    sprintf(scname, "_S%03d",node);
+    sprintf(scname, "_S%03d", node->name());
 
     // copy the information for this node
-    for (int i = 0; i < smps.getNColsPeriod(period); ++i) {
+    for (int i = 0; i < node->nCols(); ++i) {
 
       // copy the objective coefficients weighted by probability of the node
       obj->elts[firstColNode + i] = probNode * coreObj[begColPeriod + i];
@@ -851,7 +858,7 @@ void setupObjective(const Smps &smps, SmpsReturn *Ret, const int *order) {
       printf("%s\n",colnames[firstColNode+i]);
       */
     }
-  }
+  } while (node = node->next());
 
   // clean up
   delete[] coreObj;
@@ -941,35 +948,34 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 			     Algebra **DiagEntries, Algebra **RightColEntries,
 			     int *f_rw_blk, int *f_cl_blk) {
 
-  int node, scen, corr;
-  int scNode, period, firstEntry, lastEntry;
+  int period, firstEntry, lastEntry;
   int row, col, pdr, pdc;
   int k, iblk, jblk;
   bool found;
   const int *entryRow = smps.getEntryRow();
   const int *entryCol = smps.getEntryCol();
   const double *entryVal = smps.getEntryVal();
+  Node *node = smps.getRootNode(), *scNode;
   SparseSimpleMatrix *sparse;
 
   // We start from the leaf nodes and traverse the tree up to the root,
   // applying the changes corresponding to the nodes in the scenario
   // only if the correction refers to the same period of the node.
 
-  // find the leaf nodes
-  for (node = 0; node < smps.getNodes(); ++node) {
+  do {
 
     // skip the non leaf nodes
-    if (smps.getNChildren(node) > 0)
+    if (node->nChildren() > 0)
       continue;
 
     scNode = node;
-    period = smps.getPeriods() - 1;
+    period = node->level();
 
     // traverse all nodes from this leaf up to the root
     while (period >= 0) {
 
       // scenario the current node belongs to
-      scen = smps.getScenario(scNode) - 1;
+      int scen = scNode->scenario();
 
       // index of the first change
       firstEntry = smps.getFirstEntryScen(scen) - 1;
@@ -977,11 +983,11 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 
 #ifdef DEBUG_SCEN
       printf("Node %d: scenario %d (entries from %d to %d)\n",
-	     scNode, scen + 1, firstEntry, lastEntry - 1);
+	     scNode->name(), scen + 1, firstEntry, lastEntry - 1);
 #endif
 
       // for all changes affecting this scenario
-      for (corr = firstEntry; corr < lastEntry; ++corr) {
+      for (int corr = firstEntry; corr < lastEntry; ++corr) {
 
 	// row and column of core affected by the change
 	pdr = smps.getRowPeriod(entryRow[corr] - 1);
@@ -990,11 +996,11 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 	// if the change affects the objective
 	if (pdr < 0 && pdc == period) {
 
-	  col = smps.getFirstColNode(scNode) + entryCol[corr] - 1
+	  col = scNode->firstCol() + entryCol[corr] - 1
 	    - smps.getBegPeriodCol(pdc);
 	  assert(col <= smps.getTotCols());
 
-	  Ret->c->elts[col] = entryVal[corr] * smps.getProbNode(scNode);
+	  Ret->c->elts[col] = entryVal[corr] * scNode->probNode();
 
 #ifdef DEBUG_SCEN
 	  printf("   Obj entry: core col %d, det.eq. col %d, (%f)\n",
@@ -1005,7 +1011,7 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 	// if the change affects the rhs
 	else if (pdc < 0 && pdr == period) {
 
-	  row = smps.getFirstRowNode(scNode) + entryRow[corr] - 1
+	  row = scNode->firstRow() + entryRow[corr] - 1
 	    - smps.getBegPeriodRow(pdr);
 	  assert(row <= smps.getTotRows());
 
@@ -1021,16 +1027,15 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 	else if (pdc >= 0 && pdr >= 0 && pdr == period) {
 
 	  // indices in the deterministic equivalent
-	  row = smps.getFirstRowNode(scNode) + entryRow[corr] - 1
+	  row = scNode->firstRow() + entryRow[corr] - 1
 	    - smps.getBegPeriodRow(pdr);
-	  col = smps.getFirstColNode(scNode) + entryCol[corr] - 1
+	  col = scNode->firstCol() + entryCol[corr] - 1
 	    - smps.getBegPeriodCol(pdc);
 
 	  // adjust the column index if the change is in a column that belongs
 	  // to the previous period
 	  if (pdr != pdc)
-	    col += smps.getFirstColNode(smps.getParent(scNode) - 1)
-	      - smps.getFirstColNode(scNode);
+	    col += scNode->parent()->firstCol() - scNode->firstCol();
 
 	  assert(row <= smps.getTotRows());
 	  assert(col <= smps.getTotCols());
@@ -1062,20 +1067,20 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 	    int iblkrnc = 0, iblkd0 = 0;
 
 	    // node of the current column and corresponding period
-	    int cu_nd_cl = 0, cu_pd_cl = smps.getPeriod(order[0]) - 1;
+	    Node *nd = smps.getRootNode();
+	    int ndPd = nd->level();
 	    int bigCol, coreCol;
 
 	    // find the column in the core matrix that this belongs to
 	    for (bigCol = 0, coreCol = 0; bigCol < col; ++bigCol, ++coreCol) {
 
-	      int ordNode = order[cu_nd_cl];
-	      int perNode = smps.getPeriod(ordNode);
+	      int perNode = nd->level();
 
 	      // if this is past the last column in this node
 	      if (coreCol >= smps.getBegPeriodCol(perNode)) {
-		++cu_nd_cl;
-		cu_pd_cl = perNode - 1;
-		coreCol = smps.getBegPeriodCol(cu_pd_cl);
+		nd = nd->next();
+		ndPd = perNode;
+		coreCol = smps.getBegPeriodCol(ndPd);
 	      }
 	      if (Ret->is_col_diag[coreCol])
 		++iblkd0;
@@ -1119,10 +1124,11 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
       }
 
       // walk up the tree to the parent node at the previous period
-      scNode = smps.getParent(scNode) - 1;
+      scNode = scNode->parent();
       period--;
     }
-  }
+
+  } while (node = node->next());
 
   return 0;
 }
@@ -1143,19 +1149,23 @@ void SmpsOops::reorderObjective(DenseVector *obj, DenseVector *upb,
 				char **colnames) {
 
   int col, coreCol, firstColDiag, firstColNode;
-  int node = 0, nb_el = 0;
+  int nb_el = 0;
   int ttn = smps.getTotCols();
+
+  Node *node = smps.getRootNode();
+  if (!node)
+    return;
 
   double *objCopy = (double *) malloc(ttn * sizeof(double));
   double *upbCopy = (double *) malloc(ttn * sizeof(double));
   char  **clnCopy = (char **)  malloc(ttn * sizeof(char *));
 
   // find the first node that will go in a diagonal block
-  while (smps.getPeriod(order[node]) <= level)
-    ++node;
+  while (node->level() < level)
+    node = node->next();
 
   // set the first column in diagonal block
-  firstColDiag = smps.getFirstColNode(node);
+  firstColDiag = node->firstCol();
 
   // copy objective and bounds into temporary arrays
   for (int i = 0; i < ttn; ++i) {
@@ -1166,16 +1176,16 @@ void SmpsOops::reorderObjective(DenseVector *obj, DenseVector *upb,
 
   // copy the diagonal elements from the first block (Diag-0)
   firstColNode = 0;
-  for (col = 0, node = 0; col < firstColDiag; ++col) {
+  for (col = 0, node = smps.getRootNode(); col < firstColDiag; ++col) {
 
     // check if the current column belongs to the next node
-    if (col - firstColNode >= smps.getNColsPeriod(smps.getPeriod(order[node]) - 1)) {
+    if (col - firstColNode >= node->nCols()) {
       firstColNode = col;
-      ++node;
+      node = node->next();
     }
 
     // find the corresponding column in the core matrix
-    coreCol = col - firstColNode + smps.getBegPeriodCol(smps.getPeriod(node) - 1);
+    coreCol = col - firstColNode + smps.getBegPeriodCol(node->level());
     assert(coreCol <= smps.getCols());
     if (is_col_diag[coreCol] == 1) {
       obj->elts[nb_el] = objCopy[col];
@@ -1197,16 +1207,16 @@ void SmpsOops::reorderObjective(DenseVector *obj, DenseVector *upb,
 
   // copy the RankCorrector entries from the first block
   firstColNode = 0;
-  for (col = 0, node = 0; col < firstColDiag; ++col) {
+  for (col = 0, node = smps.getRootNode(); col < firstColDiag; ++col) {
 
     // check if the current column belongs to the next node
-    if (col - firstColNode >= smps.getNColsPeriod(smps.getPeriod(order[node]) - 1)) {
+    if (col - firstColNode >= node->nCols()) {
       firstColNode = col;
-      ++node;
+      node = node->next();
     }
 
     // find the corresponding column in the core matrix
-    coreCol = col - firstColNode + smps.getBegPeriodCol(smps.getPeriod(node) - 1);
+    coreCol = col - firstColNode + smps.getBegPeriodCol(node->level());
     assert(coreCol <= smps.getCols());
     if (is_col_diag[coreCol] == 0) {
       obj->elts[nb_el] = objCopy[col];
@@ -1318,7 +1328,7 @@ void SmpsOops::backOrderColVector(double *x, const int mode,
 
   int coreCol  = 0; // column in core corresponding to the current column
   int cu_nd_cl = 0; // node of the current column
-  int cu_pd_cl = smps.getPeriod(order[0]); // period of the current column
+  int cu_pd_cl = 0; // smps.getPeriod(order[0]); // period of the current column
 
 #if 0
   printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",
@@ -1339,7 +1349,7 @@ void SmpsOops::backOrderColVector(double *x, const int mode,
 
       // if this is past the last column in this node
       ++cu_nd_cl;
-      cu_pd_cl = smps.getPeriod(order[cu_nd_cl]);
+      cu_pd_cl = 0; // smps.getPeriod(order[cu_nd_cl]);
       coreCol = smps.getBegPeriodCol(cu_pd_cl - 1);
 #if 0
       printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",
@@ -1416,7 +1426,7 @@ void SmpsOops::forwardOrderColVector(double *x, const int mode,
 
   int coreCol  = 0; // column in core corresponding to the current column
   int cu_nd_cl = 0; // node of the current column
-  int cu_pd_cl = smps.getPeriod(order[0]); // period of the current column
+  int cu_pd_cl = 0; // smps.getPeriod(order[0]); // period of the current column
 
 #if 0
   printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",
@@ -1438,7 +1448,7 @@ void SmpsOops::forwardOrderColVector(double *x, const int mode,
 
       // if this is past the last column in this node
       ++cu_nd_cl;
-      cu_pd_cl = smps.getPeriod(order[cu_nd_cl]);
+      cu_pd_cl = 0; // smps.getPeriod(order[cu_nd_cl]);
       coreCol = smps.getBegPeriodCol(cu_pd_cl - 1);
 #if 0
       printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",

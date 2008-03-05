@@ -12,6 +12,7 @@
 #include <string.h>
 #include <iostream>
 #include <fstream>
+#include <queue>
 #include "Smps.h"
 #include "Tokenizer.h"
 #include "Utils.h"
@@ -47,14 +48,7 @@ SmpsTree::SmpsTree(string stocFileName) :
   maxReals(0),
   ttRows(0),
   ttCols(0),
-  parent(NULL),
-  nChildren(NULL),
-  f_chd(NULL),
-  f_rw_nd(NULL),
-  f_cl_nd(NULL),
   scenario(NULL),
-  period(NULL),
-  probnd(NULL),
   scenLength(0),
   maxScenLength(0),
   sc_first(NULL),
@@ -68,14 +62,7 @@ SmpsTree::SmpsTree(string stocFileName) :
 SmpsTree::~SmpsTree() {
 
   delete root;
-  delete[] parent;
-  delete[] period;
   delete[] scenario;
-  delete[] probnd;
-  delete[] nChildren;
-  delete[] f_chd;
-  delete[] f_rw_nd;
-  delete[] f_cl_nd;
   delete[] sc_first;
   delete[] sc_len;
   delete[] entryRow;
@@ -103,6 +90,15 @@ int SmpsTree::readStocFile(string stocFileName) {
   int foundName = 0;
   int stocType = 0;
   int rv = 0;
+
+  // index in the array representation of the event tree
+  int index = 0;
+
+  // name of the node for the node representation of the event tree
+  int nodeName = 1;
+
+  // queue of nodes to be processed
+  queue<Node*> qNodes;
 
   // reset SmpsTree::stocFile if a stocFileName has been given
   if (stocFileName != "")
@@ -162,24 +158,21 @@ int SmpsTree::readStocFile(string stocFileName) {
   scenLength = maxScenLength = getMaxReals();
   ++maxScenLength;
 
+  int *parent = new int[maxNodes];
+  int *f_chd  = new int[maxNodes];
+  int *n_chd  = new int[maxNodes];
+  int *period = new int[maxNodes];
   int *br_sce = new int[maxScens];
   int *iwork1 = new int[maxScenLength];
   int *iwork2 = new int[maxScenLength];
   int *iwork3 = new int[4 * maxScenLength];
   int *iwork4 = new int[maxScenLength];
   char *scenam = new char[8*maxScens];
+  double *probnd = new double[maxNodes];
   double *dwork  = new double[maxScenLength];
   double *prb_rl = new double[maxScenLength];
 
-  parent   = new int[maxNodes];
-  period   = new int[maxNodes];
   scenario = new int[maxNodes];
-  nChildren= new int[maxNodes];
-  f_chd    = new int[maxNodes];
-  f_rw_nd  = new int[maxNodes + 1];
-  f_cl_nd  = new int[maxNodes + 1];
-  probnd   = new double[maxNodes];
-
   sc_first = new int[maxScens];
   sc_len   = new int[maxScens];
   entryRow = new int[maxScenLength];
@@ -189,7 +182,7 @@ int SmpsTree::readStocFile(string stocFileName) {
   // initialise to zero
   memset(entryRow, 0, maxScenLength * sizeof(int));
   memset(entryCol, 0, maxScenLength * sizeof(int));
-  memset(nChildren, 0, maxNodes * sizeof(int));
+  memset(n_chd, 0, maxNodes * sizeof(int));
   memset(f_chd, 0, maxNodes * sizeof(int));
 
   int maxRows = getRows();
@@ -206,7 +199,7 @@ int SmpsTree::readStocFile(string stocFileName) {
   char stocfile[100] = "";
   strcpy(stocfile, stocFile.c_str());
   RDSTCH(&rv, &maxScens, &nScens, &maxNodes, &nNodes, stocfile,
-	 br_sce, probnd, parent, nChildren, f_chd, scenario,
+	 br_sce, probnd, parent, n_chd, f_chd, scenario,
 	 period, &maxPers, &maxPers, perNames,
 	 &scenLength, &maxScenLength, entryCol, entryRow,
 	 sc_first, sc_len, entryVal,
@@ -217,6 +210,41 @@ int SmpsTree::readStocFile(string stocFileName) {
 
   if (rv)
     goto TERMINATE;
+
+  // Convert the event tree from an array-based representation into a
+  // node-based one. We go through the nodes in the array and set up a
+  // tree in breadth-first order.
+  // Note that the scenario information is still kept in arrays.
+
+  // allocate the root node
+  root = new Node(nodeName);
+
+  qNodes.push(root);
+
+  while (!qNodes.empty()) {
+
+    // take the first element in the queue
+    Node *node = qNodes.front();
+    qNodes.pop();
+
+    // add the information to this node
+    node->setScen(scenario[index] - 1);
+    node->setProb(probnd[index]);
+
+    // allocate its children
+    for (int j = 0; j < n_chd[index]; ++j) {
+
+      Node *child = new Node(++nodeName);
+      node->addChildNode(child);
+      qNodes.push(child);
+    }
+
+    // set an initial breadth-first ordering
+    node->setNext(qNodes.empty() ? NULL : qNodes.front());
+
+    // consider the next node in the array
+    ++index;
+  }
 
   // set the start rows and columns for each node
   rv = setNodeStarts();
@@ -231,6 +259,10 @@ int SmpsTree::readStocFile(string stocFileName) {
  TERMINATE:
 
   // clean up
+  delete[] parent;
+  delete[] f_chd;
+  delete[] n_chd;
+  delete[] period;
   delete[] perNames;
   delete[] br_sce;
   delete[] iwork1;
@@ -238,6 +270,7 @@ int SmpsTree::readStocFile(string stocFileName) {
   delete[] iwork3;
   delete[] iwork4;
   delete[] dwork;
+  delete[] probnd;
   delete[] prb_rl;
   delete[] scenam;
 
@@ -557,6 +590,12 @@ int SmpsTree::countNonzeros() {
   int nzTotal = 0;
   int nPeriod = getPeriods();
 
+  Node *node = root;
+
+  // leave immediately if there is no root node
+  if (!node)
+    return 1;
+
   // count the number of nonzeros in each period block, if not already there
   if (!nzPeriod)
     countNzPeriodBlocks();
@@ -566,8 +605,11 @@ int SmpsTree::countNonzeros() {
   memset(nnPer, 0, nPeriod * sizeof(int));
 
   // count the number of nodes in each period
-  for (int node = 0; node < nNodes; ++node)
-    ++nnPer[period[node] - 1];
+  do {
+
+    ++nnPer[node->level()];
+
+  } while (node = node->next());
 
   // count the number of nonzero elements
   for (int per = 0; per < nPeriod; ++per) {
@@ -592,33 +634,33 @@ int SmpsTree::countNonzeros() {
 /**
  *  Set the start rows and columns for each node.
  *
- *  This sets the arrays f_rw_nd and f_cl_nd with the index in the
- *  deterministic equivalent matrix of the first row and column of
- *  each node. If the nodes have been reordered, then the ordering
- *  array must be provided.
+ *  This sets the dimension of each node and the indices of the first
+ *  row and column in the deterministic equivalent matrix.
  */
-int SmpsTree::setNodeStarts(const int *order) {
+int SmpsTree::setNodeStarts() {
 
-  int node, per;
-
-  // number of rows and columns in the deterministic equivalent
+  int per, rows, cols;
   int ttm = 0, ttn = 0;
 
-  // for all nodes
-  for (int i = 0; i < nNodes; ++i) {
+  Node *node = root;
 
-    node = order ? order[i] :  i;
-    per  = period[node] - 1;
+  // leave immediately if there is no root node
+  if (!node)
+    return 1;
 
-    f_rw_nd[node] = ttm;
-    f_cl_nd[node] = ttn;
+  do {
 
-    ttm += getNRowsPeriod(per);
-    ttn += getNColsPeriod(per);
-  }
+    per  = node->level();
+    rows = getNRowsPeriod(per);
+    cols = getNColsPeriod(per);
 
-  f_rw_nd[nNodes] = ttm;
-  f_cl_nd[nNodes] = ttn;
+    // set the node information
+    node->setMatrixPointers(ttm, ttn, rows, cols);
+
+    ttm += rows;
+    ttn += cols;
+
+  } while(node = node->next());
 
   // total number of rows and columns in the deterministic equivalent
   ttRows = ttm;
@@ -630,13 +672,34 @@ int SmpsTree::setNodeStarts(const int *order) {
 /** Print the stochastic tree information */
 void SmpsTree::printTree() const {
 
+  Node *node = root;
+
+  // leave immediately if there is no root node
+  if (!node)
+    return;
+
+  // queue of nodes to be printed out in breadth-first order
+  queue<Node*> qNodes;
+
+  // start from the root
+  qNodes.push(node);
+
   printf("Tree information:\n");
-  printf("   node parent scen n_chd  f_chd  per   prob   |  rows  cols\n");
-  for (int i = 0; i < nNodes; ++i) {
-    printf("  %4i  %4i  %4i  %4i  %4i  %4i   %.4f  | %4i  %4i\n", i + 1,
-	   parent[i], scenario[i], nChildren[i],
-	   f_chd[i],  period[i],   probnd[i],
-	   f_rw_nd[i + 1] - f_rw_nd[i], f_cl_nd[i + 1] - f_cl_nd[i]);
+  printf("   node parent scen  chdn   per   prob   |  rows  cols\n");
+
+  // go through all nodes in the tree in breadth-first order
+  while (!qNodes.empty()) {
+
+    // take the first element in the queue
+    node = qNodes.front();
+    qNodes.pop();
+
+    // print it
+    node->print();
+
+    // add its children to the queue
+    for (int i = 0; i < node->nChildren(); ++i)
+      qNodes.push(node->getChild(i));
   }
 }
 
@@ -645,8 +708,10 @@ const NodeInfo* SmpsTree::getNodeInfo() const {
 
   NodeInfo *info = new NodeInfo;
   info->nNodes = nNodes;
+#if DISABLED
   info->nRowsNode = f_rw_nd;
   info->nColsNode = f_cl_nd;
+#endif
 
   return info;
 }
