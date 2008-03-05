@@ -87,10 +87,10 @@ class SmpsOops {
   void SmpsDenseToVector(DenseVector *dv, Vector *v,
 			 SmpsReturn *Ret, const int ordering);
 
-  void backOrderRowVector(double *x, const int mode, const SmpsReturn *Ret);
-  void backOrderColVector(double *x, const int mode, const SmpsReturn *Ret);
-  void forwardOrderRowVector(double *x, const int mode, const SmpsReturn *Ret);
-  void forwardOrderColVector(double *x, const int mode, const SmpsReturn *Ret);
+  void backOrderRowVector(double *x, const SmpsReturn *Ret);
+  void backOrderColVector(double *x, const SmpsReturn *Ret);
+  void forwOrderRowVector(double *x, const SmpsReturn *Ret);
+  void forwOrderColVector(double *x, const SmpsReturn *Ret);
 
   /** Free the space allocated for the SmpsReturn structure */
   void freeSmpsReturn(SmpsReturn *ret);

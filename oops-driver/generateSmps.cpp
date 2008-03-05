@@ -1246,11 +1246,11 @@ void SmpsOops::SmpsVectorToDense(Vector *x, DenseVector *dx,
   SetExactVector(x);
   CopyToDenseVector(x, dx);
 
-  // reorder according to the SMPS depth-first order (mode 1)
+  // reorder according to the SMPS depth-first order
   if (rowcol == ORDER_COL)
-    backOrderColVector(dx->elts, 1, Ret);
+    backOrderColVector(dx->elts, Ret);
   else
-    backOrderRowVector(dx->elts, 1, Ret);
+    backOrderRowVector(dx->elts, Ret);
 }
 
 /**
@@ -1271,41 +1271,35 @@ void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
 
   // go for memory saving option
   if (rowcol == ORDER_COL)
-    forwardOrderColVector(dx->elts, 1, Ret);
+    forwOrderColVector(dx->elts, Ret);
   else
-    forwardOrderRowVector(dx->elts, 1, Ret);
+    forwOrderRowVector(dx->elts, Ret);
 
   CopyDenseToVector(dx, x);
 
   // and reverse the order, to leave the dense vector intact
   if (rowcol == ORDER_COL)
-    backOrderColVector(dx->elts, 1, Ret);
+    backOrderColVector(dx->elts, Ret);
   else
-    backOrderRowVector(dx->elts, 1, Ret);
+    backOrderRowVector(dx->elts, Ret);
 }
 
 /**
- *  backOrderColVector
- *
  *  The column vectors are setup in the order
  *   [D0 D1 D2 ... Dn-1 Rnk]
  *  ([D0 Rnk] is the RankCorrector and D1,...,Dn-1 are the 'proper' diagonal
  *  blocks).
  *
- *  This routine re-orders them into the OOPS outside ordering
- *   [D1 D2 ... Dn-1 (D0Rnk)]     mode = 0,
- *  or the SMPS-CORE + depth first order
- *   [(D0Rnk) D1 D2 ... Dn-1]     mode = 1
- *
- *  In both cases (D0Rnk) is the reordered [D0 Rnk] using the original
+ *  This routine re-orders them into the SMPS order:
+ *   [(D0Rnk) D1 D2 ... Dn-1]
+ *  where (D0Rnk) is the reordered [D0 Rnk] using the original
  *  order of these columns in the core matrix.
  *
  *  Needed from main method (passed through SmpsReturn *Ret)
  *  - nb_col_rnk:  number of columns in actual rankcor (Rnk) part
  *  - nb_col_diag: number of columns in diag rankcor (D0) part
  */
-void SmpsOops::backOrderColVector(double *x, const int mode,
-				  const SmpsReturn *Ret) {
+void SmpsOops::backOrderColVector(double *x, const SmpsReturn *Ret) {
 
   int col, offset;
 
@@ -1337,11 +1331,6 @@ void SmpsOops::backOrderColVector(double *x, const int mode,
 #endif
 
   // start writing the (D0Rnk) part
-  if (mode == 0)
-    offset = ttn - ncol_ttrc;  // at the end
-  else
-    offset = 0;                // at the beginning
-
   for (col = 0, coreCol = 0; col < ncol_ttrc; ++col, ++coreCol) {
 
     // find the column in the original core that this belongs to
@@ -1359,16 +1348,13 @@ void SmpsOops::backOrderColVector(double *x, const int mode,
     }
 
     if (Ret->is_col_diag[coreCol])
-      x[col + offset] = dtmp[nx_col_d0++];
+      x[col] = dtmp[nx_col_d0++];
     else
-      x[col + offset] = dtmp[nx_col_rc++];
+      x[col] = dtmp[nx_col_rc++];
   }
 
   // copy remaining columns in the order they are in already
-  if (mode == 0)
-    offset = 0;          // begin from the start
-  else
-    offset = ncol_ttrc;  // begin after rankcor
+  offset = ncol_ttrc;  // begin after rankcor
 
   // nx_col_d0 points to the next col that should be copied from main part
   for (col = 0; col < ttn - ncol_ttrc; ++col) {
@@ -1380,17 +1366,13 @@ void SmpsOops::backOrderColVector(double *x, const int mode,
 }
 
 /**
- *  forwardOrderColVector
- *
  *  The column vectors are setup in OOPS in the order
  *   [D0 D1 D2 ... Dn-1 Rnk]
  *  ([D0 Rnk] is the RankCorrector and D1,...,Dn-1 are the 'proper' diagonal
  *  blocks).
  *
- *  This routine re-orders them from the OOPS outside ordering
- *   [D1 D2 ... Dn-1 (D0Rnk)]     mode = 0,
- *  or the SMPS-CORE + depth first order
- *   [(D0Rnk) D1 D2 ... Dn-1]     mode = 1
+ *  This routine re-orders them from the SMPS order:
+ *   [(D0Rnk) D1 D2 ... Dn-1]
  *
  *  In both cases (D0Rnk) is the reordered [D0 Rnk] using the original
  *  order of these columns in the core matrix.
@@ -1399,8 +1381,7 @@ void SmpsOops::backOrderColVector(double *x, const int mode,
  *  - nb_col_rnk:  number of columns in actual rankcor (Rnk) part
  *  - nb_col_diag: number of columns in diag rankcor (D0) part
  */
-void SmpsOops::forwardOrderColVector(double *x, const int mode,
-				     const SmpsReturn *Ret) {
+void SmpsOops::forwOrderColVector(double *x, const SmpsReturn *Ret) {
 
   int col, offset;
 
@@ -1434,12 +1415,6 @@ void SmpsOops::forwardOrderColVector(double *x, const int mode,
 	 coreCol, smps.getBegPeriodCol(cu_pd_cl) - 1);
 #endif
 
-  // set where the D0Rnk block is to be found in the original vector
-  if (mode == 0)
-    offset = ttn - ncol_ttrc;  // at the end
-  else
-    offset = 0;                // at the beginning
-
   // loops through all columns in the D0Rnk block of original vector
   for (col = 0, coreCol = 0; col < ncol_ttrc; ++col, ++coreCol) {
 
@@ -1459,16 +1434,13 @@ void SmpsOops::forwardOrderColVector(double *x, const int mode,
 
     // and copy value depending on whether it is in D0 or Rnk
     if (Ret->is_col_diag[coreCol])
-      x[nx_col_d0++] = dtmp[col + offset];
+      x[nx_col_d0++] = dtmp[col];
     else
-      x[nx_col_rc++] = dtmp[col + offset];
+      x[nx_col_rc++] = dtmp[col];
   }
 
   // copy remaining columns in the order they are in already
-  if (mode == 0)
-    offset = 0;          // begin from the start
-  else
-    offset = ncol_ttrc;  // begin after rankcor
+  offset = ncol_ttrc;  // begin after rankcor
 
   // nx_col_d0 points to the next entry that should be copied into
   for (col = 0; col < ttn - ncol_ttrc; ++col) {
@@ -1479,13 +1451,8 @@ void SmpsOops::forwardOrderColVector(double *x, const int mode,
   delete[] dtmp;
 }
 
-/** Reorder the rows (if in mode 1, as they are already in order in mode 0) */
-void SmpsOops::backOrderRowVector(double *x, const int mode,
-				  const SmpsReturn *Ret) {
-
-  // nothing needs to be done
-  if (mode == 0)
-    return;
+/** Reorder the rows */
+void SmpsOops::backOrderRowVector(double *x, const SmpsReturn *Ret) {
 
   int i;
   const int ttm = smps.getTotRows(), nRowsRnkc = Ret->nb_row_rnk;
@@ -1509,28 +1476,18 @@ void SmpsOops::backOrderRowVector(double *x, const int mode,
 }
 
 /**
- * forwardOrderRowVector
+ *  Order the rows from the SMPS depth-first order into the order that is used
+ *  internally by OOPS (the only difference is that OOPS has the rows
+ *  correspoding to the first 'level' periods at the end, whereas the SMPS
+ *  depth-first order has them at the beginning).
  *
- * Order the rows from the SMPS depth-first order into the order that is used
- * internally by OOPS (the only difference is that OOPS has the rows
- * correspoding to the first 'level' periods at the end, whereas the SMPS
- * depth-first order has them at the beginning).
- *
- * @param x:
- *        The vector that should be reordered
- * @param mode:
- *        Only used for symmetry with the OrderColVector routines:
- *        should be set to 1, nothing is done if set to 0
- * @param Ret:
- *        Information about the problem with respect to which the
- *        reordering should be done
+ *  @param x:
+ *         The vector that should be reordered
+ *  @param Ret:
+ *         Information about the problem with respect to which the
+ *         reordering should be done
  */
-void SmpsOops::forwardOrderRowVector(double *x, const int mode,
-				     const SmpsReturn *Ret) {
-
-  // nothing needs to be done
-  if (mode == 0)
-    return;
+void SmpsOops::forwOrderRowVector(double *x, const SmpsReturn *Ret) {
 
   int i;
   const int ttm = smps.getTotRows(), nRowsRnkc = Ret->nb_row_rnk;
