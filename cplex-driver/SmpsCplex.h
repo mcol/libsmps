@@ -49,9 +49,6 @@ class SmpsCplex {
   /** Generate the deterministic equivalent for the smps instance */
   ProbData* generateProblem(void);
 
-  /** Return information on the nodes necessary for printing the solution */
-  const NodeInfo* getNodeInfo(void) const;
-
   friend ProbData* setupProblem(Smps &smps);
 
 };

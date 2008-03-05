@@ -65,7 +65,7 @@ int freeProbData(ProbData *data);
 ProbData* setupProblem(Smps &smps);
 
 /** Print the solution */
-void printSolution(const NodeInfo *info,
+void printSolution(const Node *root,
 		   double *primal, double *dual,
 		   double *slacks, double *rcosts);
 

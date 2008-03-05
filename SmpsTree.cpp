@@ -702,16 +702,3 @@ void SmpsTree::printTree() const {
       qNodes.push(node->getChild(i));
   }
 }
-
-/** Return information on the nodes necessary for printing the solution */
-const NodeInfo* SmpsTree::getNodeInfo() const {
-
-  NodeInfo *info = new NodeInfo;
-  info->nNodes = nNodes;
-#if DISABLED
-  info->nRowsNode = f_rw_nd;
-  info->nColsNode = f_cl_nd;
-#endif
-
-  return info;
-}

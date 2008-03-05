@@ -9,6 +9,7 @@
  *
  */
 
+#include <queue>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -411,25 +412,44 @@ int freeProbData(ProbData *PROB) {
 }
 
 /** Print the solution */
-void printSolution(const NodeInfo *info,
+void printSolution(const Node *root,
 		   double *primal, double *dual,
 		   double *slacks, double *rcosts) {
 
-  int i, j, node;
+  int end;
+  const Node *node = root;
 
-  for (node = 0; node < info->nNodes; ++node) {
+  // return immediately if there is no root node
+  if (!node)
+    return;
 
-    printf("\t---   Node %2d (%dx%d)  ---\n", node + 1,
-	   info->nRowsNode[node + 1] - info->nRowsNode[node],
-	   info->nColsNode[node + 1] - info->nColsNode[node]);
-    for (i = info->nRowsNode[node]; i < info->nRowsNode[node + 1]; ++i) {
+  // print the solution in breadth-first order
+  queue<const Node*> qNodes;
+
+  qNodes.push(node);
+
+  while (!qNodes.empty()) {
+
+    node = qNodes.front();
+    qNodes.pop();
+
+    printf("\t---   Node %2d (%dx%d)  ---\n", node->name(),
+	   node->nRows(), node->nCols());
+
+    end = node->firstRow() + node->nRows();
+    for (int i = node->firstRow(); i < end; ++i) {
       printf("Row %d:  Slack = %10f  Dual = %10f\n", i, slacks[i], dual[i]);
     }
 
-    for (j = info->nColsNode[node]; j < info->nColsNode[node + 1]; ++j) {
+    end = node->firstCol() + node->nCols();
+    for (int j = node->firstCol(); j < end; ++j) {
       printf("Column %d:  Value = %10f  Reduced cost = %10f\n",
 	     j, primal[j], rcosts[j]);
     }
+
+    // add the children to the queue of nodes to print
+    for (int i = 0; i < node->nChildren(); ++i)
+      qNodes.push(node->getChild(i));
   }
 
 #if 0

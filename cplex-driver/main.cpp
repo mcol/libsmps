@@ -299,9 +299,7 @@ int SmpsCplex::getSolution(CPXENVptr env, CPXLPptr lp,
 	 obj, iters);
 
   if (opt.printSolution()) {
-    const NodeInfo *info = getNodeInfo();
-    printSolution(info, primal, dual, slack, rcosts);
-    delete info;
+    printSolution(smps.getRootNode(), primal, dual, slack, rcosts);
   }
 
  TERMINATE:

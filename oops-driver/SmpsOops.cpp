@@ -185,27 +185,18 @@ int SmpsOops::getSolution(primal_dual_pb *Prob, SmpsReturn *Ret) {
   SmpsVectorToDense(Prob->z, z, Ret, ORDER_COL);
 
   // print the solution
-  const NodeInfo *info = getNodeInfo();
-
 #ifdef WITH_MPI
   if (IS_ROOT_PAR)
 #endif
-    printSolution(info, x->elts, y->elts, r->elts, z->elts);
+    printSolution(smps.getRootNode(), x->elts, y->elts, r->elts, z->elts);
 
   // clean up
-  delete info;
-
   FreeDenseVector(x);
   FreeDenseVector(y);
   FreeDenseVector(z);
   FreeDenseVector(r);
 
   return 0;
-}
-
-/** Return information on the nodes necessary for printing the solution */
-const NodeInfo* SmpsOops::getNodeInfo() const {
-  return smps.getNodeInfo();
 }
 
 /**

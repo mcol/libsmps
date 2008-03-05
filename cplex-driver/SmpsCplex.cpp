@@ -38,11 +38,6 @@ ProbData* SmpsCplex::generateProblem() {
   return setupProblem(smps);
 }
 
-/** Return information on the nodes necessary for printing the solution */
-const NodeInfo* SmpsCplex::getNodeInfo() const {
-  return smps.getNodeInfo();
-}
-
 /** Constructor */
 OptionsCplex::OptionsCplex(const int argc, const char *argv[]) :
   Options(argc, argv),
