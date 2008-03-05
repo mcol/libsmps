@@ -1301,7 +1301,7 @@ void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
  */
 void SmpsOops::backOrderColVector(double *x, const SmpsReturn *Ret) {
 
-  int col, offset;
+  Node *node = smps.getRootNode();
 
   // total number of columns in RankCor (D0|Rnk)
   const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
@@ -1312,52 +1312,49 @@ void SmpsOops::backOrderColVector(double *x, const SmpsReturn *Ret) {
     dtmp[i] = x[i];
 
   // copy entries into the combined rankcor slot
-  /* is_col_diag[i]==1 for those columns of the first 'level' core periods
-     that are in the first diagonal block D0
-     The complete RankCor (D0Rnk) is made up from the nodes listed in
-     order[0-??]
-  */
+
+  // set the start of the D0 and Rnk blocks
   int nx_col_d0 = 0;                      // next column to take from D0
   int nx_col_rc = ttn - Ret->nb_col_rnk;  // next column to take from Rnk
+  int currPer   = 0;                      // period of the current column
 
-  int coreCol  = 0; // column in core corresponding to the current column
-  int cu_nd_cl = 0; // node of the current column
-  int cu_pd_cl = 0; // smps.getPeriod(order[0]); // period of the current column
-
-#if 0
-  printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",
-	 cu_nd_cl, order[cu_nd_cl], cu_pd_cl - 1,
-	 coreCol, smps.getBegPeriodCol(cu_pd_cl) - 1);
+#ifdef DEBUG_SMPS_ORDER
+  printf("BACKORDCOL: node %3d (per %d): core cols %d--%d\n",
+	 node->name(), currPer,
+	 0, smps.getBegPeriodCol(currPer + 1) - 1);
 #endif
 
   // start writing the (D0Rnk) part
-  for (col = 0, coreCol = 0; col < ncol_ttrc; ++col, ++coreCol) {
+  for (int col = 0, coreCol = 0; col < ncol_ttrc; ++col, ++coreCol) {
 
     // find the column in the original core that this belongs to
-    if (coreCol >= smps.getBegPeriodCol(cu_pd_cl)) {
+    if (coreCol >= smps.getBegPeriodCol(currPer + 1)) {
 
       // if this is past the last column in this node
-      ++cu_nd_cl;
-      cu_pd_cl = 0; // smps.getPeriod(order[cu_nd_cl]);
-      coreCol = smps.getBegPeriodCol(cu_pd_cl - 1);
-#if 0
-      printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",
-	     cu_nd_cl, order[cu_nd_cl], cu_pd_cl - 1,
-	     coreCol, smps.getBegPeriodCol(cu_pd_cl) - 1);
+      node = node->next();
+      currPer = node->level();
+      coreCol = smps.getBegPeriodCol(currPer);
+
+#ifdef DEBUG_SMPS_ORDER
+      printf("BACKORDCOL: node %3d (per %d): core cols %d--%d\n",
+      printf("BACKORDCOL: node %3d: pd=%2d f_cl_core=%d l_cl_core=%d\n",
+	     node->name(), currPer,
+	     coreCol, smps.getBegPeriodCol(currPer + 1) - 1);
 #endif
     }
 
+    // copy the value depending on whether it is in D0 or Rnk
     if (Ret->is_col_diag[coreCol])
       x[col] = dtmp[nx_col_d0++];
     else
       x[col] = dtmp[nx_col_rc++];
   }
 
-  // copy remaining columns in the order they are in already
-  offset = ncol_ttrc;  // begin after rankcor
+  // copy the remaining columns in order, beginning after rankcor
+  int offset = ncol_ttrc;
 
   // nx_col_d0 points to the next col that should be copied from main part
-  for (col = 0; col < ttn - ncol_ttrc; ++col) {
+  for (int col = 0; col < ttn - ncol_ttrc; ++col) {
     x[col + offset] = dtmp[nx_col_d0++];
   }
 
@@ -1383,7 +1380,7 @@ void SmpsOops::backOrderColVector(double *x, const SmpsReturn *Ret) {
  */
 void SmpsOops::forwOrderColVector(double *x, const SmpsReturn *Ret) {
 
-  int col, offset;
+  Node *node = smps.getRootNode();
 
   // total number of columns in RankCor (D0|Rnk)
   const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
@@ -1395,55 +1392,48 @@ void SmpsOops::forwOrderColVector(double *x, const SmpsReturn *Ret) {
 
   // copy entries from the combined rankcor slot into OOPS RankCor and
   // first diagonal
-  /* is_col_diag[i]==1 for those columns of the first 'level' core periods
-     that are in the first diagonal block D0.
-     The complete RankCor (D0Rnk) is made up from the nodes listed in
-     order[0-??].
-  */
 
   // set the start of the D0 and Rnk blocks
   int nx_col_d0 = 0;                      // next column in D0
   int nx_col_rc = ttn - Ret->nb_col_rnk;  // next column in Rnk
+  int currPer   = 0;                      // period of the current column
 
-  int coreCol  = 0; // column in core corresponding to the current column
-  int cu_nd_cl = 0; // node of the current column
-  int cu_pd_cl = 0; // smps.getPeriod(order[0]); // period of the current column
-
-#if 0
-  printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",
-	 cu_nd_cl, order[cu_nd_cl], cu_pd_cl - 1,
-	 coreCol, smps.getBegPeriodCol(cu_pd_cl) - 1);
+#ifdef DEBUG_SMPS_ORDER
+  printf("FORWORDCOL: node %3d (per %d): core cols %d--%d\n",
+	 node->name(), currPer,
+	 0, smps.getBegPeriodCol(currPer + 1) - 1);
 #endif
 
-  // loops through all columns in the D0Rnk block of original vector
-  for (col = 0, coreCol = 0; col < ncol_ttrc; ++col, ++coreCol) {
+  // loop through all columns in the D0Rnk block of original vector
+  for (int col = 0, coreCol = 0; col < ncol_ttrc; ++col, ++coreCol) {
 
     // find the column in the original core that this belongs to
-    if (coreCol >= smps.getBegPeriodCol(cu_pd_cl)) {
+    if (coreCol >= smps.getBegPeriodCol(currPer + 1)) {
 
       // if this is past the last column in this node
-      ++cu_nd_cl;
-      cu_pd_cl = 0; // smps.getPeriod(order[cu_nd_cl]);
-      coreCol = smps.getBegPeriodCol(cu_pd_cl - 1);
-#if 0
-      printf("ORDCOL: nd=%3d orig_nd= %3d pd=%2d f_cl_core=%d l_cl_core=%d\n",
-	     cu_nd_cl, order[cu_nd_cl], cu_pd_cl - 1,
-	     coreCol, smps.getBegPeriodCol(cu_pd_cl) - 1);
+      node = node->next();
+      currPer = node->level();
+      coreCol = smps.getBegPeriodCol(currPer);
+
+#ifdef DEBUG_SMPS_ORDER
+      printf("FORWORDCOL: node %3d (per %d): core cols %d--%d\n",
+	     node->name(), currPer,
+	     coreCol, smps.getBegPeriodCol(currPer + 1) - 1);
 #endif
     }
 
-    // and copy value depending on whether it is in D0 or Rnk
+    // copy the value depending on whether it is in D0 or Rnk
     if (Ret->is_col_diag[coreCol])
       x[nx_col_d0++] = dtmp[col];
     else
       x[nx_col_rc++] = dtmp[col];
   }
 
-  // copy remaining columns in the order they are in already
-  offset = ncol_ttrc;  // begin after rankcor
+  // copy the remaining columns in order, beginning after rankcor
+  int offset = ncol_ttrc;
 
   // nx_col_d0 points to the next entry that should be copied into
-  for (col = 0; col < ttn - ncol_ttrc; ++col) {
+  for (int col = 0; col < ttn - ncol_ttrc; ++col) {
     x[nx_col_d0++] = dtmp[col + offset];
   }
 
