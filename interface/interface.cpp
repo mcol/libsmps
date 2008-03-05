@@ -451,32 +451,6 @@ void printSolution(const Node *root,
     for (int i = 0; i < node->nChildren(); ++i)
       qNodes.push(node->getChild(i));
   }
-
-#if 0
-  int nRows = info->nRowsNode[info->nNodes];
-  int nCols = info->nColsNode[info->nNodes];
-
-  for (i = 0, node = 0; i < nRows; ++i) {
-
-    if (i == info->nRowsNode[node]) {
-      printf("\t---   Node %2d   ---\n", node + 1);
-      ++node;
-    }
-
-    printf("Row %d:  Slack = %10f  Dual = %10f\n", i, slacks[i], dual[i]);
-  }
-
-  for (j = 0, node = 0; j < nCols; ++j) {
-
-    if (j == info->nColsNode[node]) {
-      printf("\t---   Node %2d   ---\n", node + 1);
-      ++node;
-    }
-
-    printf("Column %d:  Value = %10f  Reduced cost = %10f\n",
-	   j, primal[j], rcosts[j]);
-  }
-#endif
 }
 
 /**
