@@ -178,6 +178,9 @@ class SmpsCore {
     return begPeriodCol[per];
   }
 
+  /** Convert the inequality constraints to equalities */
+  void modifyCore(void);
+
   /** Retrieve the sparse representation of the matrix */
   const SparseData getSparseData(void) const;
 
@@ -320,9 +323,6 @@ class SmpsCore {
   /** Match the names from the time file to those of the core file */
   int findTimeCoreMatches(const vector<string> &begPeriodRowName,
 			  const vector<string> &begPeriodColName);
-
-  /** Convert the inequality constraints to equalities */
-  void modifyCore(void);
 
 };
 

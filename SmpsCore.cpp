@@ -305,11 +305,6 @@ int SmpsCore::readTimeFile(string timeFileName) {
   time.close();
 
   rv = findTimeCoreMatches(begPeriodRowName, begPeriodColName);
-  if (rv)
-    return rv;
-
-  // take care of slacks
-  modifyCore();
 
   return rv;
 }
@@ -792,8 +787,8 @@ void SmpsCore::modifyCore() {
 
 #ifdef WITH_MPI
   if (IS_ROOT_PAR)
-  printf("Added %d slacks to core matrix.\n", nSlacks);
 #endif
+  printf("Added %d slacks to core matrix.\n", nSlacks);
 
 #ifdef DEBUG_SMPSCORE
   printf("Period starts are now:\n"

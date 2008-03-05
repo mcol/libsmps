@@ -38,6 +38,9 @@ int SmpsOops::read() {
   if (rv)
     return rv;
 
+  // take care of slacks
+  smps.modifyCore();
+
   // reorder the nodes according to the level
   rv = orderNodes();
 
