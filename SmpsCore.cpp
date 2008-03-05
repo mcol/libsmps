@@ -89,7 +89,7 @@ int SmpsCore::countRows() {
   char buffer[SMPS_LINE_MAX];
   char type[SMPS_FIELD_SIZE], name[SMPS_FIELD_SIZE];
   bool foundRows = false;
-  int nValuesRead, rv;
+  int nValuesRead, rv = 0;
 
   // open the input file
   core.open(coreFile.c_str(), ifstream::in);
@@ -113,12 +113,11 @@ int SmpsCore::countRows() {
       if (strcmp(type, "ROWS") == 0)
 	foundRows = true;
 
-      if (strcmp(type, "COLUMNS") == 0)
+      else if (strcmp(type, "COLUMNS") == 0)
 	break;
     }
-    else if (nValuesRead == 2) {
-      if (foundRows)
-	++nRows;
+    else if (nValuesRead == 2 && foundRows) {
+      ++nRows;
     }
 
     else {
@@ -126,10 +125,17 @@ int SmpsCore::countRows() {
     }
   }
 
+  // we may have reached the end of the file without having found
+  // the information we wanted
+  if (!foundRows) {
+    cerr << "Problem reading the core file." << endl;
+    rv = ERROR_CORE_FORMAT;
+  }
+
   // close the input file
   core.close();
 
-  return 0;
+  return rv;
 }
 
 /** Read the core file */
@@ -160,7 +166,11 @@ int SmpsCore::readCoreFile(string coreFileName) {
     return ERROR_FILE_NOT_FOUND;
   }
 
-  countRows();
+  // scan the core file to count the number of rows declared
+  rv = countRows();
+  if (rv)
+    return rv;
+
   maxm = nRows + 1, maxn = 5 * nRows;
   maxnza = (maxm*maxn/1000 > maxn*10) ? maxm*maxn/1000 : maxn*10;
 
