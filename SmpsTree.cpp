@@ -304,7 +304,8 @@ int getStocType(const char *buffer) {
     return TYPE_BLOCKS;
   }
 
-  else if (strcmp(type, "SCENARIOS") == 0) {
+  else if (strcmp(type, "SCENARIOS") == 0 ||
+	   strcmp(type, "SCEN") == 0) {
     return TYPE_SCENARIOS;
   }
 
