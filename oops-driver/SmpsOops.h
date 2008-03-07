@@ -40,7 +40,7 @@ class SmpsOops {
   /** Solve the problem instance */
   int solve(const OptionsOops &opt, HopdmOptions *hopdm_options);
 
-  int getSolution(primal_dual_pb *Prob, SmpsReturn *Ret);
+  int getSolution(PDProblem *Prob, SmpsReturn *Ret);
 
  private:
 
@@ -57,7 +57,7 @@ class SmpsOops {
   SmpsReturn* generateSmps(void);
 
   /** Set up the Oops algebras and vectors and build the primal-dual problem */
-  primal_dual_pb* setupProblem(SmpsReturn *Pb);
+  PDProblem* setupProblem(SmpsReturn *Pb);
 
   /** Order the nodes according to the cutoff level */
   int orderNodes(Node *node);

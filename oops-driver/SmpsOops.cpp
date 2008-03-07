@@ -68,7 +68,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
   }
 
   // setup the primal-dual problem
-  primal_dual_pb *pdProb = setupProblem(prob);
+  PDProblem *pdProb = setupProblem(prob);
 
   // write the deterministic equivalent in mps format
   if (opt.writeMps()) {
@@ -124,14 +124,13 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
  *
  *  @param Pb:
  *         Pointer to an SmpsReturn structure.
- *  @return Pointer to a primal_dual_pb structure containing the problem
- *          to be solved by Oops.
+ *  @return Pointer to the problem to be solved by Oops.
  *
  *  @note
  *  InitAlgebrasNew assumes that a callback function is set up for all
  *  SparseMatrix leaves of A and Q.
  */
-primal_dual_pb* SmpsOops::setupProblem(SmpsReturn *Pb) {
+PDProblem* SmpsOops::setupProblem(SmpsReturn *Pb) {
 
   Algebra *A = Pb->AlgA;
   Algebra *Q = Pb->AlgQ;
@@ -166,7 +165,7 @@ primal_dual_pb* SmpsOops::setupProblem(SmpsReturn *Pb) {
  *  The value of the slacks is always zero, as the slacks would need to be
  *  computed here.
  */
-int SmpsOops::getSolution(primal_dual_pb *Prob, SmpsReturn *Ret) {
+int SmpsOops::getSolution(PDProblem *Prob, SmpsReturn *Ret) {
 
   DenseVector *x, *y, *z, *r;
   Tree *Trow = Ret->AlgA->Trow;
