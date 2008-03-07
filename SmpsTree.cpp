@@ -586,12 +586,12 @@ int SmpsTree::scanScenariosType(ifstream &stoc) {
  *
  *  @note The nonzeros in the objective row are not considered.
  */
-int SmpsTree::countNonzeros() {
+int SmpsTree::countNonzeros(const Node *rootNode) {
 
   int nzTotal = 0;
   int nPeriod = getPeriods();
 
-  Node *node = root;
+  const Node *node = rootNode;
 
   // leave immediately if there is no root node
   if (!node)

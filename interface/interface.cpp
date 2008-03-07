@@ -62,13 +62,13 @@ ProbData *setupMatrix(Smps &smps) {
   int ttn = smps.getTotCols();
 
   // count the number of nonzero elements
-  int ttnz = smps.countNonzeros();
+  int ttnz = smps.countNonzeros(smps.getRootNode());
 
   assert(ttm >= smps.getRows() - 1);
   assert(ttn >= smps.getCols());
 
   // dimensions of the deterministic equivalent
-  printf("Deterministic equivalent matrix is %dx%d, %d nonzeros.\n",
+  printf("The deterministic equivalent matrix is %dx%d, %d nonzeros.\n",
 	 ttm, ttn, ttnz);
 
   // allocate space for the arrays

@@ -387,7 +387,7 @@ class SmpsTree : public SmpsCore {
   }
 
   /** Count the number of nonzeros in the deterministic equivalent matrix */
-  int countNonzeros(void);
+  int countNonzeros(const Node *rootNode);
 
   /** Retrieve the scenario number for the given node */
   int getScenario(const int node) const {
