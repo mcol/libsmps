@@ -610,7 +610,7 @@ SmpsReturn* SmpsOops::generateSmps() {
   applyScenarios(Ret, DiagEntries, RightColEntries, f_rw_blk, f_cl_blk);
 
   // reorder objective, bounds and column names
-  reorderObjective(Ret->c, Ret->u, is_col_diag, rnkc_n_blk[0], Ret->colnames);
+  reorderObjective(Ret, rnkc_n_blk[0]);
 
   // set up the deterministic equivalent as a DblBordDiagAlgebra
   DblBordDiagSimpleMatrix *MA = NewDblBordDiagSimpleMatrix(nBlocks + 1, Bottom,
@@ -1144,9 +1144,7 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
  *  equivalent:
  *     [Diag-0 Diag-1 ... Diag-n RnkC]
  */
-void SmpsOops::reorderObjective(DenseVector *obj, DenseVector *upb,
-				int *is_col_diag, const int rnkn,
-				char **colnames) {
+void SmpsOops::reorderObjective(SmpsReturn *Ret, const int rnkn) {
 
   int col, coreCol, firstColDiag, firstColNode;
   int nb_el = 0;
@@ -1155,6 +1153,10 @@ void SmpsOops::reorderObjective(DenseVector *obj, DenseVector *upb,
   Node *node = smps.getRootNode();
   if (!node)
     return;
+
+  DenseVector *obj = Ret->c, *upb = Ret->u;
+  int *is_col_diag = Ret->is_col_diag;
+  char **colnames  = Ret->colnames;
 
   double *objCopy = (double *) malloc(ttn * sizeof(double));
   double *upbCopy = (double *) malloc(ttn * sizeof(double));

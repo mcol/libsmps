@@ -70,8 +70,8 @@ class SmpsOops {
 		     Algebra **DiagEntries, Algebra **RightColEntries,
 		     int *f_rw_blk, int *f_cl_blk);
 
-  void reorderObjective(DenseVector *obj, DenseVector *upb,
-			int *is_col_diag, const int rnkn, char **colnames);
+  /** Reorder objective and bounds */
+  void reorderObjective(SmpsReturn *Ret, const int rnkn);
 
   void setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
 			   int *p_pd_rw, int *f_rw_blk, int *is_col_diag,
