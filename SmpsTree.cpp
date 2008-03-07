@@ -253,7 +253,7 @@ int SmpsTree::readStocFile(string stocFileName) {
 
 #ifdef DEBUG
   if (nNodes <= 100)
-    printTree();
+    printTree(root);
 #endif
 
  TERMINATE:
@@ -675,16 +675,16 @@ int SmpsTree::setNodeStarts(Node *rootNode) {
 }
 
 /** Print the stochastic tree information */
-void SmpsTree::printTree() const {
+void SmpsTree::printTree(const Node *rootNode) const {
 
-  Node *node = root;
+  const Node *node = rootNode;
 
   // leave immediately if there is no root node
   if (!node)
     return;
 
   // queue of nodes to be printed out in breadth-first order
-  queue<Node*> qNodes;
+  queue<const Node*> qNodes;
 
   // start from the root
   qNodes.push(node);
