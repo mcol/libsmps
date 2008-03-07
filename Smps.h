@@ -420,7 +420,7 @@ class SmpsTree : public SmpsCore {
   }
 
   /** Set the start rows and columns for each node */
-  int setNodeStarts();
+  int setNodeStarts(Node *rootNode);
 
   /** Print the stochastic tree information */
   void printTree(void) const;

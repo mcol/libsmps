@@ -247,7 +247,7 @@ int SmpsTree::readStocFile(string stocFileName) {
   }
 
   // set the start rows and columns for each node
-  rv = setNodeStarts();
+  rv = setNodeStarts(root);
   if (rv)
     goto TERMINATE;
 
@@ -637,13 +637,17 @@ int SmpsTree::countNonzeros() {
  *
  *  This sets the dimension of each node and the indices of the first
  *  row and column in the deterministic equivalent matrix.
+ *
+ *  @param rootNode:
+ *         The root node of the tree whose indices need to be updated.
+ *  @return 1 If something goes wrong; 0 otherwise.
  */
-int SmpsTree::setNodeStarts() {
+int SmpsTree::setNodeStarts(Node *rootNode) {
 
   int per, rows, cols;
   int ttm = 0, ttn = 0;
 
-  Node *node = root;
+  Node *node = rootNode;
 
   // leave immediately if there is no root node
   if (!node)

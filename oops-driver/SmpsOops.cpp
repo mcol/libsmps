@@ -42,7 +42,7 @@ int SmpsOops::read() {
   smps.modifyCore();
 
   // reorder the nodes according to the level
-  rv = orderNodes();
+  rv = orderNodes(smps.getRootNode());
 
   return rv;
 }
@@ -208,11 +208,15 @@ int SmpsOops::getSolution(primal_dual_pb *Prob, SmpsReturn *Ret) {
  *  The nodes of the event tree are reordered according to the cutoff level:
  *  - breadth-first until given level (so that these nodes come first)
  *  - depth-first afterwards          (to give diagonal structure in rest)
+ *
+ *  @param node:
+ *         Root node of the tree to be reordered.
+ *  @return 1 If something goes wrong; 0 otherwise.
  */
-int SmpsOops::orderNodes() {
+int SmpsOops::orderNodes(Node *rootNode) {
 
   int nPeriods = smps.getPeriods();
-  Node *node = smps.getRootNode();
+  Node *node = rootNode;
 
   // leave immediately if there is no root node
   if (!node)
@@ -267,7 +271,7 @@ int SmpsOops::orderNodes() {
   // update the next links
 
   // start from the root
-  node = smps.getRootNode();
+  node = rootNode;
 
   do {
 
@@ -281,7 +285,7 @@ int SmpsOops::orderNodes() {
   printf("Found %d diagonal blocks.\n", nBlocks);
   printf("Reporting new order of nodes in big Matrix:\n");
   printf("  node   per  block\n");
-  node = smps.getRootNode();
+  node = rootNode;
   do {
     printf("  %3d   %3d   %3d\n",
 	   node->name(), node->level() + 1, node->block());
@@ -289,7 +293,7 @@ int SmpsOops::orderNodes() {
 #endif
 
   // reset the period starts
-  smps.setNodeStarts();
+  smps.setNodeStarts(rootNode);
 
   return 0;
 }

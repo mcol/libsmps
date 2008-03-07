@@ -60,7 +60,7 @@ class SmpsOops {
   primal_dual_pb* setupProblem(SmpsReturn *Pb);
 
   /** Order the nodes according to the cutoff level */
-  int orderNodes(void);
+  int orderNodes(Node *node);
 
   /** Perform a recursive depth-first ordering of the node and its children */
   void dfsNode(queue<Node*> &qOrder, Node *node);
