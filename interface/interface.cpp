@@ -29,6 +29,8 @@ ProbData* setupProblem(Smps &smps) {
 
   // setup the matrix
   PROB = setupMatrix(smps);
+  if (!PROB)
+    return NULL;
 
   // setup the right-hand side
   setupRhs(PROB, smps);
