@@ -61,7 +61,7 @@ int SmpsOops::read() {
 int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
 
   // generate the problem
-  SmpsReturn *prob = generateSmps();
+  SmpsReturn *prob = generateSmps(smps.getRootNode());
 
   // check the validity of the arguments
   if (!prob) {

@@ -62,7 +62,7 @@ class SmpsOops {
   }
 
   /** Generate the deterministic equivalent for the smps instance */
-  SmpsReturn* generateSmps(void);
+  SmpsReturn* generateSmps(const Node *rootNode);
 
   /** Set up the Oops algebras and vectors and build the primal-dual problem */
   PDProblem* setupProblem(SmpsReturn *Pb);
@@ -150,6 +150,9 @@ struct SmpsReturn {
   /** Columns in first 'level' periods of core matrix that can be shifted
       to the first diagonal block */
   int *is_col_diag;
+
+  /** Root node of the tree for which the problem has been generated */
+  const Node *rootNode;
 
 };
 

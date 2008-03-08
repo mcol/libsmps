@@ -60,7 +60,11 @@ setupObjective(const Smps &smps, SmpsReturn *Ret);
  *  (4c) Correct RHS and objvalue.
  *	 Do this on whole Matrix (therefore needs to be done after 5a)
  */
-SmpsReturn* SmpsOops::generateSmps() {
+SmpsReturn* SmpsOops::generateSmps(const Node *rootNode) {
+
+  // ensure that the root node exists
+  if (!rootNode)
+    return NULL;
 
   // whole matrices A/Q
   Algebra *AlgA, *AlgQ;
@@ -68,6 +72,10 @@ SmpsReturn* SmpsOops::generateSmps() {
   SmpsReturn *Ret = new SmpsReturn;
 
   int i, j, k;
+  const Node *node;
+
+  // store the root node
+  Ret->rootNode = rootNode;
 
   // col and nonzeros in new D-0 matrix
   int nzdg0, cldg0;
@@ -220,7 +228,7 @@ SmpsReturn* SmpsOops::generateSmps() {
     cldg0 = 0;    // total columns in first diagonal
     cu_nd_cl = 0;
 
-    Node *node = smps.getRootNode();
+    node = rootNode;
 
     do {
 
@@ -378,7 +386,7 @@ SmpsReturn* SmpsOops::generateSmps() {
 	   i, rnkc_nz_pd[i], diag_nz_pd[i]);
   }
 
-  Node *node = smps.getRootNode();
+  node = rootNode;
 
   do {
 
@@ -509,7 +517,7 @@ SmpsReturn* SmpsOops::generateSmps() {
   b_cu_blk_cl = 0;  // first column in big matrix of current node
   cu_blk_cl = 0;
 
-  node = smps.getRootNode();
+  node = rootNode;
 
   // for all columns in the deterministic equivalent
   for (i = 0; i < ttn; ++i) {
@@ -768,7 +776,7 @@ void setupRhs(const Smps &smps, SmpsReturn *Ret) {
   int firstRowNode, begRowPeriod, period;
   char scname[8], *p;
   DenseVector *rhs = Ret->b;
-  Node *node = smps.getRootNode();
+  const Node *node = Ret->rootNode;
 
   // leave immediately if there is no root node
   if (!node)
@@ -810,7 +818,7 @@ void setupObjective(const Smps &smps, SmpsReturn *Ret) {
   int row, firstColNode, begColPeriod, period;
   char buffer[50], scname[8], *p;
   DenseVector *obj = Ret->c, *upb = Ret->u;
-  Node *node = smps.getRootNode();
+  const Node *node = Ret->rootNode;
 
   // leave immediately if there is no root node
   if (!node)
@@ -955,7 +963,7 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
   const int *entryRow = smps.getEntryRow();
   const int *entryCol = smps.getEntryCol();
   const double *entryVal = smps.getEntryVal();
-  Node *node = smps.getRootNode(), *scNode;
+  const Node *node = Ret->rootNode, *scNode;
   SparseSimpleMatrix *sparse;
 
   // We start from the leaf nodes and traverse the tree up to the root,
@@ -1067,7 +1075,7 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 	    int iblkrnc = 0, iblkd0 = 0;
 
 	    // node of the current column and corresponding period
-	    Node *nd = smps.getRootNode();
+	    const Node *nd = Ret->rootNode;
 	    int ndPd = nd->level();
 	    int bigCol, coreCol;
 
@@ -1150,7 +1158,7 @@ void SmpsOops::reorderObjective(SmpsReturn *Ret, const int rnkn) {
   int nb_el = 0;
   int ttn = smps.getTotCols();
 
-  Node *node = smps.getRootNode();
+  const Node *node = Ret->rootNode;
   if (!node)
     return;
 
@@ -1178,7 +1186,7 @@ void SmpsOops::reorderObjective(SmpsReturn *Ret, const int rnkn) {
 
   // copy the diagonal elements from the first block (Diag-0)
   firstColNode = 0;
-  for (col = 0, node = smps.getRootNode(); col < firstColDiag; ++col) {
+  for (col = 0, node = Ret->rootNode; col < firstColDiag; ++col) {
 
     // check if the current column belongs to the next node
     if (col - firstColNode >= node->nCols()) {
@@ -1209,7 +1217,7 @@ void SmpsOops::reorderObjective(SmpsReturn *Ret, const int rnkn) {
 
   // copy the RankCorrector entries from the first block
   firstColNode = 0;
-  for (col = 0, node = smps.getRootNode(); col < firstColDiag; ++col) {
+  for (col = 0, node = Ret->rootNode; col < firstColDiag; ++col) {
 
     // check if the current column belongs to the next node
     if (col - firstColNode >= node->nCols()) {
@@ -1303,7 +1311,7 @@ void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
  */
 void SmpsOops::backOrderColVector(double *x, const SmpsReturn *Ret) {
 
-  Node *node = smps.getRootNode();
+  const Node *node = Ret->rootNode;
 
   // total number of columns in RankCor (D0|Rnk)
   const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
@@ -1382,7 +1390,7 @@ void SmpsOops::backOrderColVector(double *x, const SmpsReturn *Ret) {
  */
 void SmpsOops::forwOrderColVector(double *x, const SmpsReturn *Ret) {
 
-  Node *node = smps.getRootNode();
+  const Node *node = Ret->rootNode;
 
   // total number of columns in RankCor (D0|Rnk)
   const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
