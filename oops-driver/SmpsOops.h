@@ -47,11 +47,19 @@ class SmpsOops {
   /** The smps instance to solve */
   Smps smps;
 
+  /** Root node of a reduced event tree */
+  Node *rootReduced;
+
   /** The cutoff level */
   int level;
 
   /** Number of diagonal blocks in the deterministic equivalent */
   int nBlocks;
+
+  /** Return the root node of the reduced event tree */
+  Node* getRootNodeReduced(void) {
+    return rootReduced;
+  }
 
   /** Generate the deterministic equivalent for the smps instance */
   SmpsReturn* generateSmps(void);

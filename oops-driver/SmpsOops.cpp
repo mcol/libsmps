@@ -22,6 +22,7 @@ double tt_start, tt_end;
 /** Constructor */
 SmpsOops::SmpsOops(string smpsFile, const int lev) :
   smps(smpsFile),
+  rootReduced(NULL),
   level(lev),
   nBlocks(0) {
 }
@@ -29,6 +30,7 @@ SmpsOops::SmpsOops(string smpsFile, const int lev) :
 /** Destructor */
 SmpsOops::~SmpsOops() {
 
+  delete rootReduced;
 }
 
 /** Read the smps files */
