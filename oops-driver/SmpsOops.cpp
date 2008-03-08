@@ -9,7 +9,6 @@
  *
  */
 
-#include <iostream>
 #include <queue>
 #include "SmpsOops.h"
 #include "oops/oopstime.h"
@@ -62,10 +61,8 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
 
   // generate the problem
   SmpsReturn *prob = generateSmps(smps.getRootNode());
-
-  // check the validity of the arguments
   if (!prob) {
-    cout << "No problem defined." << endl;
+    printf("Failed to generate the deterministic equivalent.\n");
     return 1;
   }
 
@@ -135,10 +132,8 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 
   // generate a reduced problem
   SmpsReturn *prob = generateSmps(getRootNodeReduced());
-
-  // check the validity of the arguments
   if (!prob) {
-    cout << "No problem defined." << endl;
+    printf("Failed to generate the deterministic equivalent.\n");
     return 1;
   }
 
