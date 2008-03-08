@@ -33,9 +33,8 @@ Node::Node(const int nodeName) :
 Node::~Node() {
 
   // free the space occupied by the children nodes
-  for (vector<Node *>::iterator childNode = _children.begin();
-       childNode != _children.end(); ++childNode) {
-    delete *childNode;
+  for (int i = 0; i < (int) _children.size(); ++i) {
+    delete _children[i];
   }
 }
 
