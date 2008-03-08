@@ -140,6 +140,11 @@ class SmpsCore {
     return varType[col];
   }
 
+  /** Return whether the problem has upper bounds */
+  bool hasUpperBounds(void) const {
+    return _hasUpperBounds;
+  }
+
   /** Return the right-hand side value for the given row */
   double getRhs(const int row) const {
     return rhs[row];
@@ -283,6 +288,9 @@ class SmpsCore {
 
   /** Linked list of columns with same code */
   int *lnkclcd;
+
+  /** Whether the problem has upper bounds */
+  bool _hasUpperBounds;
 
   /** Number of periods in the time file */
   int nPeriods;

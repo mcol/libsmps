@@ -145,12 +145,24 @@ PDProblem* SmpsOops::setupProblem(SmpsReturn *Pb) {
   Vector *vx = NewVector(A->Tcol, "vx");
   Vector *vy = NewVector(A->Trow, "vy");
   Vector *vz = NewVector(A->Tcol, "vz");
+  Vector *vs, *vw;
+  if (smps.hasUpperBounds()) {
+    vs = NewVector(A->Tcol, "vs");
+    vw = NewVector(A->Tcol, "vw");
+  }
 
   CopyDenseToVector(Pb->b, vb);
   CopyDenseToVector(Pb->c, vc);
   CopyDenseToVector(Pb->u, vu);
 
-  return NewPDProblem(AlgAug, vb, vc, vu, vx, vy, vz);
+  // create the primal dual problem
+  PDProblem *Prob = NewPDProblem(AlgAug, vb, vc, vu, vx, vy, vz);
+  if (smps.hasUpperBounds()) {
+    Prob->s = vs;
+    Prob->w = vw;
+  }
+
+  return Prob;
 }
 
 /**

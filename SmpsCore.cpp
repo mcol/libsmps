@@ -50,6 +50,7 @@ SmpsCore::SmpsCore(string coreFileName, string timeFileName) :
   hdclcd(NULL),
   lnkrwcd(NULL),
   lnkclcd(NULL),
+  _hasUpperBounds(false),
   nPeriods(0),
   begPeriodRow(NULL),
   begPeriodCol(NULL),
@@ -207,6 +208,14 @@ int SmpsCore::readCoreFile(string coreFileName) {
 
   if (rv)
     goto TERMINATE;
+
+  // find out if there are any upper bounded variables
+  for (int i = 0; i < nRows; ++i) {
+    if (varType[i] == 1 || varType[i] == 3) {
+      _hasUpperBounds = true;
+      break;
+    }
+  }
 
   // convert the character arrays into vectors of strings
   convertNames(rwname, clname);
