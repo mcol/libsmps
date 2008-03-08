@@ -66,13 +66,14 @@ Node* Node::getChild(const int childNumber) const {
 void Node::print() const {
 
   // node parent scen n_chd per prob | rows cols
-  printf("  %4i  %4i  %4i  %4i  %4i   %.4f  | %4i  %4i\n",
+  printf("  %4i  %4i  %4i  %4i  %4i   %.4f  | %4i  %4i  (%4i)\n",
 	 _name,
 	 _parent ? _parent->name() : 0,
-	 _scenario,
+	 _scenario + 1,
 	 nChildren(),
 	 _level + 1,
 	 _probNode,
 	 _nRows,
-	 _nCols);
+	 _nCols,
+	 next() ? next()->name() : -1);
 }
