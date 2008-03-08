@@ -93,8 +93,14 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
     goto TERMINATE;
   }
 
-  // fill the data of the LP problem
+  // generate the deterministic equivalent
   ProbData *prob = generateProblem();
+  if (!prob) {
+    fprintf(stderr, "Failed to generate the deterministic equivalent.\n");
+    goto TERMINATE;
+  }
+
+  // fill the data of the LP problem
   status = createLP(env, lp, prob);
   if (status) {
     fprintf(stderr, "Failed to fill the data of the LP problem.\n");
