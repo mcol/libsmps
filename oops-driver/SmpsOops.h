@@ -37,8 +37,11 @@ class SmpsOops {
   /** Read the smps files */
   int read(void);
 
-  /** Solve the problem instance */
+  /** Solve the complete problem */
   int solve(const OptionsOops &opt, HopdmOptions *hopdm_options);
+
+  /** Solve a reduced problem */
+  int solveReduced(const OptionsOops &opt, HopdmOptions *hopdm_options);
 
   int getSolution(PDProblem *Prob, SmpsReturn *Ret);
 
