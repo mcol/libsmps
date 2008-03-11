@@ -1245,18 +1245,18 @@ void SmpsOops::reorderObjective(SmpsReturn *Ret, const int rnkn) {
 }
 
 /**
- *  Copy a Vector into a depth-first ordered DenseVector.
+ *  Copy a Vector into a breadth-first ordered DenseVector.
  *
  *  Copies a Vector as used by OOPS into a DenseVector corresponding to a
- *  depth-first ordering of the scenario tree.
+ *  breadth-first ordering of the scenario tree.
  */
-void SmpsOops::SmpsVectorToDense(Vector *x, DenseVector *dx,
-				 SmpsReturn *Ret, const int rowcol) {
+void SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
+				 const SmpsReturn *Ret, const int rowcol) {
 
   SetExactVector(x);
   CopyToDenseVector(x, dx);
 
-  // reorder according to the SMPS depth-first order
+  // reorder according to the SMPS breadth-first order
   if (rowcol == ORDER_COL)
     backOrderColVector(dx->elts, Ret);
   else
@@ -1264,10 +1264,10 @@ void SmpsOops::SmpsVectorToDense(Vector *x, DenseVector *dx,
 }
 
 /**
- *  Copy a depth-first ordered DenseVector into a Vector.
+ *  Copy a breadth-first ordered DenseVector into a Vector.
  *
- *  Copies a DenseVector corresponding to a depth-first ordering of the
- *  scenario tree into a Vector as used by OOPS.
+ *  Copies a DenseVector corresponding to a breadth-first ordering of the
+ *  scenario tree into a Vector in the mixed ordering used by OOPS.
  *
  *  Reorders the elements according to the reordering used by OOPS:
  *  first period entries are placed at the end rather than at the beginning,
@@ -1275,7 +1275,7 @@ void SmpsOops::SmpsVectorToDense(Vector *x, DenseVector *dx,
  *  diagonal block, rather than in the RankCor block.
  */
 void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
-				 SmpsReturn *Ret, const int rowcol) {
+				 const SmpsReturn *Ret, const int rowcol) {
 
   // should attempt to leave the original element order intact
 
@@ -1476,10 +1476,10 @@ void SmpsOops::backOrderRowVector(double *x, const SmpsReturn *Ret) {
 }
 
 /**
- *  Order the rows from the SMPS depth-first order into the order that is used
+ *  Order the rows from the SMPS breadth-first order into the order used
  *  internally by OOPS (the only difference is that OOPS has the rows
  *  correspoding to the first 'level' periods at the end, whereas the SMPS
- *  depth-first order has them at the beginning).
+ *  breadth-first order has them at the beginning).
  *
  *  @param x:
  *         The vector that should be reordered

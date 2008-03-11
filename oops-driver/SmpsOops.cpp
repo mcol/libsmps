@@ -234,9 +234,9 @@ int SmpsOops::getSolution(PDProblem *Prob, SmpsReturn *Ret) {
   r = NewDenseVector(nRows, "slacks");
 
   // recover initial order on solution vectors
-  SmpsVectorToDense(Prob->x, x, Ret, ORDER_COL);
-  SmpsVectorToDense(Prob->y, y, Ret, ORDER_ROW);
-  SmpsVectorToDense(Prob->z, z, Ret, ORDER_COL);
+  VectorToSmpsDense(Prob->x, x, Ret, ORDER_COL);
+  VectorToSmpsDense(Prob->y, y, Ret, ORDER_ROW);
+  VectorToSmpsDense(Prob->z, z, Ret, ORDER_COL);
 
   // print the solution
 #ifdef WITH_MPI

@@ -90,13 +90,13 @@ class SmpsOops {
 			   const Node *node, const int colBlk,
 			   const int rnkCol, const int coreCol);
 
-  /** Copy a Vector into a depth-first ordered DenseVector */
-  void SmpsVectorToDense(Vector *v, DenseVector *dv,
-			 SmpsReturn *Ret, const int ordering);
+  /** Copy a Vector into a breadth-first ordered DenseVector */
+  void VectorToSmpsDense(Vector *v, DenseVector *dv,
+			 const SmpsReturn *Ret, const int ordering);
 
-  /** Copy a depth-first ordered DenseVector into a Vector */
+  /** Copy a breadth-first ordered DenseVector into a Vector */
   void SmpsDenseToVector(DenseVector *dv, Vector *v,
-			 SmpsReturn *Ret, const int ordering);
+			 const SmpsReturn *Ret, const int ordering);
 
   void backOrderRowVector(double *x, const SmpsReturn *Ret);
   void backOrderColVector(double *x, const SmpsReturn *Ret);
