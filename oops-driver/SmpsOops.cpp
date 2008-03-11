@@ -346,6 +346,10 @@ int SmpsOops::orderNodes(Node *rootNode) {
   // reset the period starts
   smps.setNodeStarts(rootNode);
 
+  // dimensions of the deterministic equivalent
+  printf("The deterministic equivalent matrix is %dx%d, %d nonzeros.\n",
+	 smps.getTotRows(), smps.getTotCols(), smps.countNonzeros(rootNode));
+
   return 0;
 }
 
