@@ -20,6 +20,7 @@
 
 // forward declarations
 class OptionsOops;
+class WSPoint;
 struct SmpsReturn;
 
 
@@ -52,6 +53,12 @@ class SmpsOops {
 
   /** The reduced event tree */
   SmpsTree rTree;
+
+  /** A primal-dual solution of the reduced problem, useful for warmstart */
+  PDPoint *pdPoint;
+
+  /** A warmstart point for the complete problem */
+  WSPoint *wsPoint;
 
   /** The cutoff level */
   int level;
@@ -154,6 +161,36 @@ struct SmpsReturn {
   const Node *rootNode;
 
 };
+
+
+/** A warmstart point for the complete problem */
+class WSPoint {
+
+ public:
+
+  /** Constructor */
+  WSPoint(DenseVector *vx, DenseVector *vy, DenseVector *vz,
+	  DenseVector *vs = NULL, DenseVector *vw = NULL);
+
+  /** Destructor */
+  ~WSPoint();
+
+  /** Primal vector */
+  DenseVector *x;
+
+  /** Dual vector */
+  DenseVector *y;
+
+  /** Dual slack vector */
+  DenseVector *z;
+
+  /** Upper bound slack vector */
+  DenseVector *s;
+
+  /** Dual upper bound vector */
+  DenseVector *w;
+
+ };
 
 
 /** Command line options for the Oops interface */

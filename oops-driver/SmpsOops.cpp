@@ -22,6 +22,8 @@ double tt_start, tt_end;
 SmpsOops::SmpsOops(string smpsFile, const int lev) :
   smps(smpsFile),
   rTree(),
+  pdPoint(NULL),
+  wsPoint(NULL),
   level(lev),
   nBlocks(0) {
 }
@@ -29,6 +31,8 @@ SmpsOops::SmpsOops(string smpsFile, const int lev) :
 /** Destructor */
 SmpsOops::~SmpsOops() {
 
+  delete pdPoint;
+  delete wsPoint;
 }
 
 /** Read the smps files */
@@ -375,6 +379,28 @@ void SmpsOops::dfsNode(queue<Node*> &qOrder, Node *node) {
   for (int i = 0; i < node->nChildren(); i++) {
     dfsNode(qOrder, node->getChild(i));
   }
+}
+
+/** Constructor */
+WSPoint::WSPoint(DenseVector *vx, DenseVector *vy, DenseVector *vz,
+		 DenseVector *vs, DenseVector *vw) :
+  x(vx),
+  y(vy),
+  z(vz),
+  s(vs),
+  w(vw) {
+}
+
+/** Destructor */
+WSPoint::~WSPoint() {
+
+  FreeDenseVector(x);
+  FreeDenseVector(y);
+  FreeDenseVector(z);
+  if (s)
+    FreeDenseVector(s);
+  if (w)
+    FreeDenseVector(w);
 }
 
 /** Constructor */
