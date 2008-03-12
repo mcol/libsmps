@@ -100,10 +100,6 @@ int SmpsTree::readStocFile(string stocFileName) {
   // queue of nodes to be processed
   queue<Node*> qNodes;
 
-  // reset SmpsTree::stocFile if a stocFileName has been given
-  if (stocFileName != "")
-    stocFile = stocFileName;
-
   // open the input file
   stoc.open(stocFile.c_str(), ifstream::in);
   if (stoc.fail()) {
@@ -190,10 +186,6 @@ int SmpsTree::readStocFile(string stocFileName) {
   int maxPers = getPeriods();
 
   char *perNames = convertPeriodNames();
-
-  // reset SmpsTree::stocFile if a stocFileName has been given
-  if (stocFileName != "")
-    stocFile = stocFileName;
 
   // read the stoc file
   char stocfile[100] = "";
