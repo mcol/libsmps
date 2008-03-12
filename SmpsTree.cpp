@@ -200,6 +200,19 @@ int SmpsTree::readStocFile(string stocFileName) {
 	 iwork1, iwork2, iwork3, iwork4, dwork,
 	 prb_rl, scenam, begPeriodCol, begPeriodRow);
 
+  // clean up
+  delete[] perNames;
+  delete[] f_chd;
+  delete[] period;
+  delete[] br_sce;
+  delete[] iwork1;
+  delete[] iwork2;
+  delete[] iwork3;
+  delete[] iwork4;
+  delete[] scenam;
+  delete[] dwork;
+  delete[] prb_rl;
+
   if (rv)
     goto TERMINATE;
 
@@ -252,19 +265,8 @@ int SmpsTree::readStocFile(string stocFileName) {
 
   // clean up
   delete[] parent;
-  delete[] f_chd;
   delete[] n_chd;
-  delete[] period;
-  delete[] perNames;
-  delete[] br_sce;
-  delete[] iwork1;
-  delete[] iwork2;
-  delete[] iwork3;
-  delete[] iwork4;
-  delete[] dwork;
   delete[] probnd;
-  delete[] prb_rl;
-  delete[] scenam;
 
   return rv;
 }
