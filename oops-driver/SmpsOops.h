@@ -85,7 +85,8 @@ class SmpsOops {
   void reorderObjective(SmpsReturn *Ret, const int rnkn);
 
   void setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
-			   int *p_pd_rw, int *f_rw_blk, int *is_col_diag,
+			   int *p_pd_rw, int *f_rw_blk,
+			   const int *is_col_diag,
 			   const SparseData &data,
 			   const Node *node, const int colBlk,
 			   const int rnkCol, const int coreCol);

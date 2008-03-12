@@ -714,7 +714,8 @@ void SmpsOops::freeSmpsReturn(SmpsReturn *ret) {
  *        deterministic equivalent
  */
 void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
-				   int *p_pd_rw, int *f_rw_blk, int *is_col_diag,
+				   int *p_pd_rw, int *f_rw_blk,
+				   const int *is_col_diag,
 				   const SparseData &data,
 				   const Node *node, const int colBlk,
 				   const int rnkCol, const int coreCol) {
@@ -751,7 +752,7 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
       - f_rw_blk[blk];
 
     /*
-    printf(" %2d  - %2d :> %2d, %2d, %2d, %2d  ", per, ordNode,
+    printf(" %2d  - %2d :> %2d, %2d, %2d, %2d  ", per, node->name(),
 	   data.rwnmbs[k], smps.getBegPeriodRow(per),
 	   node->firstRow(), f_rw_blk[blk]);
     printf(":: %lf  %d\n", sparse->element[sparse->nb_el],
