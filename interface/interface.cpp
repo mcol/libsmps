@@ -44,7 +44,7 @@ ProbData* setupProblem(Smps &smps) {
 /** Setup the constraint matrix */
 ProbData *setupMatrix(Smps &smps) {
 
-  Node *node = smps.getRootNode();
+  const Node *node = smps.getRootNode();
 
   // leave immediately if there is no root node
   if (!node)
@@ -168,7 +168,7 @@ ProbData *setupMatrix(Smps &smps) {
       // copy the linking blocks in the current period
       for (int block = 0; block < node->nChildren(); ++block) {
 
-	Node *fChild = node->getChild(0);
+	const Node *fChild = node->getChild(0);
 
 	// determine the offset in row numbers for the children nodes
 	offsetChild = fChild->firstRow() + block * fChild->nRows()
@@ -230,7 +230,7 @@ ProbData *setupMatrix(Smps &smps) {
 /** Setup the right-hand side */
 int setupRhs(ProbData *PROB, const Smps &smps) {
 
-  Node *node = smps.getRootNode();
+  const Node *node = smps.getRootNode();
 
   // leave immediately if there is no root node
   if (!node)
@@ -239,7 +239,6 @@ int setupRhs(ProbData *PROB, const Smps &smps) {
   // allocate space for right-hand side and row types
   double *rhs = new double[PROB->ttm];
   int    *rws = new int[PROB->ttm];
-
 
   // for all nodes
   do {
@@ -276,7 +275,7 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
   const int *entryRow = smps.getEntryRow();
   const int *entryCol = smps.getEntryCol();
   const double *entryVal = smps.getEntryVal();
-  Node *node = smps.getRootNode(), *scNode;
+  const Node *node = smps.getRootNode(), *scNode;
 
   // We start from the leaf nodes and traverse the tree up to the root,
   // applying the changes corresponding to the nodes in the scenario
