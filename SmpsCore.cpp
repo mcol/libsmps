@@ -53,8 +53,7 @@ SmpsCore::SmpsCore(string coreFileName, string timeFileName) :
   _hasUpperBounds(false),
   nPeriods(0),
   begPeriodRow(NULL),
-  begPeriodCol(NULL),
-  nzPeriod(NULL) {
+  begPeriodCol(NULL) {
 }
 
 /** Destructor */
@@ -80,7 +79,6 @@ SmpsCore::~SmpsCore() {
   delete[] blo;
   delete[] begPeriodRow;
   delete[] begPeriodCol;
-  delete[] nzPeriod;
 }
 
 /** Count the number of rows declared in the core file */
@@ -634,16 +632,12 @@ void SmpsCore::processCore() {
 }
 
 /** Count the number of nonzero elements in each period block */
-void SmpsCore::countNzPeriodBlocks() {
+int* SmpsCore::countNzPeriodBlocks() const {
 
   int rowPeriod, colPeriod;
 
-  // don't execute it again if it was already run
-  if (nzPeriod)
-    return;
-
   // allocate and initialize the vector
-  nzPeriod = new int[nPeriods * nPeriods];
+  int *nzPeriod = new int[nPeriods * nPeriods];
   memset(nzPeriod, 0, nPeriods * nPeriods * sizeof(int));
 
   // for all columns
@@ -669,6 +663,8 @@ void SmpsCore::countNzPeriodBlocks() {
     printf("\n");
   }
 #endif
+
+  return nzPeriod;
 }
 
 /**

@@ -117,11 +117,6 @@ class SmpsCore {
     return begPeriodCol[per + 1] - begPeriodCol[per];
   }
 
-  /** Return the number of nonzeros in the given period block */
-  int getNzPeriod(const int rowBlock, const int colBlock) const {
-    return nzPeriod[rowBlock + nPeriods * colBlock];
-  }
-
   /** Retrieve the index of the objective row */
   int getObjRowIndex(void) const {
     return objRow;
@@ -161,7 +156,7 @@ class SmpsCore {
   }
 
   /** Count the number of nonzeros in each period block */
-  void countNzPeriodBlocks(void);
+  int* countNzPeriodBlocks(void) const;
 
   /** Retrieve the pointer to the beginning of a given row name */
   const char* getBegRowName(const int row) const {
@@ -307,9 +302,6 @@ class SmpsCore {
   /** First column index of each period */
   int *begPeriodCol;
 
-  /** The number of nonzeros in each period block */
-  int *nzPeriod;
-
   /** List of row names read from the core file */
   vector<string> rowNames;
 
@@ -393,9 +385,6 @@ class SmpsTree : public SmpsCore {
   int getTotCols(void) const {
     return ttCols;
   }
-
-  /** Count the number of nonzeros in the deterministic equivalent matrix */
-  int countNonzeros(const Node *rootNode);
 
   /** Retrieve the scenario number for the given node */
   int getScenario(const int node) const {
@@ -518,16 +507,30 @@ class Smps : public SmpsTree {
   /** Constructor */
   Smps(string smpsFileName = "");
 
+  /** Destructor */
+  ~Smps();
+
   /** Read the Smps files */
   int read(void);
 
   /** Read the smps input file */
   int readSmpsFile(string smpsFileName = "");
 
+  /** Count the number of nonzeros in the deterministic equivalent matrix */
+  int countNonzeros(const Node *rootNode);
+
+  /** Return the number of nonzeros in the given period block */
+  int getNzPeriod(const int rowBlock, const int colBlock) const {
+    return nzPeriod[rowBlock + getPeriods() * colBlock];
+  }
+
  private:
 
   /** Name of the smps input file */
   string smpsFile;
+
+  /** The number of nonzeros in each period block */
+  int *nzPeriod;
 
 };
 
