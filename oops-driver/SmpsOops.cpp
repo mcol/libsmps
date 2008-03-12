@@ -303,6 +303,9 @@ int SmpsOops::orderNodes(Node *rootNode) {
       qNodes.push(node->getChild(i));
     }
 
+    // we should never have an empty queue
+    assert(!qNodes.empty());
+
     // take the first node in the queue
     node = qNodes.front();
 

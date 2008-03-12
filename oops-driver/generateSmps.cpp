@@ -227,7 +227,6 @@ SmpsReturn* SmpsOops::generateSmps(const Node *rootNode) {
     nzdg0 = 0;    // total nonzeros in first diagonal
     cldg0 = 0;    // total columns in first diagonal
     cu_nd_cl = 0;
-
     node = rootNode;
 
     do {
@@ -516,7 +515,6 @@ SmpsReturn* SmpsOops::generateSmps(const Node *rootNode) {
   cu_pd_cl = 0;     // period corresponding to current column
   b_cu_blk_cl = 0;  // first column in big matrix of current node
   cu_blk_cl = 0;
-
   node = rootNode;
 
   // for all columns in the deterministic equivalent
@@ -532,6 +530,7 @@ SmpsReturn* SmpsOops::generateSmps(const Node *rootNode) {
       // current block
       ++cu_nd_cl;
       node = node->next();
+      assert(node != NULL);
 
       // period of current node
       cu_pd_cl = node->level();
