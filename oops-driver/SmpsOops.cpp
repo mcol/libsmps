@@ -21,7 +21,7 @@ double tt_start, tt_end;
 /** Constructor */
 SmpsOops::SmpsOops(string smpsFile, const int lev) :
   smps(smpsFile),
-  rootReduced(NULL),
+  rTree(),
   level(lev),
   nBlocks(0) {
 }
@@ -29,7 +29,6 @@ SmpsOops::SmpsOops(string smpsFile, const int lev) :
 /** Destructor */
 SmpsOops::~SmpsOops() {
 
-  delete rootReduced;
 }
 
 /** Read the smps files */
@@ -43,7 +42,7 @@ int SmpsOops::read() {
   smps.modifyCore();
 
   // reorder the nodes according to the level
-  rv = orderNodes(smps.getRootNode());
+  rv = orderNodes(smps.getSmpsTree());
 
   return rv;
 }
@@ -131,7 +130,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 			   HopdmOptions *hopdm_options) {
 
   // generate a reduced problem
-  SmpsReturn *prob = generateSmps(getRootNodeReduced());
+  SmpsReturn *prob = generateSmps(rTree.getRootNode());
   if (!prob) {
     printf("Failed to generate the deterministic equivalent.\n");
     return 1;
@@ -264,10 +263,10 @@ int SmpsOops::getSolution(PDProblem *Prob, SmpsReturn *Ret) {
  *         Root node of the tree to be reordered.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
-int SmpsOops::orderNodes(Node *rootNode) {
+int SmpsOops::orderNodes(SmpsTree &Tree) {
 
   int nPeriods = smps.getPeriods();
-  Node *node = rootNode;
+  Node *node = Tree.getRootNode();
 
   // leave immediately if there is no root node
   if (!node)
@@ -279,6 +278,10 @@ int SmpsOops::orderNodes(Node *rootNode) {
            "the number of stages (%d).\n", nPeriods);
     return 1;
   }
+
+  // reset the number of blocks, because we may call orderNodes multiple
+  // times and on different trees
+  nBlocks = 0;
 
   // queue of nodes to be followed
   queue<Node*> qNodes;
@@ -325,7 +328,7 @@ int SmpsOops::orderNodes(Node *rootNode) {
   // update the next links
 
   // start from the root
-  node = rootNode;
+  node = Tree.getRootNode();
 
   do {
 
@@ -339,7 +342,7 @@ int SmpsOops::orderNodes(Node *rootNode) {
   printf("Found %d diagonal blocks.\n", nBlocks);
   printf("Reporting new order of nodes in big Matrix:\n");
   printf("  node   per  block\n");
-  node = rootNode;
+  node = Tree.getRootNode();
   do {
     printf("  %3d   %3d   %3d\n",
 	   node->name(), node->level() + 1, node->block());
@@ -347,11 +350,11 @@ int SmpsOops::orderNodes(Node *rootNode) {
 #endif
 
   // reset the period starts
-  smps.setNodeStarts(rootNode);
+  smps.setNodeStarts(Tree);
 
   // dimensions of the deterministic equivalent
   printf("The deterministic equivalent matrix is %dx%d, %d nonzeros.\n",
-	 smps.getTotRows(), smps.getTotCols(), smps.countNonzeros(rootNode));
+	 smps.getTotRows(), smps.getTotCols(), smps.countNonzeros(Tree));
 
   return 0;
 }

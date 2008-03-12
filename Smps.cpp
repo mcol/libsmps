@@ -18,6 +18,7 @@
 /** Constructor */
 Smps::Smps(string smpsFileName) :
   smpsFile(smpsFileName),
+  Tree(),
   nzPeriod(NULL) {
 }
 
@@ -44,7 +45,7 @@ int Smps::read(void) {
   if (rv)
     return rv;
 
-  rv = readStocFile();
+  rv = readStocFile(Tree);
   if (rv)
     return rv;
 
@@ -104,12 +105,13 @@ int Smps::readSmpsFile(string smpsFileName) {
  *
  *  @note The nonzeros in the objective row are not considered.
  */
-int Smps::countNonzeros(const Node *rootNode) {
+int Smps::countNonzeros(const SmpsTree &tree) {
 
   int nzTotal = 0;
   int nPeriod = getPeriods();
 
-  const Node *node = rootNode;
+  // get the root node
+  const Node *node = tree.getRootNode();
 
   // leave immediately if there is no root node
   if (!node)
@@ -146,4 +148,45 @@ int Smps::countNonzeros(const Node *rootNode) {
   delete[] nnPer;
 
   return nzTotal;
+}
+
+/**
+ *  Set the start rows and columns for each node.
+ *
+ *  This sets the dimension of each node and the indices of the first
+ *  row and column in the deterministic equivalent matrix.
+ *
+ *  @param tree:
+ *         The SmpsTree whose indices need to be updated.
+ *  @return 1 If something goes wrong; 0 otherwise.
+ */
+int Smps::setNodeStarts(SmpsTree &tree) {
+
+  int per, rows, cols;
+  int ttm = 0, ttn = 0;
+
+  Node *node = tree.getRootNode();
+
+  // leave immediately if there is no root node
+  if (!node)
+    return 1;
+
+  do {
+
+    per  = node->level();
+    rows = getNRowsPeriod(per);
+    cols = getNColsPeriod(per);
+
+    // set the node information
+    node->setMatrixPointers(ttm, ttn, rows, cols);
+
+    ttm += rows;
+    ttn += cols;
+
+  } while(node = node->next());
+
+  // total number of rows and columns in the deterministic equivalent
+  tree.setDimensions(ttm, ttn);
+
+  return 0;
 }

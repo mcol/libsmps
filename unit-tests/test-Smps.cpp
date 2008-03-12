@@ -33,7 +33,7 @@ testReadSmpsFile(const string SmpsFile) {
   rv = smps.readTimeFile();
   rv = checkEqual(rv, 0, "readTimeFile rv", SmpsFile);
 
-  rv = smps.readStocFile();
+  rv = smps.readStocFile(smps.getSmpsTree());
   rv = checkEqual(rv, 0, "readStocFile rv", SmpsFile);
 
   return rv;

@@ -64,7 +64,7 @@ ProbData *setupMatrix(Smps &smps) {
   int ttn = smps.getTotCols();
 
   // count the number of nonzero elements
-  int ttnz = smps.countNonzeros(smps.getRootNode());
+  int ttnz = smps.countNonzeros(smps.getSmpsTree());
 
   assert(ttm >= smps.getRows() - 1);
   assert(ttn >= smps.getCols());

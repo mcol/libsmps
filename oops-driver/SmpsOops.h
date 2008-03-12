@@ -50,19 +50,14 @@ class SmpsOops {
   /** The smps instance to solve */
   Smps smps;
 
-  /** Root node of a reduced event tree */
-  Node *rootReduced;
+  /** The reduced event tree */
+  SmpsTree rTree;
 
   /** The cutoff level */
   int level;
 
   /** Number of diagonal blocks in the deterministic equivalent */
   int nBlocks;
-
-  /** Return the root node of the reduced event tree */
-  Node* getRootNodeReduced(void) {
-    return rootReduced;
-  }
 
   /** Generate the deterministic equivalent for the smps instance */
   SmpsReturn* generateSmps(const Node *rootNode);
@@ -71,7 +66,7 @@ class SmpsOops {
   PDProblem* setupProblem(SmpsReturn *Pb);
 
   /** Order the nodes according to the cutoff level */
-  int orderNodes(Node *node);
+  int orderNodes(SmpsTree &Tree);
 
   /** Perform a recursive depth-first ordering of the node and its children */
   void dfsNode(queue<Node*> &qOrder, Node *node);

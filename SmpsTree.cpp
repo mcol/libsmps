@@ -1,7 +1,7 @@
 /*
  *  SmpsTree.cpp
  *
- *  Structure for the stochastic data of the problem.
+ *  Structures for the stochastic data of the problem.
  *
  *  Marco Colombo
  *  School of Mathematics
@@ -36,18 +36,13 @@
 static int
 getStocType(const char *buffer);
 
+
 /** Constructor */
-SmpsTree::SmpsTree(string stocFileName) :
+SmpsStoc::SmpsStoc(string stocFileName) :
   stocFile(stocFileName),
-  root(NULL),
-  nNodes(0),
-  nScens(1),
-  nStages(0),
   maxNodes(0),
   maxScens(1),
   maxReals(0),
-  ttRows(0),
-  ttCols(0),
   scenario(NULL),
   scenLength(0),
   maxScenLength(0),
@@ -59,9 +54,8 @@ SmpsTree::SmpsTree(string stocFileName) :
 }
 
 /** Destructor */
-SmpsTree::~SmpsTree() {
+SmpsStoc::~SmpsStoc() {
 
-  delete root;
   delete[] scenario;
   delete[] sc_first;
   delete[] sc_len;
@@ -82,7 +76,7 @@ SmpsTree::~SmpsTree() {
  *   @return 0  Everything is fine.
  *           >0 Error.
  */
-int SmpsTree::readStocFile(string stocFileName) {
+int SmpsStoc::readStocFile(SmpsTree &Tree) {
 
   ifstream stoc;
   char buffer[SMPS_LINE_MAX];
@@ -181,6 +175,8 @@ int SmpsTree::readStocFile(string stocFileName) {
   memset(n_chd, 0, maxNodes * sizeof(int));
   memset(f_chd, 0, maxNodes * sizeof(int));
 
+  int per, rows, cols, ttRows = 0, ttCols = 0;
+  int nScens, nNodes;
   int maxRows = getRows();
   int maxCols = getCols();
   int maxPers = getPeriods();
@@ -222,19 +218,28 @@ int SmpsTree::readStocFile(string stocFileName) {
   // Note that the scenario information is still kept in arrays.
 
   // allocate the root node
-  root = new Node(nodeName);
+  Node *node = new Node(nodeName);
+  Tree.setRootNode(node);
 
-  qNodes.push(root);
+  qNodes.push(node);
 
   while (!qNodes.empty()) {
 
     // take the first element in the queue
-    Node *node = qNodes.front();
+    node = qNodes.front();
     qNodes.pop();
 
     // add the information to this node
     node->setScen(scenario[index] - 1);
     node->setProb(probnd[index]);
+
+    // set the start rows and columns for each node
+    per = node->level();
+    rows = getNRowsPeriod(per);
+    cols = getNColsPeriod(per);
+    node->setMatrixPointers(ttRows, ttCols, rows, cols);
+    ttRows += rows;
+    ttCols += cols;
 
     // allocate its children
     for (int j = 0; j < n_chd[index]; ++j) {
@@ -251,14 +256,12 @@ int SmpsTree::readStocFile(string stocFileName) {
     ++index;
   }
 
-  // set the start rows and columns for each node
-  rv = setNodeStarts(root);
-  if (rv)
-    goto TERMINATE;
+  // total number of rows and columns in the deterministic equivalent
+  Tree.setDimensions(ttRows, ttCols);
 
 #ifdef DEBUG
   if (nNodes <= 100)
-    printTree(root);
+    Tree.print();
 #endif
 
  TERMINATE:
@@ -310,7 +313,7 @@ int getStocType(const char *buffer) {
 }
 
 /** Scan a stochastic file in INDEP DISCRETE format */
-int SmpsTree::scanIndepType(ifstream &stoc) {
+int SmpsStoc::scanIndepType(ifstream &stoc) {
 
   int rv, nBlocks = 0;
   char buffer[SMPS_LINE_MAX];
@@ -377,7 +380,7 @@ int SmpsTree::scanIndepType(ifstream &stoc) {
 }
 
 /** Read a stochastic file in INDEP DISCRETE format */
-int SmpsTree::readIndepType(ifstream &stoc) {
+int SmpsStoc::readIndepType(ifstream &stoc) {
 
   char buffer[SMPS_LINE_MAX];
   int rv;
@@ -395,7 +398,7 @@ int SmpsTree::readIndepType(ifstream &stoc) {
 }
 
 /** Scan a stochastic file in BLOCKS DISCRETE format */
-int SmpsTree::scanBlocksType(ifstream &stoc) {
+int SmpsStoc::scanBlocksType(ifstream &stoc) {
 
   int rv, nBlocks = 0;
   char buffer[SMPS_LINE_MAX], bl[SMPS_FIELD_SIZE];
@@ -488,7 +491,7 @@ int SmpsTree::scanBlocksType(ifstream &stoc) {
 }
 
 /** Read a stochastic file in BLOCKS DISCRETE format */
-int SmpsTree::readBlocksType(ifstream &stoc) {
+int SmpsStoc::readBlocksType(ifstream &stoc) {
 
   char buffer[SMPS_LINE_MAX];
   int rv;
@@ -506,7 +509,7 @@ int SmpsTree::readBlocksType(ifstream &stoc) {
 }
 
 /** Scan a stochastic file in SCENARIOS format */
-int SmpsTree::scanScenariosType(ifstream &stoc) {
+int SmpsStoc::scanScenariosType(ifstream &stoc) {
 
   int rv, branchPeriod;
   char buffer[SMPS_LINE_MAX], sc[SMPS_FIELD_SIZE], perName[SMPS_FIELD_SIZE];
@@ -575,52 +578,23 @@ int SmpsTree::scanScenariosType(ifstream &stoc) {
   return 0;
 }
 
-/**
- *  Set the start rows and columns for each node.
- *
- *  This sets the dimension of each node and the indices of the first
- *  row and column in the deterministic equivalent matrix.
- *
- *  @param rootNode:
- *         The root node of the tree whose indices need to be updated.
- *  @return 1 If something goes wrong; 0 otherwise.
- */
-int SmpsTree::setNodeStarts(Node *rootNode) {
+/** Constructor */
+SmpsTree::SmpsTree() :
+  root(NULL),
+  ttRows(0),
+  ttCols(0) {
+}
 
-  int per, rows, cols;
-  int ttm = 0, ttn = 0;
+/* Destructor */
+SmpsTree::~SmpsTree() {
 
-  Node *node = rootNode;
-
-  // leave immediately if there is no root node
-  if (!node)
-    return 1;
-
-  do {
-
-    per  = node->level();
-    rows = getNRowsPeriod(per);
-    cols = getNColsPeriod(per);
-
-    // set the node information
-    node->setMatrixPointers(ttm, ttn, rows, cols);
-
-    ttm += rows;
-    ttn += cols;
-
-  } while(node = node->next());
-
-  // total number of rows and columns in the deterministic equivalent
-  ttRows = ttm;
-  ttCols = ttn;
-
-  return 0;
+  delete root;
 }
 
 /** Print the stochastic tree information */
-void SmpsTree::printTree(const Node *rootNode) const {
+void SmpsTree::print() const {
 
-  const Node *node = rootNode;
+  const Node *node = root;
 
   // leave immediately if there is no root node
   if (!node)

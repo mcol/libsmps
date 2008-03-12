@@ -27,7 +27,7 @@ testReadStocFile(const string StocFile, const int expScens,
   tree.readCoreFile();
   tree.readTimeFile();
 
-  rv = tree.readStocFile();
+  rv = tree.readStocFile(tree.getSmpsTree());
   rv = checkEqual(rv, 0, "readStocFile rv", StocFile);
   if (rv) {
     return TEST_ERROR;

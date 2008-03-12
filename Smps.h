@@ -184,8 +184,8 @@ class SmpsCore {
   /** Retrieve the sparse representation of the matrix */
   const SparseData getSparseData(void) const;
 
-  /** Give access to SmpsTree to the private members */
-  friend class SmpsTree;
+  /** Give access to SmpsStoc to the private members */
+  friend class SmpsStoc;
 
  protected:
 
@@ -328,52 +328,24 @@ class SmpsCore {
 
 
 /** The SmpsTree class */
-class SmpsTree : public SmpsCore {
+class SmpsTree {
 
  public:
 
   /** Constructor */
-  SmpsTree(string stocFileName = "");
+  SmpsTree();
 
   /** Destructor */
   ~SmpsTree();
 
-  /** Read the stochastic file */
-  int readStocFile(string stocFileName = "");
+  /** Set the root node of the event tree */
+  void setRootNode(Node *rootNode) {
+    root = rootNode;
+  }
 
   /** Retrieve the root node of the event tree */
   Node* getRootNode(void) const {
     return root;
-  }
-
-  /** Retrieve the number of nodes in the event tree */
-  int getNodes(void) const {
-    return nNodes;
-  }
-
-  /** Retrieve the maximum number of nodes in the event tree */
-  int getMaxNodes(void) const {
-    return maxNodes;
-  }
-
-  /** Retrieve the number of scenarios in the event tree */
-  int getScens(void) const {
-    return nScens;
-  }
-
-  /** Retrieve the maximum number of scenarios in the event tree */
-  int getMaxScens(void) const {
-    return maxScens;
-  }
-
-  /** Retrieve the number of stages in the event tree */
-  int getStages(void) const {
-    return nStages;
-  }
-
-  /** Retrieve the maximum number of realisations in the event tree */
-  int getMaxReals(void) const {
-    return maxReals;
   }
 
   /** Retrieve the number of rows in the deterministic equivalent */
@@ -384,6 +356,58 @@ class SmpsTree : public SmpsCore {
   /** Retrieve the number of columns in the deterministic equivalent */
   int getTotCols(void) const {
     return ttCols;
+  }
+
+  /** Set the dimensions of the deterministic equivalent */
+  void setDimensions(const int rows, const int cols) {
+    ttRows = rows;
+    ttCols = cols;
+  }
+
+  /** Print the stochastic tree information */
+  void print(void) const;
+
+ private:
+
+  /** Root node of the event tree */
+  Node *root;
+
+  /** Number of rows in the deterministic equivalent */
+  int ttRows;
+
+  /** Number of columns in the deterministic equivalent */
+  int ttCols;
+
+};
+
+
+/** The SmpsStoc class */
+class SmpsStoc : public SmpsCore {
+
+ public:
+
+  /** Constructor */
+  SmpsStoc(string stocFileName = "");
+
+  /** Destructor */
+  ~SmpsStoc();
+
+  /** Read the stochastic file */
+  int readStocFile(SmpsTree &Tree);
+
+  /** Retrieve the maximum number of nodes in the event tree */
+  int getMaxNodes(void) const {
+    return maxNodes;
+  }
+
+  /** Retrieve the maximum number of scenarios in the event tree */
+  int getMaxScens(void) const {
+    return maxScens;
+  }
+
+  /** Retrieve the maximum number of realisations in the event tree */
+  int getMaxReals(void) const {
+    return maxReals;
   }
 
   /** Retrieve the scenario number for the given node */
@@ -416,30 +440,12 @@ class SmpsTree : public SmpsCore {
     return entryVal;
   }
 
-  /** Set the start rows and columns for each node */
-  int setNodeStarts(Node *rootNode);
-
-  /** Print the stochastic tree information */
-  void printTree(const Node *rootNode) const;
-
  protected:
 
   /** Name of the stochastic file */
   string stocFile;
 
  private:
-
-  /** Root node of the event tree */
-  Node *root;
-
-  /** Number of nodes in the event tree */
-  int nNodes;
-
-  /** Number of scenarios */
-  int nScens;
-
-  /** Number of stages in the event tree */
-  int nStages;
 
   /** Maximum number of nodes in the event tree */
   int maxNodes;
@@ -449,12 +455,6 @@ class SmpsTree : public SmpsCore {
 
   /** Maximum number of realisations */
   int maxReals;
-
-  /** Number of rows in the deterministic equivalent */
-  int ttRows;
-
-  /** Number of columns in the deterministic equivalent */
-  int ttCols;
 
   /** Scenario that node belongs to */
   int *scenario;
@@ -500,7 +500,7 @@ class SmpsTree : public SmpsCore {
 
 
 /** The Smps class */
-class Smps : public SmpsTree {
+class Smps : public SmpsStoc {
 
  public:
 
@@ -516,18 +516,44 @@ class Smps : public SmpsTree {
   /** Read the smps input file */
   int readSmpsFile(string smpsFileName = "");
 
+  /** Get access to the event tree */
+  SmpsTree& getSmpsTree(void) {
+    return Tree;
+  }
+
+  /** Retrieve the root node of the event tree */
+  const Node* getRootNode(void) const {
+    return Tree.getRootNode();
+  }
+
   /** Count the number of nonzeros in the deterministic equivalent matrix */
-  int countNonzeros(const Node *rootNode);
+  int countNonzeros(const SmpsTree &tree);
 
   /** Return the number of nonzeros in the given period block */
   int getNzPeriod(const int rowBlock, const int colBlock) const {
     return nzPeriod[rowBlock + getPeriods() * colBlock];
   }
 
+  /** Retrieve the number of rows in the deterministic equivalent */
+  int getTotRows(void) const {
+    return Tree.getTotRows();
+  }
+
+  /** Retrieve the number of columns in the deterministic equivalent */
+  int getTotCols(void) const {
+    return Tree.getTotCols();
+  }
+
+  /** Set the start rows and columns for each node */
+  int setNodeStarts(SmpsTree &tree);
+
  private:
 
   /** Name of the smps input file */
   string smpsFile;
+
+  /** The event tree */
+  SmpsTree Tree;
 
   /** The number of nonzeros in each period block */
   int *nzPeriod;
