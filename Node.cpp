@@ -10,6 +10,7 @@
  */
 
 #include <vector>
+#include <assert.h>
 #include "Node.h"
 using namespace std;
 
@@ -40,6 +41,9 @@ Node::~Node() {
 
 /** Add a node to the list of children */
 int Node::addChildNode(Node *childNode) {
+
+  // don't add a node as a child of itself
+  assert(childNode != this);
 
   // link the child to the parent
   childNode->_level = _level + 1;
