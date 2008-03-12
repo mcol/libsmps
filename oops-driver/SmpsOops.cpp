@@ -153,11 +153,51 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   // solve the problem
   hopdm_ret *ret = hopdm(printout, pdProb, hopdm_options, Prt);
 
+  // extract and store the solution
+  storeSolution(pdProb, prob);
+
   // clean up
   free(ret);
   FreePDProblem(pdProb);
   freeSmpsReturn(prob);
   delete Prt;
+
+  return 0;
+}
+
+/**
+ *  Store the solution from the reduced problem.
+ *
+ *  @param pdProb:
+ *         The reduced primal-dual problem.
+ *  @param Ret:
+ *         The SmpsReturn structure of the reduced problem.
+ *  @return 1 If something goes wrong, 0 otherwise.
+ */
+int SmpsOops::storeSolution(const PDProblem *pdProb, const SmpsReturn *Ret) {
+
+  // allocate space for the new vectors
+  Algebra *A = Ret->AlgA;
+  Vector *x = NewVector(A->Tcol, "vx");
+  Vector *y = NewVector(A->Trow, "vy");
+  Vector *z = NewVector(A->Tcol, "vz");
+  Vector *s = NULL, *w = NULL;
+  if (smps.hasUpperBounds()) {
+    s = NewVector(A->Tcol, "vs");
+    w = NewVector(A->Tcol, "vw");
+  }
+
+  // copy the solution vectors
+  CopyVector(pdProb->x, x);
+  CopyVector(pdProb->y, y);
+  CopyVector(pdProb->z, z);
+  if (smps.hasUpperBounds()) {
+    CopyVector(pdProb->s, s);
+    CopyVector(pdProb->w, w);
+  }
+
+  // store the solution
+  pdPoint = NewPDPoint(x, y, z, s, w, NULL);
 
   return 0;
 }

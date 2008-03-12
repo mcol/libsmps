@@ -72,6 +72,9 @@ class SmpsOops {
   /** Set up the Oops algebras and vectors and build the primal-dual problem */
   PDProblem* setupProblem(SmpsReturn *Pb);
 
+  /** Store the solution from the reduced problem */
+  int storeSolution(const PDProblem *pdProb, const SmpsReturn *Ret);
+
   /** Order the nodes according to the cutoff level */
   int orderNodes(SmpsTree &Tree);
 
