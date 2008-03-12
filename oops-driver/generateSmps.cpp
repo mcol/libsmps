@@ -370,9 +370,6 @@ SmpsReturn* SmpsOops::generateSmps(const Node *rootNode) {
   // compute the dimensions of the submatrices
   //
 
-  // count the nonzeros in each period block
-  smps.countNzPeriodBlocks();
-
   // count nonzeros in parts of big matrix
   for (i = 0; i < nPeriods; ++i) {
 
