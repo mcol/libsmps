@@ -63,7 +63,7 @@ int SmpsOops::read() {
 int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
 
   // generate the problem
-  SmpsReturn *prob = generateSmps(smps.getRootNode());
+  SmpsReturn *prob = generateSmps(smps.getSmpsTree());
   if (!prob) {
     printf("Failed to generate the deterministic equivalent.\n");
     return 1;
@@ -134,7 +134,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 			   HopdmOptions *hopdm_options) {
 
   // generate a reduced problem
-  SmpsReturn *prob = generateSmps(rTree.getRootNode());
+  SmpsReturn *prob = generateSmps(rTree);
   if (!prob) {
     printf("Failed to generate the deterministic equivalent.\n");
     return 1;

@@ -67,7 +67,7 @@ class SmpsOops {
   int nBlocks;
 
   /** Generate the deterministic equivalent for the smps instance */
-  SmpsReturn* generateSmps(const Node *rootNode);
+  SmpsReturn* generateSmps(const SmpsTree &tree);
 
   /** Set up the Oops algebras and vectors and build the primal-dual problem */
   PDProblem* setupProblem(SmpsReturn *Pb);
@@ -82,12 +82,12 @@ class SmpsOops {
   void dfsNode(queue<Node*> &qOrder, Node *node);
 
   /** Apply the scenario changes */
-  int applyScenarios(SmpsReturn *Ret,
+  int applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 		     Algebra **DiagEntries, Algebra **RightColEntries,
 		     int *f_rw_blk, int *f_cl_blk);
 
   /** Reorder objective and bounds */
-  void reorderObjective(SmpsReturn *Ret, const int rnkn);
+  void reorderObjective(const SmpsTree &tree, SmpsReturn *Ret, const int rnkn);
 
   void setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
 			   int *p_pd_rw, int *f_rw_blk,

@@ -60,7 +60,10 @@ setupObjective(const Smps &smps, SmpsReturn *Ret);
  *  (4c) Correct RHS and objvalue.
  *	 Do this on whole Matrix (therefore needs to be done after 5a)
  */
-SmpsReturn* SmpsOops::generateSmps(const Node *rootNode) {
+SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
+
+  // extract the root node
+  const Node *rootNode = tree.getRootNode();
 
   // ensure that the root node exists
   if (!rootNode)
@@ -120,8 +123,8 @@ SmpsReturn* SmpsOops::generateSmps(const Node *rootNode) {
   int *diag_nz_pd = new int[nPeriods];
 
   // dimensions of the deterministic equivalent
-  int ttm = smps.getTotRows();
-  int ttn = smps.getTotCols();
+  int ttm = tree.getTotRows();
+  int ttn = tree.getTotCols();
 
   // first row/col in the diagonal part of the deterministic equivalent
   int f_rwdiag = smps.getBegPeriodRow(level);
@@ -611,10 +614,10 @@ SmpsReturn* SmpsOops::generateSmps(const Node *rootNode) {
   setupObjective(smps, Ret);
 
   // apply scenario corrections
-  applyScenarios(Ret, DiagEntries, RightColEntries, f_rw_blk, f_cl_blk);
+  applyScenarios(tree, Ret, DiagEntries, RightColEntries, f_rw_blk, f_cl_blk);
 
   // reorder objective, bounds and column names
-  reorderObjective(Ret, rnkc_n_blk[0]);
+  reorderObjective(tree, Ret, rnkc_n_blk[0]);
 
   // set up the deterministic equivalent as a DblBordDiagAlgebra
   DblBordDiagSimpleMatrix *MA = NewDblBordDiagSimpleMatrix(nBlocks + 1, Bottom,
@@ -650,6 +653,8 @@ SmpsReturn* SmpsOops::generateSmps(const Node *rootNode) {
 void SmpsOops::freeSmpsReturn(SmpsReturn *ret) {
 
   int i;
+  const int ttm = ret->b->dim;
+  const int ttn = ret->c->dim;
 
   // early return if the structure has not been allocated
   if (!ret)
@@ -668,11 +673,11 @@ void SmpsOops::freeSmpsReturn(SmpsReturn *ret) {
 
   delete[] ret->is_col_diag;
 
-  for (i = 0; i < smps.getTotRows(); ++i)
+  for (i = 0; i < ttm; ++i)
     delete[] ret->rownames[i];
   delete[] ret->rownames;
 
-  for (i = 0; i < smps.getTotCols(); ++i)
+  for (i = 0; i < ttn; ++i)
     delete[] ret->colnames[i];
   delete[] ret->colnames;
 
@@ -773,13 +778,14 @@ void setupRhs(const Smps &smps, SmpsReturn *Ret) {
   int firstRowNode, begRowPeriod, period;
   char scname[8], *p;
   DenseVector *rhs = Ret->b;
+  const int ttm = Ret->b->dim;
   const Node *node = Ret->rootNode;
 
   // leave immediately if there is no root node
   if (!node)
     return;
 
-  char **rownames = Ret->rownames = new char*[smps.getTotRows()];
+  char **rownames = Ret->rownames = new char*[ttm];
 
   // for all nodes in the tree in order
   do {
@@ -815,13 +821,14 @@ void setupObjective(const Smps &smps, SmpsReturn *Ret) {
   int row, firstColNode, begColPeriod, period;
   char buffer[50], scname[8], *p;
   DenseVector *obj = Ret->c, *upb = Ret->u;
+  const int ttn = Ret->c->dim;
   const Node *node = Ret->rootNode;
 
   // leave immediately if there is no root node
   if (!node)
     return;
 
-  char **colnames = Ret->colnames = new char*[smps.getTotCols()];
+  char **colnames = Ret->colnames = new char*[ttn];
 
   // copy the objective row from the core matrix
   double *coreObj = smps.getObjRow();
@@ -949,7 +956,7 @@ void setupObjective(const Smps &smps, SmpsReturn *Ret) {
 
   END
 */
-int SmpsOops::applyScenarios(SmpsReturn *Ret,
+int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 			     Algebra **DiagEntries, Algebra **RightColEntries,
 			     int *f_rw_blk, int *f_cl_blk) {
 
@@ -1003,7 +1010,7 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 
 	  col = scNode->firstCol() + entryCol[corr] - 1
 	    - smps.getBegPeriodCol(pdc);
-	  assert(col <= smps.getTotCols());
+	  assert(col <= tree.getTotCols());
 
 	  Ret->c->elts[col] = entryVal[corr] * scNode->probNode();
 
@@ -1018,7 +1025,7 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 
 	  row = scNode->firstRow() + entryRow[corr] - 1
 	    - smps.getBegPeriodRow(pdr);
-	  assert(row <= smps.getTotRows());
+	  assert(row <= tree.getTotRows());
 
 	  Ret->b->elts[row] = entryVal[corr];
 
@@ -1042,8 +1049,8 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
 	  if (pdr != pdc)
 	    col += scNode->parent()->firstCol() - scNode->firstCol();
 
-	  assert(row <= smps.getTotRows());
-	  assert(col <= smps.getTotCols());
+	  assert(row <= tree.getTotRows());
+	  assert(col <= tree.getTotCols());
 
 #ifdef DEBUG_SCEN
 	  printf("   Mtx entry: core row %3d col %3d, det.eq. row %3d col %3d",
@@ -1149,11 +1156,12 @@ int SmpsOops::applyScenarios(SmpsReturn *Ret,
  *  equivalent:
  *     [Diag-0 Diag-1 ... Diag-n RnkC]
  */
-void SmpsOops::reorderObjective(SmpsReturn *Ret, const int rnkn) {
+void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
+				const int rnkn) {
 
   int col, coreCol, firstColDiag, firstColNode;
   int nb_el = 0;
-  int ttn = smps.getTotCols();
+  int ttn = tree.getTotCols();
 
   const Node *node = Ret->rootNode;
   if (!node)
@@ -1312,7 +1320,8 @@ void SmpsOops::backOrderColVector(double *x, const SmpsReturn *Ret) {
 
   // total number of columns in RankCor (D0|Rnk)
   const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
-  const int ttn = smps.getTotCols();
+  const int ttn = Ret->c->dim;
+
   double *dtmp  = new double[ttn];
 
   for (int i = 0; i < ttn; ++i)
@@ -1391,7 +1400,7 @@ void SmpsOops::forwOrderColVector(double *x, const SmpsReturn *Ret) {
 
   // total number of columns in RankCor (D0|Rnk)
   const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
-  const int ttn = smps.getTotCols();
+  const int ttn = Ret->c->dim;
   double *dtmp  = new double[ttn];
 
   for (int i = 0; i < ttn; ++i)
@@ -1452,7 +1461,7 @@ void SmpsOops::forwOrderColVector(double *x, const SmpsReturn *Ret) {
 void SmpsOops::backOrderRowVector(double *x, const SmpsReturn *Ret) {
 
   int i;
-  const int ttm = smps.getTotRows(), nRowsRnkc = Ret->nb_row_rnk;
+  const int ttm = Ret->b->dim, nRowsRnkc = Ret->nb_row_rnk;
   double *dtmp = new double[ttm];
 
   for (i = 0; i < ttm; ++i)
@@ -1487,7 +1496,7 @@ void SmpsOops::backOrderRowVector(double *x, const SmpsReturn *Ret) {
 void SmpsOops::forwOrderRowVector(double *x, const SmpsReturn *Ret) {
 
   int i;
-  const int ttm = smps.getTotRows(), nRowsRnkc = Ret->nb_row_rnk;
+  const int ttm = Ret->b->dim, nRowsRnkc = Ret->nb_row_rnk;
   double *dtmp = new double[ttm];
 
   for (i = 0; i < ttm; ++i)
