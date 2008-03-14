@@ -40,7 +40,7 @@ Node::~Node() {
 }
 
 /** Add a node to the list of children */
-int Node::addChildNode(Node *childNode) {
+int Node::addChild(Node *childNode) {
 
   // don't add a node as a child of itself
   assert(childNode != this);

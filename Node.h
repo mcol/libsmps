@@ -28,7 +28,7 @@ class Node {
   ~Node();
 
   /** Add a node to the list of children */
-  int addChildNode(Node *child);
+  int addChild(Node *child);
 
   // Setters
 

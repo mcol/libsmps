@@ -245,7 +245,7 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
     for (int j = 0; j < n_chd[index]; ++j) {
 
       Node *child = new Node(++nodeName);
-      node->addChildNode(child);
+      node->addChild(child);
       qNodes.push(child);
     }
 
