@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <assert.h>
 #include <libgen.h>
 #include "Smps.h"
 
@@ -173,7 +174,10 @@ int Smps::setNodeStarts(SmpsTree &tree) {
 
   do {
 
-    per  = node->level();
+    per = node->level();
+    assert(per < getPeriods());
+
+    // find the dimension of the current node
     rows = getNRowsPeriod(per);
     cols = getNColsPeriod(per);
 
