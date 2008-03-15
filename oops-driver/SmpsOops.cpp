@@ -24,7 +24,7 @@ SmpsOops::SmpsOops(string smpsFile, const int lev) :
   rTree(),
   pdPoint(NULL),
   wsPoint(NULL),
-  level(lev),
+  cutoff(lev),
   nBlocks(0) {
 }
 
@@ -317,7 +317,7 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
     return 1;
 
   // check that the required cutoff level is feasible
-  if (level <= 0 || level >= nPeriods) {
+  if (cutoff <= 0 || cutoff >= nPeriods) {
     printf("The cutoff level must be positive and smaller than "
            "the number of stages (%d).\n", nPeriods);
     return 1;
@@ -356,7 +356,7 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
     // take the first node in the queue
     node = qNodes.front();
 
-  } while (node->level() < level);
+  } while (node->level() < cutoff);
 
   // now proceed in depth-first order
   while (!qNodes.empty()) {
@@ -410,7 +410,7 @@ void SmpsOops::dfsNode(queue<Node*> &qOrder, Node *node) {
   qOrder.push(node);
 
   // count the number of diagonal blocks
-  if (node->level() == level)
+  if (node->level() == cutoff)
     ++nBlocks;
 
   node->setBlock(nBlocks);

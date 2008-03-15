@@ -61,7 +61,7 @@ class SmpsOops {
   WSPoint *wsPoint;
 
   /** The cutoff level */
-  int level;
+  int cutoff;
 
   /** Number of diagonal blocks in the deterministic equivalent */
   int nBlocks;

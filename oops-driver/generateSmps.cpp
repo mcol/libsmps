@@ -27,18 +27,18 @@ setupObjective(const Smps &smps, SmpsReturn *Ret);
  *  Uses the information from the SMPS files create the deterministic
  *  equivalent problem.
  *
- *  All nodes in periods < level are treated in a RankCorrector, nodes
- *  in period == level are seeds for diagonal blocks.
+ *  All nodes in periods < cutoff are treated in a RankCorrector, nodes
+ *  in period == cutoff are seeds for diagonal blocks.
  *
  *  Some extra analysis is done to:
- *  - remove columns from RankCor that do not affect any periods >= level,
+ *  - remove columns from RankCor that do not affect any periods >= cutoff,
  *    these can be (and are) treated in an additional diagonal block (D-0)
  *    FIXME: should also separate rows from the first block of RankCor that
  *           do not affect columns in D-0
  *
  *  The subroutine procedes as follows:
  *
- *  (1a) Analyse which columns of the first block (periods < level) can be
+ *  (1a) Analyse which columns of the first block (periods < cutoff) can be
  *       treated in additional Diagonal D-0 and which remain in RnkC
  *       Count dimensions of D-0 and RnkC
  *	 Count Nonzeros in resulting RnkC and D-0 parts of big matrix
@@ -127,8 +127,8 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
   int ttn = tree.getTotCols();
 
   // first row/col in the diagonal part of the deterministic equivalent
-  int f_rwdiag = smps.getBegPeriodRow(level);
-  int f_cldiag = smps.getBegPeriodCol(level);
+  int f_rwdiag = smps.getBegPeriodRow(cutoff);
+  int f_cldiag = smps.getBegPeriodCol(cutoff);
 
   int objRow = smps.getObjRowIndex();
 
@@ -141,13 +141,13 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
   /*
      Scan through the columns of RankCorrector block to see which can go in
      the diagonal.
-     For all row periods <= level, count the number of nonzeros in columns
+     For all row periods <= cutoff, count the number of nonzeros in columns
      that can go in the diagonal part (used to obtain the number of nonzeros
      in diagonal entry).
-     For all col periods <= level, count the number of columns that
+     For all col periods <= cutoff, count the number of columns that
      can go in the diagonal part (used to obtain col of diag).
 
-     Columns within periods <= level are designated to go into the Border
+     Columns within periods <= cutoff are designated to go into the Border
      part of the matrix. However some of them have no entries in rows
      corresponding to other time periods, and they can be treated differently.
 
@@ -157,9 +157,9 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
      to the scenario tree, we will need to count how many RankCor columns go
      to the diagonal from every period.
 
-     clpddg[0-(level-1)]   number of CORE-columns to go in diagonal from
+     clpddg[0-(cutoff-1)]  number of CORE-columns to go in diagonal from
                            RankCor in period i
-     nzpddg[0-(level-1)]   number of nonzeros in above columns
+     nzpddg[0-(cutoff-1)]  number of nonzeros in above columns
                            (this time sorted by their row-period in CORE)
                           FIXME: is this correct? Do we not need to
                                  distiguish by both row/col period
@@ -170,8 +170,8 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
     is_col_diag = Ret->is_col_diag = new int[f_cldiag];
 
     int *nzpddg0 = new int[nPeriods];
-    int *nzpddg  = (int *) calloc(level, sizeof(int));
-    int *clpddg  = (int *) calloc(level, sizeof(int));
+    int *nzpddg  = (int *) calloc(cutoff, sizeof(int));
+    int *clpddg  = (int *) calloc(cutoff, sizeof(int));
     bool found;
 
     // for all columns in border block
@@ -194,7 +194,7 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
       // - nzpddg[0 - nPeriods-1]: total number of entries in above columns
       //                           sorted by which row-periods they occur in
 
-      for (j = 0; j < level; ++j)
+      for (j = 0; j < cutoff; ++j)
 	nzpddg0[j] = 0;
 
       for (j = data.clpnts[i]; j < data.clpnts[i + 1]; ++j) {
@@ -219,12 +219,12 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
 
 	is_col_diag[i] = 1;
 	clpddg[cu_pd_cl]++;
-	for (j = 0; j < level; ++j)
+	for (j = 0; j < cutoff; ++j)
 	  nzpddg[j] += nzpddg0[j];
       }
     }
 
-    // scan through all nodes in first 'level' periods and count
+    // scan through all nodes in first 'cutoff' periods and count
     // col in diagonal and nonzeros in them
 
     nzdg0 = 0;    // total nonzeros in first diagonal
@@ -235,7 +235,7 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
     do {
 
       int perNode = node->level();
-      if (perNode >= level)
+      if (perNode >= cutoff)
 	break;
 
 #ifdef DEBUG
@@ -257,7 +257,7 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
   }
 
   /* nzdg0 = Total nonzeros in final matrix in Border columns that could
-             be treated separately (i.e. don't affect periods > level)
+             be treated separately (i.e. don't affect periods > cutoff)
      cldg0 = # of columns in final matrix in Border that could be
              treated separately
      cu_nd_cl = total number of nodes in Border */
@@ -377,9 +377,9 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
   for (i = 0; i < nPeriods; ++i) {
 
     rnkc_nz_pd[i] = diag_nz_pd[i] = 0;
-    for (j = 0; j < level; ++j)
+    for (j = 0; j < cutoff; ++j)
       rnkc_nz_pd[i] += smps.getNzPeriod(i, j);
-    for (j = level; j < nPeriods; ++j)
+    for (j = cutoff; j < nPeriods; ++j)
       diag_nz_pd[i] += smps.getNzPeriod(i, j);
     printf("Nonzeros RNKCR/Diag[%d]: %4d %4d\n",
 	   i, rnkc_nz_pd[i], diag_nz_pd[i]);
@@ -1176,7 +1176,7 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
   char  **clnCopy = (char **)  malloc(ttn * sizeof(char *));
 
   // find the first node that will go in a diagonal block
-  while (node->level() < level)
+  while (node->level() < cutoff)
     node = node->next();
 
   // set the first column in diagonal block
@@ -1484,7 +1484,7 @@ void SmpsOops::backOrderRowVector(double *x, const SmpsReturn *Ret) {
 /**
  *  Order the rows from the SMPS breadth-first order into the order used
  *  internally by OOPS (the only difference is that OOPS has the rows
- *  correspoding to the first 'level' periods at the end, whereas the SMPS
+ *  correspoding to the first 'cutoff' periods at the end, whereas the SMPS
  *  breadth-first order has them at the beginning).
  *
  *  @param x:
