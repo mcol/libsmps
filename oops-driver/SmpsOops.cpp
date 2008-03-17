@@ -398,7 +398,7 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
 
   // dimensions of the deterministic equivalent
   printf("The deterministic equivalent matrix is %dx%d, %d nonzeros.\n",
-	 smps.getTotRows(), smps.getTotCols(), smps.countNonzeros(Tree));
+	 Tree.getTotRows(), Tree.getTotCols(), smps.countNonzeros(Tree));
 
   return 0;
 }
