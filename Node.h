@@ -30,6 +30,9 @@ class Node {
   /** Add a node to the list of children */
   int addChild(Node *child);
 
+  /** Copy the information from a node */
+  int copy(const Node *fromNode);
+
   // Setters
 
   /** Set the link to the next node in order */

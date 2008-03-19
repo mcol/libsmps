@@ -39,6 +39,15 @@ Node::~Node() {
   }
 }
 
+/** Copy the information from a node */
+int Node::copy(const Node *fromNode) {
+
+  _level    = fromNode->_level;
+  _scenario = fromNode->_scenario;
+
+  return 0;
+}
+
 /** Add a node to the list of children */
 int Node::addChild(Node *childNode) {
 
