@@ -238,7 +238,7 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
       if (perNode >= cutoff)
 	break;
 
-#ifdef DEBUG
+#ifdef DEBUG_GENERATE_SMPS
       printf("Node %d period %d,  nz in diag %d, cols in diag %d\n",
 	     cu_nd_cl, perNode, nzpddg[perNode], clpddg[perNode]);
 #endif
@@ -248,7 +248,9 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
 
     } while (node = node->next());
 
+#ifdef DEBUG_GENERATE_SMPS
     printf("Cols from RNKCR to DIAG[0]: %d (%d nonzeros).\n", cldg0, nzdg0);
+#endif
 
     // clean up
     delete[] nzpddg0;
@@ -381,8 +383,11 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
       rnkc_nz_pd[i] += smps.getNzPeriod(i, j);
     for (j = cutoff; j < nPeriods; ++j)
       diag_nz_pd[i] += smps.getNzPeriod(i, j);
+
+#ifdef DEBUG_GENERATE_SMPS
     printf("Nonzeros RNKCR/Diag[%d]: %4d %4d\n",
 	   i, rnkc_nz_pd[i], diag_nz_pd[i]);
+#endif
   }
 
   node = rootNode;
