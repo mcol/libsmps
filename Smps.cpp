@@ -134,7 +134,9 @@ int Smps::countNonzeros(const SmpsTree &tree) {
   } while (node = node->next());
 
   // count the number of nonzero elements
-  for (int per = 0, nzPer = 0; per < nPeriod; ++per) {
+  for (int per = 0; per < nPeriod; ++per) {
+
+    int nzPer = 0;
 
     // number of nonzeros in the period
     for (int j = 0; j < nPeriod; ++j) {
