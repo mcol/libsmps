@@ -229,7 +229,7 @@ PDProblem* SmpsOops::setupProblem(SmpsReturn *Pb) {
   Vector *vx = NewVector(A->Tcol, "vx");
   Vector *vy = NewVector(A->Trow, "vy");
   Vector *vz = NewVector(A->Tcol, "vz");
-  Vector *vs, *vw;
+  Vector *vs = NULL, *vw = NULL;
   if (smps.hasUpperBounds()) {
     vs = NewVector(A->Tcol, "vs");
     vw = NewVector(A->Tcol, "vw");
