@@ -10,6 +10,7 @@
  */
 
 #include <queue>
+#include <assert.h>
 #include "SmpsOops.h"
 #include "oops/oopstime.h"
 #include "oops/WriteMps.h"
