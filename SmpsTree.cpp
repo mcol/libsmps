@@ -182,6 +182,7 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
   int maxPers = getPeriods();
 
   char *perNames = convertPeriodNames();
+  Node *node;
 
   // read the stoc file
   char stocfile[100] = "";
@@ -218,7 +219,7 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
   // Note that the scenario information is still kept in arrays.
 
   // allocate the root node
-  Node *node = new Node(nodeName);
+  node = new Node(nodeName);
   Tree.setRootNode(node);
 
   qNodes.push(node);
