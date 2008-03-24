@@ -86,7 +86,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
   // options for the complete problem
   hopdm_options->glopt->conv_tol = 1.e-4;
 
-  hopdm_ret *ret;
+  hopdm_ret *ret = NULL;
   PrintOptions *Prt = NewHopdmPrt(PRINT_ITER);
 
   if (opt.dontSolve()) {
@@ -109,12 +109,10 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
   if (opt.printSolution())
     getSolution(pdProb, prob);
 
-  // clean up
-  free(ret);
-
  TERMINATE:
 
   // clean up
+  delete ret;
   FreePDProblem(pdProb);
   freeSmpsReturn(prob);
   delete Prt;
@@ -158,7 +156,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   storeSolution(pdProb, prob);
 
   // clean up
-  free(ret);
+  delete ret;
   FreePDProblem(pdProb);
   freeSmpsReturn(prob);
   delete Prt;
