@@ -39,10 +39,10 @@ class SmpsOops {
   int read(void);
 
   /** Solve the complete problem */
-  int solve(const OptionsOops &opt, HopdmOptions *hopdm_options);
+  int solve(const OptionsOops &opt, HopdmOptions &hopdmOpts);
 
   /** Solve a reduced problem */
-  int solveReduced(const OptionsOops &opt, HopdmOptions *hopdm_options);
+  int solveReduced(const OptionsOops &opt, HopdmOptions &hopdmOpts);
 
   int getSolution(PDProblem *Prob, SmpsReturn *Ret);
 

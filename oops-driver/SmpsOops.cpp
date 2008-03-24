@@ -57,11 +57,11 @@ int SmpsOops::read() {
  *
  *  @param opt:
  *         Command line options.
- *  @param hopdm_options:
+ *  @param hopdmOpts:
  *         Pointer to the options for the solver.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
-int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
+int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
   // generate the problem
   SmpsReturn *prob = generateSmps(smps.getSmpsTree());
@@ -84,10 +84,10 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
   printf(" --------------- solve ---------------------\n");
 
   // options for the complete problem
-  hopdm_options->glopt->conv_tol = 1.e-4;
+  hopdmOpts.glopt->conv_tol = 1.e-4;
 
   hopdm_ret *ret = NULL;
-  PrintOptions *Prt = NewHopdmPrt(PRINT_ITER);
+  PrintOptions Prt(PRINT_ITER);
 
   if (opt.dontSolve()) {
     printf("Problem not solved by request.\n");
@@ -98,7 +98,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
   tt_start = oopstime();
 
   // solve the problem
-  ret = hopdm(printout, pdProb, hopdm_options, Prt);
+  ret = hopdm(printout, pdProb, &hopdmOpts, &Prt);
 
   // stop the clock
   tt_end = oopstime();
@@ -115,7 +115,6 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
   delete ret;
   FreePDProblem(pdProb);
   freeSmpsReturn(prob);
-  delete Prt;
 
   return 0;
 }
@@ -125,12 +124,12 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions *hopdm_options) {
  *
  *  @param opt:
  *         Command line options.
- *  @param hopdm_options:
+ *  @param hopdmOpts:
  *         Pointer to the options for the solver.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
 int SmpsOops::solveReduced(const OptionsOops &opt,
-			   HopdmOptions *hopdm_options) {
+			   HopdmOptions &hopdmOpts) {
 
   // generate a reduced problem
   SmpsReturn *prob = generateSmps(rTree);
@@ -139,18 +138,18 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
     return 1;
   }
 
+  PrintOptions Prt(PRINT_ITER);
+
   // setup the primal-dual problem
   PDProblem *pdProb = setupProblem(prob);
 
   printf(" --------------- solveReduced --------------\n");
 
   // options for the reduced problem
-  hopdm_options->glopt->conv_tol = 5.e-1;
-
-  PrintOptions *Prt = NewHopdmPrt(PRINT_ITER);
+  hopdmOpts.glopt->conv_tol = 5.e-1;
 
   // solve the problem
-  hopdm_ret *ret = hopdm(printout, pdProb, hopdm_options, Prt);
+  hopdm_ret *ret = hopdm(printout, pdProb, &hopdmOpts, &Prt);
 
   // extract and store the solution
   storeSolution(pdProb, prob);
@@ -159,7 +158,6 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   delete ret;
   FreePDProblem(pdProb);
   freeSmpsReturn(prob);
-  delete Prt;
 
   return 0;
 }

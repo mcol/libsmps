@@ -45,10 +45,10 @@ int main(const int argc, const char *argv[]) {
   if (rv)
     return 1;
 
-  HopdmOptions *hopdm_options = NewHopdmOptions();
+  HopdmOptions hopdmOpts = HopdmOptions();
 
   // solve the problem
-  data.solve(opt, hopdm_options);
+  data.solve(opt, hopdmOpts);
 
 #ifdef WITH_TIME
   reportTimes(stdout);
@@ -57,9 +57,6 @@ int main(const int argc, const char *argv[]) {
   // close the output file
   if (opt.outputToFile())
     fclose(printout);
-
-  // clean up
-  FreeHopdmOptions(hopdm_options);
 
 #ifdef WITH_MPI
   MPI_Finalize();
