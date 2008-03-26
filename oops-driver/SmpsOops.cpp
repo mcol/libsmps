@@ -85,9 +85,6 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
   printf(" --------------- solve ---------------------\n");
 
-  // options for the complete problem
-  hopdmOpts.glopt->conv_tol = 1.e-4;
-
   hopdm_ret *ret = NULL;
   PrintOptions Prt(PRINT_ITER);
 
@@ -95,6 +92,9 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
     printf("Problem not solved by request.\n");
     goto TERMINATE;
   }
+
+  // options for the complete problem
+  hopdmOpts.glopt->conv_tol = 1.e-4;
 
   // start the clock
   tt_start = oopstime();
@@ -146,8 +146,6 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
     return 1;
   }
 
-  PrintOptions Prt(PRINT_ITER);
-
   // setup the primal-dual problem
   PDProblem *pdProb = setupProblem(prob);
 
@@ -161,11 +159,19 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 
   printf(" --------------- solveReduced --------------\n");
 
+  hopdm_ret *ret = NULL;
+  PrintOptions Prt(PRINT_ITER);
+
+  if (opt.dontSolve()) {
+    printf("Problem not solved by request.\n");
+    goto TERMINATE;
+  }
+
   // options for the reduced problem
   hopdmOpts.glopt->conv_tol = 5.e-1;
 
   // solve the problem
-  hopdm_ret *ret = hopdm(printout, pdProb, &hopdmOpts, &Prt);
+  ret = hopdm(printout, pdProb, &hopdmOpts, &Prt);
   if (ret->ifail) {
     rv = ret->ifail;
     goto TERMINATE;
