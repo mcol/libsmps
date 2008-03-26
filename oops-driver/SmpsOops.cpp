@@ -63,6 +63,8 @@ int SmpsOops::read() {
  */
 int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
+  int rv = 0;
+
   // generate the problem
   SmpsReturn *prob = generateSmps(smps.getSmpsTree());
   if (!prob) {
@@ -99,6 +101,10 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
   // solve the problem
   ret = hopdm(printout, pdProb, &hopdmOpts, &Prt);
+  if (ret->ifail) {
+    rv = ret->ifail;
+    goto TERMINATE;
+  }
 
   // stop the clock
   tt_end = oopstime();
@@ -116,7 +122,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   FreePDProblem(pdProb);
   freeSmpsReturn(prob);
 
-  return 0;
+  return rv;
 }
 
 /**
@@ -130,6 +136,8 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
  */
 int SmpsOops::solveReduced(const OptionsOops &opt,
 			   HopdmOptions &hopdmOpts) {
+
+  int rv = 0;
 
   // generate a reduced problem
   SmpsReturn *prob = generateSmps(rTree);
@@ -158,16 +166,22 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 
   // solve the problem
   hopdm_ret *ret = hopdm(printout, pdProb, &hopdmOpts, &Prt);
+  if (ret->ifail) {
+    rv = ret->ifail;
+    goto TERMINATE;
+  }
 
   // extract and store the solution
   storeSolution(pdProb, prob);
+
+ TERMINATE:
 
   // clean up
   delete ret;
   FreePDProblem(pdProb);
   freeSmpsReturn(prob);
 
-  return 0;
+  return rv;
 }
 
 /**
