@@ -143,6 +143,14 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   // setup the primal-dual problem
   PDProblem *pdProb = setupProblem(prob);
 
+  // write the deterministic equivalent in mps format
+  if (opt.writeMps()) {
+    FILE *fout = fopen("smps-red.mps", "w");
+    Write_MpsFile(fout, pdProb->AlgAug, pdProb->b, pdProb->c, pdProb->u, 0,
+		  prob->colnames, prob->rownames);
+    fclose(fout);
+  }
+
   printf(" --------------- solveReduced --------------\n");
 
   // options for the reduced problem
