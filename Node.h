@@ -30,6 +30,9 @@ class Node {
   /** Add a node to the list of children */
   int addChild(Node *child);
 
+  /** Remove a node from the list of children */
+  int removeChild(Node *child);
+
   /** Copy the information from a node */
   int copy(const Node *fromNode);
 

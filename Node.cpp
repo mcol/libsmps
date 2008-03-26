@@ -64,6 +64,22 @@ int Node::addChild(Node *childNode) {
   return 0;
 }
 
+/** Remove a node from the list of children */
+int Node::removeChild(Node *childNode) {
+
+  for (int i = 0; i < nChildren(); ++i) {
+
+    // compare the addresses
+    if (_children[i] == childNode) {
+      _children.erase(_children.begin() + i);
+      return 0;
+    }
+  }
+
+  // could not find the child
+  return 1;
+}
+
 /** Retrieve the child node at the given index */
 Node* Node::getChild(const int childNumber) const {
 
