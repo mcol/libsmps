@@ -55,6 +55,7 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
 
   CPXENVptr env;
   CPXLPptr lp;
+  ProbData *prob = NULL;
 
   printf(" --------------- cplexSolve ----------------\n");
 
@@ -94,7 +95,7 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
   }
 
   // generate the deterministic equivalent
-  ProbData *prob = generateProblem();
+  prob = generateProblem();
   if (!prob) {
     fprintf(stderr, "Failed to generate the deterministic equivalent.\n");
     goto TERMINATE;

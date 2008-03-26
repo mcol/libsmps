@@ -454,6 +454,7 @@ void printSolution(const Node *root,
   }
 }
 
+#ifdef OBSOLETE
 /**
  *  Write the deterministic equivalent problem in MPS format.
  *
@@ -567,3 +568,4 @@ int writeMps(const char *filename, ProbData *PROB) {
 
   return 0;
 }
+#endif /* OBSOLETE */

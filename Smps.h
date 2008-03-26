@@ -416,12 +416,12 @@ class SmpsStoc : public SmpsCore {
   }
 
   /** Return the index of the first scenario change for the given scenario */
-  const int getFirstEntryScen(const int scen) const {
+  int getFirstEntryScen(const int scen) const {
     return sc_first[scen];
   }
 
   /** Return the number of changes in the given scenario */
-  const int getLengthScen(const int scen) const {
+  int getLengthScen(const int scen) const {
     return sc_len[scen];
   }
 
