@@ -812,7 +812,7 @@ void setupRhs(const Smps &smps, SmpsReturn *Ret) {
       rhs->elts[firstRowNode + i] = smps.getRhs(begRowPeriod + i);
 
       // build a name for this row
-      rownames[firstRowNode + i] = new char[15];
+      rownames[firstRowNode + i] = new char[20];
       strncpy(rownames[firstRowNode + i], smps.getBegRowName(begRowPeriod + i), 8);
       p = rownames[firstRowNode + i] + 8;
       while(*(p - 1) == ' ') --p;
