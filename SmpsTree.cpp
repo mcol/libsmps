@@ -608,7 +608,7 @@ void SmpsTree::print() const {
   qNodes.push(node);
 
   printf("Tree information:\n");
-  printf("   node parent scen  chdn   per   prob   |  rows  cols (next)\n");
+  printf("   node  prnt  scen  chdn   per   prob   |  rows  cols (next)\n");
 
   // go through all nodes in the tree in breadth-first order
   while (!qNodes.empty()) {

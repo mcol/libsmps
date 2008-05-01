@@ -95,7 +95,7 @@ Node* Node::getChild(const int childNumber) const {
 void Node::print() const {
 
   // node parent scen n_chd per prob | rows cols
-  printf("  %4i  %4i  %4i  %4i  %4i   %.4f  | %4i  %4i  (%4i)\n",
+  printf(" %5i %5i %5i  %4i  %4i   %.4f  | %4i  %4i  (%4i)\n",
 	 _name,
 	 _parent ? _parent->name() : 0,
 	 _scenario + 1,
