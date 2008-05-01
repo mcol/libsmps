@@ -43,6 +43,11 @@ class Node {
     _next = nextNode;
   }
 
+  /** Set the number of levels spanned by the node */
+  void setLevel(const int levels) {
+    _nLevels = levels;
+  }
+
   /** Set the scenario index */
   void setScen(const int scen) {
     _scenario = scen;
@@ -95,6 +100,11 @@ class Node {
   /** Return the level of the node in the tree */
   int level(void) const {
     return _level;
+  }
+
+  /** Return the number of periods spanned by the node */
+  int nLevels(void) const {
+    return _nLevels;
   }
 
   /** Return the scenario index of the node */
@@ -151,6 +161,9 @@ class Node {
 
   /** Level of the node within a tree */
   int _level;
+
+  /** Number of periods spanned by the node */
+  int _nLevels;
 
   /** Scenario this node belongs to */
   int _scenario;
