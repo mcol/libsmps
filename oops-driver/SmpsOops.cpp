@@ -320,13 +320,21 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
   }
 }
 
-/** Generate a reduced tree */
-int SmpsOops::reduceTree() {
+/**
+ *  Generate a reduced tree by choosing a subset of scenarios.
+ *
+ *  @param nScenarios:
+ *         Number of scenarios to appear in the reduced tree.
+ *  @return 1 If something goes wrong; 0 otherwise.
+ */
+int SmpsOops::reduceTree(const int nScenarios) {
 
   printf(" --------------- reduceTree ----------------\n");
 
-  // number of desired scenarios in the reduced tree
-  const int nScenarios = 6;
+  // check that the number of scenarios is sensible
+  if (nScenarios < 1)
+    return 1;
+
   const Node *cNode = smps.getRootNode();
 
   // allocate the root node for the reduced tree
@@ -809,8 +817,8 @@ OptionsOops::OptionsOops(const int argc, const char *argv[]) :
 int OptionsOops::parse() {
 
   // add the specialised options
-  Options::addOption("-w", "use a warmstart strategy",
-		     &_useWarmstart);
+  Options::addOption("-w", "use a warmstart strategy with scenario reduction",
+		     &_useWarmstart, true);
   Options::addOption("-l", "cutoff level (for multistage programs)",
 		     &_cutoffLevel, true);
 
