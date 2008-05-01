@@ -65,6 +65,10 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
   int rv = 0;
 
+  // XXX This call is needed because nBlocks is in SmpsOops and we need it to
+  // update it, since otherwise we may still use the one of the reduced tree
+  orderNodes(smps.getSmpsTree());
+
   // generate the problem
   SmpsReturn *prob = generateSmps(smps.getSmpsTree());
   if (!prob) {
@@ -95,6 +99,10 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
   // options for the complete problem
   hopdmOpts.glopt->conv_tol = 1.e-4;
+
+  // use the warmstart point if available
+  if (wsPoint)
+    hopdmOpts.use_start_point = 1;
 
   // start the clock
   tt_start = oopstime();
@@ -180,6 +188,19 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   // extract and store the solution
   storeSolution(pdProb, prob);
 
+  // generate a warmstart point for the complete problem
+  setupWarmStart(prob);
+
+  if (pdPoint) {
+    FreeVector(pdPoint->x);
+    FreeVector(pdPoint->y);
+    FreeVector(pdPoint->z);
+    if (smps.hasUpperBounds()) {
+      FreeVector(pdPoint->s);
+      FreeVector(pdPoint->w);
+    }
+  }
+
  TERMINATE:
 
   // clean up
@@ -228,6 +249,114 @@ int SmpsOops::storeSolution(const PDProblem *pdProb, const SmpsReturn *Ret) {
 }
 
 /**
+ *  Create the reduced tree in a recursive manner.
+ *
+ *  @param cNode:
+ *         Node in the complete tree.
+ *  @param rParent:
+ *         Node in the reduced tree to which add children.
+ *  @param nWanted:
+ *         Number of desired scenarios in the reduced tree.
+ */
+void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
+			       const int nWanted) {
+
+  int i, nChildren = cNode->nChildren();
+  Node *child;
+
+  // nothing more to be done
+  if (nWanted == 0 || nChildren == 0)
+    return;
+
+#ifdef DEBUG_RTREE
+  printf("ReduceScenarios: node %d (%d)\n", cNode->name(), nWanted);
+#endif
+
+  // stop the recursion
+  if (nWanted == 1) {
+
+    // copy the nodes on the path from here to a leaf node
+    while (cNode->nChildren() > 0) {
+
+      // get the first child
+      cNode = cNode->getChild(0);
+
+      // create a new reduced tree node
+      child = new Node(cNode->name());
+      child->copy(cNode);
+      rParent->addChild(child);
+      nMap[cNode] = child;
+      rParent = child;
+    }
+
+    return;
+  }
+
+  // common number of scenarios to be chosen from each child
+  int each = nWanted / nChildren;
+
+  // number of nodes that have an extra scenario
+  int rest = nWanted % nChildren;
+
+  // continue the recursion only for as much as needed
+  int last = nChildren < nWanted ? nChildren: nWanted;
+
+  // copy the needed number of children of the complete node
+  for (i = 0; i < last; ++i) {
+
+    Node *ttt = cNode->getChild(i);
+    child = new Node(ttt->name());
+    child->copy(ttt);
+    rParent->addChild(child);
+    nMap[ttt] = child;
+
+    // enter the recursion
+    if (rest > 0) {
+      reduceScenarios(ttt, child, each + 1);
+      --rest;
+    }
+    else
+      reduceScenarios(ttt, child, each);
+  }
+}
+
+/** Generate a reduced tree */
+int SmpsOops::reduceTree() {
+
+  printf(" --------------- reduceTree ----------------\n");
+
+  // number of desired scenarios in the reduced tree
+  const int nScenarios = 6;
+  const Node *cNode = smps.getRootNode();
+
+  // allocate the root node for the reduced tree
+  rTree.setRootNode(new Node(100 + cNode->name()));
+  Node *rNode = rTree.getRootNode();
+
+  // copy the root node
+  rNode->copy(cNode);
+  nMap[cNode] = rNode;
+
+  // build up the reduced tree by selecting some scenarios
+  reduceScenarios(cNode, rNode, nScenarios);
+
+  // set the start rows and columns for each node
+  int rv = smps.setNodeStarts(rTree);
+  if (rv)
+    return 1;
+
+  // order the nodes and set the next links
+  orderNodes(rTree);
+
+  // recompute the probabilities in the reduced tree
+  adjustProbabilities();
+
+  rTree.print();
+
+  return 0;
+}
+
+/**
  *  Set up the Oops algebras and vectors and build the primal-dual problem.
  *
  *  @param Pb:
@@ -259,6 +388,17 @@ PDProblem* SmpsOops::setupProblem(SmpsReturn *Pb) {
     vw = NewVector(A->Tcol, "vw");
   }
 
+  // use the warmstart point if available
+  if (wsPoint) {
+    SmpsDenseToVector(wsPoint->x, vx, Pb, ORDER_COL);
+    SmpsDenseToVector(wsPoint->y, vy, Pb, ORDER_ROW);
+    SmpsDenseToVector(wsPoint->z, vz, Pb, ORDER_COL);
+    if (smps.hasUpperBounds()) {
+      SmpsDenseToVector(wsPoint->s, vs, Pb, ORDER_COL);
+      SmpsDenseToVector(wsPoint->w, vw, Pb, ORDER_COL);
+    }
+  }
+
   CopyDenseToVector(Pb->b, vb);
   CopyDenseToVector(Pb->c, vc);
   CopyDenseToVector(Pb->u, vu);
@@ -271,6 +411,196 @@ PDProblem* SmpsOops::setupProblem(SmpsReturn *Pb) {
   }
 
   return Prob;
+}
+
+/**
+ *  Find the complete tree node that represents the given node.
+ *
+ *  Given a node in the complete tree, find the closest node in the complete
+ *  tree that was chosen to appear in the reduced tree.
+ *
+ *  This is done by recursively walking up the tree until we find a node that
+ *  was in the reduced tree; at that point we walk back down and return the
+ *  index of a reduced tree node of the same period as the original node.
+ *
+ *  @param node:
+ *         Node in the complete tree.
+ *  @return The complete tree node that represents the given node.
+ *
+ *  @note
+ *  This function returns a complete tree node. To find the reduced tree node
+ *  from which the solution has to be copied, we have to apply the map again.
+ */
+const Node* SmpsOops::findNode(const Node *node) {
+
+  map<const Node*, Node*>::iterator it;
+
+  // find the node in the map
+  assert(node != NULL);
+  it = nMap.find(node);
+
+  // this node was chosen to be in the reduced tree
+  if (it != nMap.end()) {
+
+#ifdef DEBUG_RTREE
+    printf("   Node %d: already chosen.\n", node->name());
+#endif
+
+    return node;
+  }
+
+  // find a parent node that was in the reduced tree
+  const Node *parent = findNode(node->parent());
+
+  // find a suitable node among the children of the given parent
+  for (int i = 0; i < parent->nChildren(); ++i) {
+
+    Node *child = parent->getChild(i);
+    it = nMap.find(child);
+
+    // this child is suitable
+    if (it != nMap.end()) {
+
+#ifdef DEBUG_RTREE
+      printf("   Node %d: mapping to node %d.\n", node->name(), child->name());
+#endif
+
+      return it->first;
+    }
+#ifdef DEBUG_RTREE
+    else
+      printf("      %d was not chosen!\n", child->name());
+#endif
+  }
+
+  // no suitable node found
+  assert(0);
+}
+
+/** Recompute the probabilities in the reduced tree */
+void SmpsOops::adjustProbabilities() {
+
+  const Node *cNode = smps.getRootNode();
+
+  do {
+
+    // find the corresponding node in the reduced tree
+    Node *rNode = nMap[findNode(cNode)];
+
+    // update the probabilities
+    rNode->setProb(rNode->probNode() + cNode->probNode());
+
+  } while (cNode = cNode->next());
+}
+
+/**
+ *  Set up a warmstart point from a reduced-tree solution.
+ *
+ *  @param Ret:
+ *         The SmpsReturn structure of the reduced problem.
+ *  @return 1 If something goes wrong; 0 otherwise.
+ */
+int SmpsOops::setupWarmStart(const SmpsReturn *Ret) {
+
+  // dense vectors for the reduced solution
+  DenseVector *xred, *zred, *yred, *sred = NULL, *wred = NULL;
+
+  // dense vectors for the complete solution
+  DenseVector *xnew, *znew, *ynew, *snew = NULL, *wnew = NULL;
+
+  printf(" --------------- setupWarmStart ------------\n");
+
+  if (!pdPoint) {
+    printf("Failed to set up a warmstart point.\n");
+    return 1;
+  }
+
+  // dimensions of the complete and the reduced deterministic equivalents
+  int nRows = smps.getTotRows(), rRows = rTree.getTotRows();
+  int nCols = smps.getTotCols(), rCols = rTree.getTotCols();
+
+  printf("Reduced matrix:  %dx%d\n", rRows, rCols);
+  printf("Complete matrix: %dx%d\n", nRows, nCols);
+
+  // allocate space for the vectors in the reduced iterate
+  xred = NewDenseVector(rCols, "xred");
+  yred = NewDenseVector(rRows, "yred");
+  zred = NewDenseVector(rCols, "zred");
+  if (smps.hasUpperBounds()) {
+    sred = NewDenseVector(rCols, "sred");
+    wred = NewDenseVector(rCols, "wred");
+  }
+
+  // recover the initial ordering of the solution vectors
+  VectorToSmpsDense(pdPoint->x, xred, Ret, ORDER_COL);
+  VectorToSmpsDense(pdPoint->y, yred, Ret, ORDER_ROW);
+  VectorToSmpsDense(pdPoint->z, zred, Ret, ORDER_COL);
+  if (smps.hasUpperBounds()) {
+    VectorToSmpsDense(pdPoint->s, sred, Ret, ORDER_COL);
+    VectorToSmpsDense(pdPoint->w, wred, Ret, ORDER_COL);
+  }
+
+  // allocate space for the vectors in the complete iterate
+  xnew = NewDenseVector(nCols, "xnew");
+  ynew = NewDenseVector(nRows, "ynew");
+  znew = NewDenseVector(nCols, "znew");
+  if (smps.hasUpperBounds()) {
+    snew = NewDenseVector(nCols, "snew");
+    wnew = NewDenseVector(nCols, "wnew");
+  }
+
+  const Node *cNode = smps.getRootNode(), *rNode;
+  int cIndex, rIndex, nElems;
+  double crProb;
+
+  // go through the nodes in the complete tree
+  do {
+
+    rNode  = nMap[findNode(cNode)];
+    cIndex = cNode->firstCol();
+    rIndex = rNode->firstCol();
+    nElems = cNode->nCols();
+    crProb = cNode->probNode() / rNode->probNode();
+
+#ifdef DEBUG_WARMSTART
+    printf("Working on %d -> rNode: %d,  %d  %d\n",
+	   cNode->name(), rNode->name(), cIndex, rIndex);
+#endif
+
+    // copy the x and z iterates
+    for (int i = 0; i < nElems; i++) {
+      xnew->elts[cIndex + i] = xred->elts[rIndex + i];
+      znew->elts[cIndex + i] = zred->elts[rIndex + i] * crProb;
+      if (smps.hasUpperBounds()) {
+	snew->elts[cIndex + i] = sred->elts[rIndex + i];
+	wnew->elts[cIndex + i] = wred->elts[rIndex + i] * crProb;
+      }
+    }
+
+    cIndex = cNode->firstRow();
+    rIndex = rNode->firstRow();
+    nElems = cNode->nRows();
+
+    // copy the y iterate
+    for (int i = 0; i < nElems; i++) {
+      ynew->elts[cIndex + i] = yred->elts[rIndex + i] * crProb;
+    }
+
+  } while (cNode = cNode->next());
+
+  // set the warmstart point
+  wsPoint = new WSPoint(xnew, ynew, znew, snew, wnew);
+
+  // clean up
+  FreeDenseVector(xred);
+  FreeDenseVector(yred);
+  FreeDenseVector(zred);
+  if (smps.hasUpperBounds()) {
+    FreeDenseVector(sred);
+    FreeDenseVector(wred);
+  }
+
+  return 0;
 }
 
 /**

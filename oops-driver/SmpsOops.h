@@ -12,6 +12,7 @@
 #ifndef _SMPS_OOPS_H_
 #define _SMPS_OOPS_H_
 
+#include <map>
 #include <queue>
 #include "oops/oops.h"
 #include "Smps.h"
@@ -44,6 +45,9 @@ class SmpsOops {
   /** Solve a reduced problem */
   int solveReduced(const OptionsOops &opt, HopdmOptions &hopdmOpts);
 
+  /** Generate a reduced tree */
+  int reduceTree(void);
+
   int getSolution(PDProblem *Prob, SmpsReturn *Ret);
 
  private:
@@ -60,6 +64,9 @@ class SmpsOops {
   /** A warmstart point for the complete problem */
   WSPoint *wsPoint;
 
+  /** The mapping between the nodes in the complete and reduced trees */
+  map<const Node*, Node*> nMap;
+
   /** The cutoff level */
   int cutoff;
 
@@ -72,8 +79,20 @@ class SmpsOops {
   /** Set up the Oops algebras and vectors and build the primal-dual problem */
   PDProblem* setupProblem(SmpsReturn *Pb);
 
+  /** Create a reduced tree in a recursive manner */
+  void reduceScenarios(const Node *cNode, Node *rParent, const int nWanted);
+
   /** Store the solution from the reduced problem */
   int storeSolution(const PDProblem *pdProb, const SmpsReturn *Ret);
+
+  /** Set up the warmstart point from a reduced-tree solution */
+  int setupWarmStart(const SmpsReturn *Pb);
+
+  /** Find the complete tree node that represents the given node */
+  const Node* findNode(const Node *node);
+
+  /** Recompute the probabilities in the reduced tree */
+  void adjustProbabilities(void);
 
   /** Order the nodes according to the cutoff level */
   int orderNodes(SmpsTree &Tree);

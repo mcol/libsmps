@@ -47,6 +47,20 @@ int main(const int argc, const char *argv[]) {
 
   HopdmOptions hopdmOpts = HopdmOptions();
 
+  // warmstart case
+  if (opt.useWarmstart()) {
+
+    // create a reduced tree
+    rv = data.reduceTree();
+    if (rv)
+      goto TERMINATE;
+
+    // solve the reduced problem
+    rv = data.solveReduced(opt, hopdmOpts);
+    if (rv)
+      goto TERMINATE;
+  }
+
   // solve the problem
   data.solve(opt, hopdmOpts);
 
@@ -57,6 +71,8 @@ int main(const int argc, const char *argv[]) {
   // close the output file
   if (opt.outputToFile())
     fclose(printout);
+
+ TERMINATE:
 
 #ifdef WITH_MPI
   MPI_Finalize();
