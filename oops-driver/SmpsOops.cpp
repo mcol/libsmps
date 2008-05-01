@@ -570,6 +570,15 @@ int SmpsOops::setupWarmStart(const SmpsReturn *Ret) {
     nElems = cNode->nCols();
     crProb = cNode->probNode() / rNode->probNode();
 
+    // adjust rIndex taking into account aggregation
+    if (cNode->level() != rNode->level()) {
+      const Node *ttt = cNode;
+      while (ttt->level() != rNode->level()) {
+	ttt = ttt->parent();
+	rIndex += ttt->nCols();
+      }
+    }
+
 #ifdef DEBUG_WARMSTART
     printf("Working on %d -> rNode: %d,  %d  %d\n",
 	   cNode->name(), rNode->name(), cIndex, rIndex);
@@ -588,6 +597,15 @@ int SmpsOops::setupWarmStart(const SmpsReturn *Ret) {
     cIndex = cNode->firstRow();
     rIndex = rNode->firstRow();
     nElems = cNode->nRows();
+
+    // adjust rIndex taking into account aggregation
+    if (cNode->level() != rNode->level()) {
+      const Node *ttt = cNode;
+      while (ttt->level() != rNode->level()) {
+	ttt = ttt->parent();
+	rIndex += ttt->nRows();
+      }
+    }
 
     // copy the y iterate
     for (int i = 0; i < nElems; i++) {

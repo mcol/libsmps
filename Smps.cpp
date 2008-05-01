@@ -180,8 +180,11 @@ int Smps::setNodeStarts(SmpsTree &tree) {
     assert(per < getPeriods());
 
     // find the dimension of the current node
-    rows = getNRowsPeriod(per);
-    cols = getNColsPeriod(per);
+    rows = cols = 0;
+    for (int i = 0; i < node->nLevels(); ++i) {
+      rows += getNRowsPeriod(per + i);
+      cols += getNColsPeriod(per + i);
+    }
 
     // set the node information
     node->setMatrixPointers(ttm, ttn, rows, cols);

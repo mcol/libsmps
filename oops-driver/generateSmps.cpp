@@ -397,12 +397,14 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
 
     int blkNode = node->block();
     perNode = node->level();
-    rnkc_nz_blk[blkNode] += rnkc_nz_pd[perNode];
-    diag_nz_blk[blkNode] += diag_nz_pd[perNode];
-    diag_m_blk[blkNode]  += smps.getNRowsPeriod(perNode);
-    diag_n_blk[blkNode]  += smps.getNColsPeriod(perNode);
+    for (i = 0; i < node->nLevels(); ++i) {
+      rnkc_nz_blk[blkNode] += rnkc_nz_pd[perNode + i];
+      diag_nz_blk[blkNode] += diag_nz_pd[perNode + i];
+      diag_m_blk[blkNode]  += smps.getNRowsPeriod(perNode + i);
+      diag_n_blk[blkNode]  += smps.getNColsPeriod(perNode + i);
+    }
     /*
-    printf("%d  %d  %d  ", node->name(), blkNode, perNode);
+    printf("%d  %d  %d  %d ", node->name(), blkNode, perNode, node->nLevels());
     printf("* %6d %6d %6d %6d\n",
 	   rnkc_nz_blk[blkNode], diag_nz_blk[blkNode],
 	   diag_m_blk[blkNode],  diag_n_blk[blkNode]);
@@ -523,9 +525,13 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
   // for all columns in the deterministic equivalent
   for (i = 0; i < ttn; ++i) {
 
+    int lastCol = 0;
     perNode = node->level();
 
-    if (i - b_cu_blk_cl >= smps.getNColsPeriod(perNode)) {
+    for (j = 0; j < node->nLevels(); ++j)
+      lastCol += smps.getNColsPeriod(perNode + j);
+
+    if (i - b_cu_blk_cl >= lastCol) {
 
       // first col of current node in big matrix
       b_cu_blk_cl = i;
@@ -724,8 +730,9 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
 				   const Node *node, const int colBlk,
 				   const int rnkCol, const int coreCol) {
 
-  const int per = node->level();
   const int blk = node->block();
+  const int per = node->level();
+  const int end = per + node->nLevels();
   int index;
   SparseSimpleMatrix *sparse;
 
@@ -748,7 +755,7 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
   }
 
   // copy the information for this node into the deterministic equivalent
-  for (int k = p_pd_rw[per]; k < p_pd_rw[per + 1]; ++k) {
+  for (int k = p_pd_rw[per]; k < p_pd_rw[end]; ++k) {
 
     sparse->element[sparse->nb_el] = data.acoeff[k];
     sparse->row_nbs[sparse->nb_el] = data.rwnmbs[k]
@@ -963,7 +970,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 			     Algebra **DiagEntries, Algebra **RightColEntries,
 			     int *f_rw_blk, int *f_cl_blk) {
 
-  int period, firstEntry, lastEntry;
+  int period, lastPd, firstEntry, lastEntry;
   int row, col, pdr, pdc;
   int k, iblk, jblk;
   bool found;
@@ -989,6 +996,9 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
     // traverse all nodes from this leaf up to the root
     while (period >= 0) {
 
+      // last period covered by this node
+      lastPd = period + scNode->nLevels();
+
       // scenario the current node belongs to
       int scen = scNode->scenario();
 
@@ -997,8 +1007,9 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
       lastEntry  = firstEntry + smps.getLengthScen(scen);
 
 #ifdef DEBUG_SCEN
-      printf("Node %d: scenario %d (entries from %d to %d)\n",
-	     scNode->name(), scen + 1, firstEntry, lastEntry - 1);
+      printf("Node %d: scen %d (entries from %d to %d), period %d to %d\n",
+	     scNode->name(), scen + 1, firstEntry, lastEntry - 1,
+	     period, lastPd);
 #endif
 
       // for all changes affecting this scenario
@@ -1009,10 +1020,10 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	pdc = smps.getColPeriod(entryCol[corr] - 1);
 
 	// if the change affects the objective
-	if (pdr < 0 && pdc == period) {
+	if (pdr < 0 && pdc >= period && pdc < lastPd) {
 
 	  col = scNode->firstCol() + entryCol[corr] - 1
-	    - smps.getBegPeriodCol(pdc);
+	    - smps.getBegPeriodCol(period);
 	  assert(col <= tree.getTotCols());
 
 	  Ret->c->elts[col] = entryVal[corr] * scNode->probNode();
@@ -1024,10 +1035,10 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	}
 
 	// if the change affects the rhs
-	else if (pdc < 0 && pdr == period) {
+	else if (pdc < 0 && pdr >= period && pdr < lastPd) {
 
 	  row = scNode->firstRow() + entryRow[corr] - 1
-	    - smps.getBegPeriodRow(pdr);
+	    - smps.getBegPeriodRow(period);
 	  assert(row <= tree.getTotRows());
 
 	  Ret->b->elts[row] = entryVal[corr];
