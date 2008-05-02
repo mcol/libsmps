@@ -51,7 +51,9 @@ int main(const int argc, const char *argv[]) {
   if (opt.useWarmstart()) {
 
     // create a reduced tree
-    rv = data.reduceTree(opt.useWarmstart());
+    if (opt.useReduction())
+      rv = data.reduceTree(opt.useReduction());
+
     if (rv)
       goto LEAVE_WARMSTART;
 

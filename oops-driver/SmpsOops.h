@@ -218,8 +218,11 @@ class WSPoint {
 /** Command line options for the Oops interface */
 class OptionsOops : public Options {
 
-  /** Whether a warmstart strategy should be used */
-  int _useWarmstart;
+  /** Whether scenario reduction should be used */
+  int _useReduction;
+
+  /** Whether stage aggregation should be performed */
+  int _useAggregation;
 
   /** The value of the cutoff level (for multistage problems) */
   int _cutoffLevel;
@@ -232,9 +235,19 @@ class OptionsOops : public Options {
   /** Parse the command line options */
   int parse(void);
 
-  /** Retrieve the value of the useWarmstart option */
+  /** Determine whether a warmstart strategy has to be employed */
   int useWarmstart(void) const {
-    return _useWarmstart;
+    return _useReduction || _useAggregation;
+  }
+
+  /** Retrieve the value of the useReduction option */
+  int useReduction(void) const {
+    return _useReduction;
+  }
+
+  /** Retrieve the value of the useAggregation option */
+  int useAggregation(void) const {
+    return _useAggregation;
   }
 
   /** Retrieve the value of the cutoffValue option */

@@ -827,7 +827,8 @@ WSPoint::~WSPoint() {
 /** Constructor */
 OptionsOops::OptionsOops(const int argc, const char *argv[]) :
   Options(argc, argv),
-  _useWarmstart(0),
+  _useReduction(0),
+  _useAggregation(0),
   _cutoffLevel(1) {
 }
 
@@ -836,7 +837,9 @@ int OptionsOops::parse() {
 
   // add the specialised options
   Options::addOption("-w", "use a warmstart strategy with scenario reduction",
-		     &_useWarmstart, true);
+		     &_useReduction, true);
+  Options::addOption("-a", "use a warmstart strategy with stage aggregation",
+		     &_useAggregation, true);
   Options::addOption("-l", "cutoff level (for multistage programs)",
 		     &_cutoffLevel, true);
 
