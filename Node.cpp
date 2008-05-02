@@ -62,6 +62,10 @@ int Node::addChild(Node *childNode) {
   // store the new child
   _children.push_back(childNode);
 
+#ifdef DEBUG_NODE
+  printf("Adding child %d to node %d\n", childNode->name(), this->name());
+#endif
+
   return 0;
 }
 

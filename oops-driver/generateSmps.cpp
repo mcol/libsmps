@@ -459,25 +459,25 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
   // diagonal elements of Q
   Algebra **QDiag = (Algebra**) malloc((nBlocks + 2) * sizeof(Algebra *));
 
-#ifdef DEBUG
+#ifdef DEBUG_GENERATE_SMPS
 #ifdef WITH_MPI
   if(IS_ROOT_PAR)
 #endif
   printf("Dimensions and nonzeros of parts of the deterministic equivalent:\n"
 	 " blk |    nonz r/d   |    rows r/d   |    cols r/d   ||"
 	 " first row/col\n");
-#endif /* DEBUG */
+#endif /* DEBUG_GENERATE_SMPS */
 
   for (i = 0; i <= nBlocks; ++i) {
 
-#ifdef DEBUG
+#ifdef DEBUG_GENERATE_SMPS
 #ifdef WITH_MPI
   if(IS_ROOT_PAR)
 #endif
     printf("%4d | %6d %6d | %6d %6d | %6d %6d || %6d %6d\n", i,
 	   rnkc_nz_blk[i], diag_nz_blk[i], rnkc_m_blk[i], diag_m_blk[i],
 	   rnkc_n_blk[i],  diag_n_blk[i],  f_rw_blk[i],   f_cl_blk[i]);
-#endif /* DEBUG */
+#endif /* DEBUG_GENERATE_SMPS */
 
     // right-hand columns
     sparse = NewSparseMatrix(rnkc_m_blk[i], rnkc_n_blk[i],
