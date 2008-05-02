@@ -53,13 +53,15 @@ int main(const int argc, const char *argv[]) {
     // create a reduced tree
     rv = data.reduceTree(opt.useWarmstart());
     if (rv)
-      goto TERMINATE;
+      goto LEAVE_WARMSTART;
 
     // solve the reduced problem
     rv = data.solveReduced(opt, hopdmOpts);
     if (rv)
       goto TERMINATE;
   }
+
+ LEAVE_WARMSTART:
 
   // solve the problem
   data.solve(opt, hopdmOpts);
