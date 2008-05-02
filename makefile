@@ -22,6 +22,7 @@ HEADERS := \
 
 DEPENDS := \
 	$(HEADERS) \
+	$(LIBDIR)/libstoc.a \
 	$(NULL)
 
 APPS	:= \
