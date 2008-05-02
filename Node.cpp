@@ -52,6 +52,10 @@ int Node::copy(const Node *fromNode) {
 /** Add a node to the list of children */
 int Node::addChild(Node *childNode) {
 
+  // ignore the request to add a child to a NULL node
+  if (!this)
+    return 1;
+
   // don't add a node as a child of itself
   assert(childNode != this);
 
