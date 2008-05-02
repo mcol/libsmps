@@ -50,9 +50,11 @@ int main(const int argc, const char *argv[]) {
   // warmstart case
   if (opt.useWarmstart()) {
 
-    // create a reduced tree
+    // select the warmstart strategy
     if (opt.useReduction())
       rv = data.reduceTree(opt.useReduction());
+    else if (opt.useAggregation())
+      rv = data.aggregateStages(opt.useAggregation());
 
     if (rv)
       goto LEAVE_WARMSTART;

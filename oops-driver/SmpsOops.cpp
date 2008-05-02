@@ -18,6 +18,9 @@
 
 double tt_start, tt_end;
 
+static void
+dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode);
+
 
 /** Constructor */
 SmpsOops::SmpsOops(string smpsFile, const int lev) :
@@ -362,9 +365,103 @@ int SmpsOops::reduceTree(const int nScenarios) {
   // recompute the probabilities in the reduced tree
   adjustProbabilities();
 
+#ifdef DEBUG_RTREE
   rTree.print();
+#endif
 
   return 0;
+}
+
+/**
+ *  Generate a reduced tree with aggregation.
+ *
+ *  @param nAggr:
+ *         Number of stages to be aggregated (starting from the last)
+ *  @return 1 If something goes wrong, 0 otherwise.
+ */
+int SmpsOops::aggregateStages(const int nAggr) {
+
+  // check that the number of stages to aggregate is sensible
+  if (nAggr < 1)
+    return 1;
+
+  printf(" --------------- aggregateStages -----------\n");
+
+  // aggregate the last stages
+  const int last = smps.getPeriods() - nAggr + 1;
+  if (last < 2) {
+    printf("No aggregation possible.\n");
+    return 1;
+  }
+
+  printf("Aggregating stages %d to %d.\n", last, smps.getPeriods());
+
+  int nodeName = 100;
+  const Node *cNode = smps.getRootNode();
+  Node *rNode;
+
+  // queue of nodes to be processed
+  queue<const Node*> cNodes;
+  cNodes.push(cNode);
+
+  // copy the tree up to the aggregation point
+  while (!cNodes.empty()) {
+
+    // take the first element in the queue
+    cNode = cNodes.front();
+    cNodes.pop();
+
+    // these nodes have to be copied
+    if (cNode->level() < last) {
+
+      // create a node in the reduced tree
+      rNode = new Node(++nodeName);
+      rNode->copy(cNode);
+      rNode->setProb(cNode->probNode());
+      nMap[cNode->parent()]->addChild(rNode);
+
+      // map the complete node to the reduced node
+      nMap[cNode] = rNode;
+
+      // these nodes span from the current stage to the last
+      if (rNode->level() == last - 1) {
+	rNode->setLevel(nAggr);
+
+	// map all children to this reduced node
+	dfsMap(nMap, cNode, rNode);
+      }
+    }
+
+    // put the children in the queue
+    for (int i = 0; i < cNode->nChildren(); ++i)
+      cNodes.push(cNode->getChild(i));
+  }
+
+  // find the root node
+  while (rNode->level() > 0)
+    rNode = rNode->parent();
+
+  // set the root of the reduced tree
+  rTree.setRootNode(rNode);
+
+  // order the nodes and set the next links
+  orderNodes(rTree);
+
+#ifdef DEBUG_RTREE
+  rTree.print();
+#endif
+
+  return 0;
+}
+
+void dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode) {
+
+  const Node *child;
+  for (int i = 0; i < cNode->nChildren(); ++i) {
+    child = cNode->getChild(i);
+    nMap[child] = rNode;
+    dfsMap(nMap, child, rNode);
+  }
 }
 
 /**
@@ -460,6 +557,9 @@ const Node* SmpsOops::findNode(const Node *node) {
     return node;
   }
 
+  // this node was not in the reduced tree, so we have to find the
+  // closest node that was in the reduced tree.
+
   // find a parent node that was in the reduced tree
   const Node *parent = findNode(node->parent());
 
@@ -484,8 +584,12 @@ const Node* SmpsOops::findNode(const Node *node) {
 #endif
   }
 
-  // no suitable node found
-  assert(0);
+#ifdef DEBUG_RTREE
+  printf("   Returning node %d (parent)\n", parent->name());
+#endif
+
+  // no suitable node found, so for aggregation we return the parent
+  return parent;
 }
 
 /** Recompute the probabilities in the reduced tree */
