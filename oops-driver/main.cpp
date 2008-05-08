@@ -22,7 +22,7 @@ static void setupOutputFile(OptionsOops &opt);
 int main(const int argc, const char *argv[]) {
 
   // initialise the parallel stuff
-  InitLippPar(argc, argv);
+  InitLippPar(argc, (char **) argv);
 
   // parse the command line options
   OptionsOops opt(argc, argv);
