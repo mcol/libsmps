@@ -208,7 +208,7 @@ int SmpsCore::readCoreFile(string coreFileName) {
     goto TERMINATE;
 
   // find out if there are any upper bounded variables
-  for (int i = 0; i < nRows; ++i) {
+  for (int i = 0; i < nCols; ++i) {
     if (varType[i] == 1 || varType[i] == 3) {
       _hasUpperBounds = true;
       break;
