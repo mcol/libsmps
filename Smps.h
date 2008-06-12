@@ -311,8 +311,9 @@ class SmpsCore {
   /** Count the number of rows declared in the core file */
   int countRows(void);
 
-  /** Convert the arrays of names from rdmps1 into vectors of strings */
-  int convertNames(const char *rowname, const char *colname);
+  /** Convert an array of names from rdmps1 into a vector of strings */
+  int convertNames(vector<string> &newNames, const char *mpsNames,
+		   const int size);
 
   /** Change the numbering convention to C */
   void processCore(void);
