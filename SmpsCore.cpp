@@ -729,7 +729,6 @@ void SmpsCore::modifyCore() {
 	new_clpnts[new_col] = new_nnz;
 	new_stavar[new_col] = 1;
 	sprintf(&(new_clname[8 * new_col]), "SK%05d", j);
-	new_clname[8 * new_col + 7] = ' '; // delete the \0
 	new_acoeff[new_nnz] = (rwstat[j] == 2) ? -1.0 : 1.0;
 	new_rwnmbs[new_nnz] = j;
 
@@ -782,6 +781,10 @@ void SmpsCore::modifyCore() {
   lnkclcd = new_lnclcd;
   varType = new_stavar;
   begPeriodCol = new_begPeriodCol;
+
+  // recreate the column names
+  colNames.clear();
+  convertNames(colNames, new_clname, nCols);
 
 #ifdef WITH_MPI
   if (IS_ROOT_PAR)
