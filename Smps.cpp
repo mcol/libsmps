@@ -136,15 +136,16 @@ int Smps::countNonzeros(const SmpsTree &tree) {
   // count the number of nonzero elements
   for (int per = 0; per < nPeriod; ++per) {
 
-    int nzPer = 0;
-
     // number of nonzeros in the period
     for (int j = 0; j < nPeriod; ++j) {
-      nzPer += nzPeriod[per + nPeriod * j];
-    }
 
-    // total nonzeros
-    nzTotal += nnPer[per] * nzPer;
+      nzTotal += nzPeriod[per + nPeriod * j] * nnPer[per];
+
+      // adjust nonzeros for elements above the diagonal
+      if (j > per)
+	// -1 because it's been added already once at the line above
+	nzTotal += nzPeriod[per + nPeriod * j] * (nnPer[j] - 1);
+    }
   }
 
   // clean up
