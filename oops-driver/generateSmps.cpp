@@ -785,41 +785,27 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
 /** Set up the right-hand side */
 void setupRhs(const Smps &smps, SmpsReturn *Ret) {
 
-  int firstRowNode, begRowPeriod, period;
-  char scname[8], *p;
+  int firstRowNode, begRowPeriod;
   DenseVector *rhs = Ret->b;
-  const int ttm = Ret->b->dim;
   const Node *node = Ret->rootNode;
 
   // leave immediately if there is no root node
   if (!node)
     return;
 
-  char **rownames = Ret->rownames = new char*[ttm];
+  // generate the row names for the deterministic equivalent
+  Ret->rownames = smps.getRowNames();
 
   // for all nodes in the tree in order
   do {
 
-    period = node->level();
     firstRowNode = node->firstRow();
-    begRowPeriod = smps.getBegPeriodRow(period);
-
-    sprintf(scname, "_S%03d", node->name());
+    begRowPeriod = smps.getBegPeriodRow(node->level());
 
     // copy the information for this node
     for (int i = 0; i < node->nRows(); ++i) {
 
       rhs->elts[firstRowNode + i] = smps.getRhs(begRowPeriod + i);
-
-      // build a name for this row
-      rownames[firstRowNode + i] = new char[20];
-      strncpy(rownames[firstRowNode + i], smps.getBegRowName(begRowPeriod + i), 8);
-      p = rownames[firstRowNode + i] + 8;
-      while(*(p - 1) == ' ') --p;
-      strcpy(p, scname);
-      /*
-      printf("%s\n", rownames[firstRowNode + i]);
-      */
     }
 
   } while (node = node->next());
@@ -828,17 +814,16 @@ void setupRhs(const Smps &smps, SmpsReturn *Ret) {
 /** Set up the objective and the bounds */
 void setupObjective(const Smps &smps, SmpsReturn *Ret) {
 
-  int row, firstColNode, begColPeriod, period;
-  char buffer[50], scname[8], *p;
+  int firstColNode, begColPeriod;
   DenseVector *obj = Ret->c, *upb = Ret->u;
-  const int ttn = Ret->c->dim;
   const Node *node = Ret->rootNode;
 
   // leave immediately if there is no root node
   if (!node)
     return;
 
-  char **colnames = Ret->colnames = new char*[ttn];
+  // generate the column names for the deterministic equivalent
+  Ret->colnames = smps.getColNames();
 
   // copy the objective row from the core matrix
   double *coreObj = smps.getObjRow();
@@ -846,12 +831,9 @@ void setupObjective(const Smps &smps, SmpsReturn *Ret) {
   // for all nodes in the tree
   do {
 
-    period  = node->level();
     firstColNode = node->firstCol();
-    begColPeriod = smps.getBegPeriodCol(period);
+    begColPeriod = smps.getBegPeriodCol(node->level());
     double probNode = node->probNode();
-
-    sprintf(scname, "_S%03d", node->name());
 
     // copy the information for this node
     for (int i = 0; i < node->nCols(); ++i) {
@@ -861,25 +843,8 @@ void setupObjective(const Smps &smps, SmpsReturn *Ret) {
 
       // copy the upper bounds
       upb->elts[firstColNode + i] = smps.getUpperBound(begColPeriod + i);
-
-      // and build a name for this col
-      colnames[firstColNode + i] = new char[20];
-      strncpy(buffer, smps.getBegColName(begColPeriod + i), 8);
-      p = buffer + 8;
-      if (strncmp(buffer, "SK", 2) == 0) {
-	row = atoi(buffer + 2);
-	buffer[2] = '_';
-	strncpy(buffer + 3, smps.getBegRowName(row), 8);
-	p = buffer + 11;
-      }
-      while(*(p - 1) == ' ') --p;
-      *p = 0;
-      strcpy(colnames[firstColNode + i], buffer);
-      strcat(colnames[firstColNode + i], scname);
-      /*
-      printf("%s\n",colnames[firstColNode+i]);
-      */
     }
+
   } while (node = node->next());
 
   // clean up
