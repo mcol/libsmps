@@ -158,6 +158,16 @@ class SmpsCore {
   /** Count the number of nonzeros in each period block */
   int* countNzPeriodBlocks(void) const;
 
+  /** Return the name of the given row */
+  const string& getRowName(const int row) const {
+    return rowNames[row];
+  }
+
+  /** Return the name of the given column */
+  const string& getColName(const int col) const {
+    return colNames[col];
+  }
+
   /** Retrieve the pointer to the beginning of a given row name */
   const char* getBegRowName(const int row) const {
     return &rwname[8 * row];
@@ -547,6 +557,12 @@ class Smps : public SmpsStoc {
 
   /** Set the start rows and columns for each node */
   int setNodeStarts(SmpsTree &tree);
+
+  /** Build the row names for the deterministic equivalent */
+  char** getRowNames(void) const;
+
+  /** Build the column names for the deterministic equivalent */
+  char** getColNames(void) const;
 
  private:
 

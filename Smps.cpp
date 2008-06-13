@@ -199,3 +199,66 @@ int Smps::setNodeStarts(SmpsTree &tree) {
 
   return 0;
 }
+
+/**
+ *  Build the row names for the deterministic equivalent.
+ *
+ *  @note
+ *  The name of the objective row is left untouched.
+ */
+char** Smps::getRowNames(void) const {
+
+  const Node *node = getRootNode();
+  char **rownames  = new char*[getTotRows()];
+  char scname[9];
+
+  // for all nodes in the tree in order
+  do {
+
+    sprintf(scname, "_S%03d", node->scenario());
+    const int begRowPeriod = getBegPeriodRow(node->level());
+    const int firstRowNode = node->firstRow();
+
+    // copy the information for this node
+    for (int i = 0; i < node->nRows(); ++i) {
+
+      // build a name for this row
+      string rwName = getRowName(begRowPeriod + i) + scname;
+
+      rownames[firstRowNode + i] = new char[20];
+      strcpy(rownames[firstRowNode + i], rwName.c_str());
+    }
+
+  } while (node = node->next());
+
+  return rownames;
+}
+
+/** Build the column names for the deterministic equivalent. */
+char** Smps::getColNames(void) const {
+
+  const Node *node = getRootNode();
+  char **colnames  = new char*[getTotCols()];
+  char scname[9];
+
+  // for all nodes in the tree in order
+  do {
+
+    sprintf(scname, "_S%03d", node->scenario());
+    const int begColPeriod = getBegPeriodCol(node->level());
+    const int firstColNode = node->firstCol();
+
+    // copy the information for this node
+    for (int i = 0; i < node->nCols(); ++i) {
+
+      // build a name for this column
+      string clName = getColName(begColPeriod + i) + scname;
+
+      colnames[firstColNode + i] = new char[20];
+      strcpy(colnames[firstColNode + i], clName.c_str());
+    }
+
+  } while (node = node->next());
+
+  return colnames;
+}
