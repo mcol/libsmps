@@ -223,6 +223,8 @@ ProbData *setupMatrix(Smps &smps) {
   PROB->obj    = obj;
   PROB->blo    = blo;
   PROB->bup    = bup;
+  PROB->rwnames = smps.getRowNames();
+  PROB->clnames = smps.getColNames();
 
   return PROB;
 }
@@ -407,6 +409,19 @@ int freeProbData(ProbData *PROB) {
   delete[] PROB->bup;
   delete[] PROB->rhs;
   delete[] PROB->rws;
+
+  if (PROB->rwnames) {
+    for (int i = 0; i < PROB->ttm; ++i)
+      delete[] PROB->rwnames[i];
+    delete[] PROB->rwnames;
+  }
+
+  if (PROB->clnames) {
+    for (int i = 0; i < PROB->ttn; ++i)
+      delete[] PROB->clnames[i];
+    delete[] PROB->clnames;
+  }
+
   delete PROB;
 
   return 0;

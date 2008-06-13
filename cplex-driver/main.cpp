@@ -179,6 +179,8 @@ int createLP(CPXENVptr env, CPXLPptr lp, ProbData *prob) {
   double *rhs = prob->rhs;
   double *blo = prob->blo;
   double *bup = prob->bup;
+  char **rwnm = prob->rwnames;
+  char **clnm = prob->clnames;
 
   // array of column numbers
   int *colnmbs = new int[nNonz];
@@ -198,12 +200,12 @@ int createLP(CPXENVptr env, CPXLPptr lp, ProbData *prob) {
     goto TERMINATE;
 
   // create the new rows
-  status = CPXnewrows(env, lp, nRows, rhs, rowType, NULL, NULL);
+  status = CPXnewrows(env, lp, nRows, rhs, rowType, NULL, rwnm);
   if (status)
     goto TERMINATE;
 
   // add the columns
-  status = CPXnewcols(env, lp, nCols, obj, blo, bup, NULL, NULL);
+  status = CPXnewcols(env, lp, nCols, obj, blo, bup, NULL, clnm);
   if (status)
     goto TERMINATE;
 

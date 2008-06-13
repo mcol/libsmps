@@ -55,6 +55,12 @@ struct ProbData {
   /** Type of constraint */
   int *rws;
 
+  /** Row names */
+  char **rwnames;
+
+  /** Column names */
+  char **clnames;
+
 };
 
 
