@@ -682,13 +682,17 @@ void SmpsOops::freeSmpsReturn(SmpsReturn *ret) {
 
   delete[] ret->is_col_diag;
 
-  for (i = 0; i < ttm; ++i)
-    delete[] ret->rownames[i];
-  delete[] ret->rownames;
+  if (ret->rownames) {
+    for (i = 0; i < ttm; ++i)
+      delete[] ret->rownames[i];
+    delete[] ret->rownames;
+  }
 
-  for (i = 0; i < ttn; ++i)
-    delete[] ret->colnames[i];
-  delete[] ret->colnames;
+  if (ret->colnames) {
+    for (i = 0; i < ttn; ++i)
+      delete[] ret->colnames[i];
+    delete[] ret->colnames;
+  }
 
   delete ret;
 }
@@ -1152,7 +1156,9 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
 
   double *objCopy = (double *) malloc(ttn * sizeof(double));
   double *upbCopy = (double *) malloc(ttn * sizeof(double));
-  char  **clnCopy = (char **)  malloc(ttn * sizeof(char *));
+  char  **clnCopy = NULL;
+  if (colnames)
+    clnCopy = (char **) malloc(ttn * sizeof(char *));
 
   // find the first node that will go in a diagonal block
   while (node->level() < cutoff)
@@ -1165,7 +1171,8 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
   for (int i = 0; i < ttn; ++i) {
     objCopy[i] = obj->elts[i];
     upbCopy[i] = upb->elts[i];
-    clnCopy[i] = colnames[i];
+    if (colnames)
+      clnCopy[i] = colnames[i];
   }
 
   // copy the diagonal elements from the first block (Diag-0)
@@ -1184,7 +1191,8 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
     if (is_col_diag[coreCol] == 1) {
       obj->elts[nb_el] = objCopy[col];
       upb->elts[nb_el] = upbCopy[col];
-      colnames[nb_el]  = clnCopy[col];
+      if (colnames)
+	colnames[nb_el] = clnCopy[col];
       ++nb_el;
     }
   }
@@ -1195,7 +1203,8 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
   for (col = firstColDiag; col < ttn; ++col) {
     obj->elts[nb_el] = objCopy[col];
     upb->elts[nb_el] = upbCopy[col];
-    colnames[nb_el]  = clnCopy[col];
+    if (colnames)
+      colnames[nb_el] = clnCopy[col];
     ++nb_el;
   }
 
@@ -1215,7 +1224,8 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
     if (is_col_diag[coreCol] == 0) {
       obj->elts[nb_el] = objCopy[col];
       upb->elts[nb_el] = upbCopy[col];
-      colnames[nb_el]  = clnCopy[col];
+      if (colnames)
+	colnames[nb_el] = clnCopy[col];
       ++nb_el;
     }
   }
