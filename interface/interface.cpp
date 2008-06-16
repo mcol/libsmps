@@ -397,9 +397,6 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
 	  assert(row <= smps.getTotRows());
 	  assert(col <= smps.getTotCols());
 
-	  assert(row <= smps.getTotRows());
-	  assert(col <= smps.getTotCols());
-
 	  index = PROB->clpnts[col];
 	  while (PROB->rwnmbs[index] != row)
 	    index++;
