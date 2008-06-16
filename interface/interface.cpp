@@ -338,7 +338,7 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
 
 #ifdef DEBUG_SCEN
       printf("Node %d: scenario %d (entries from %d to %d)\n",
-	     scNode, scen + 1, firstEntry, lastEntry - 1);
+	     scNode->name(), scen + 1, firstEntry, lastEntry - 1);
 #endif
 
       // for all changes affecting this scenario
