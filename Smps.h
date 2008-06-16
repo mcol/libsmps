@@ -564,6 +564,11 @@ class Smps : public SmpsStoc {
   /** Build the column names for the deterministic equivalent */
   char** getColNames(void) const;
 
+  /** Set the switch to build the names for the deterministic equivalent */
+  void setBuildNames(void) {
+    buildNames = true;
+  }
+
  private:
 
   /** Name of the smps input file */
@@ -574,6 +579,9 @@ class Smps : public SmpsStoc {
 
   /** The number of nonzeros in each period block */
   int *nzPeriod;
+
+  /** Whether the names for the deterministic equivalent should be built */
+  bool buildNames;
 
 };
 

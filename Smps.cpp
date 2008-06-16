@@ -20,7 +20,8 @@
 Smps::Smps(string smpsFileName) :
   smpsFile(smpsFileName),
   Tree(),
-  nzPeriod(NULL) {
+  nzPeriod(NULL),
+  buildNames(false) {
 }
 
 /** Destructor */
@@ -204,10 +205,16 @@ int Smps::setNodeStarts(SmpsTree &tree) {
 /**
  *  Build the row names for the deterministic equivalent.
  *
+ *  @return An array of pointers to the row names, which can be NULL
+ *          if buildNames is unset.
+ *
  *  @note
  *  The name of the objective row is left untouched.
  */
 char** Smps::getRowNames(void) const {
+
+  if (!buildNames)
+    return NULL;
 
   const Node *node = getRootNode();
   char **rownames  = new char*[getTotRows()];
@@ -235,8 +242,16 @@ char** Smps::getRowNames(void) const {
   return rownames;
 }
 
-/** Build the column names for the deterministic equivalent. */
+/**
+ *  Build the column names for the deterministic equivalent.
+ *
+ *  @return An array of pointers to the column names, which can be NULL
+ *          if buildNames is unset.
+ */
 char** Smps::getColNames(void) const {
+
+  if (!buildNames)
+    return NULL;
 
   const Node *node = getRootNode();
   char **colnames  = new char*[getTotCols()];

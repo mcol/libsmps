@@ -69,6 +69,10 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   // update it, since otherwise we may still use the one of the reduced tree
   orderNodes(smps.getSmpsTree());
 
+  if (opt.writeMps()) {
+    smps.setBuildNames();
+  }
+
   // generate the problem
   SmpsReturn *prob = generateSmps(smps.getSmpsTree());
   if (!prob) {

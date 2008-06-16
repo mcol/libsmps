@@ -94,6 +94,10 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
     goto TERMINATE;
   }
 
+  if (opt.writeMps()) {
+    smps.setBuildNames();
+  }
+
   // generate the deterministic equivalent
   prob = generateProblem();
   if (!prob) {
