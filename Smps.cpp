@@ -30,8 +30,14 @@ Smps::~Smps() {
   delete[] nzPeriod;
 }
 
-/** Read the Smps files */
-int Smps::read(void) {
+/**
+ *  Read the Smps files.
+ *
+ *  @param addSlacks
+ *         Whether the inequality constraints should be converted into
+ *         equalities by adding slacks.
+ */
+int Smps::read(const bool addSlacks) {
 
   int rv;
 
@@ -46,6 +52,10 @@ int Smps::read(void) {
   rv = readTimeFile();
   if (rv)
     return rv;
+
+  // take care of slacks
+  if (addSlacks)
+    modifyCore();
 
   rv = readStocFile(Tree);
   if (rv)

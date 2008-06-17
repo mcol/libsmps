@@ -522,7 +522,7 @@ class Smps : public SmpsStoc {
   ~Smps();
 
   /** Read the Smps files */
-  int read(void);
+  int read(const bool addSlacks = false);
 
   /** Read the smps input file */
   int readSmpsFile(string smpsFileName = "");

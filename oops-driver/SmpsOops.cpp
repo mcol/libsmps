@@ -39,12 +39,9 @@ SmpsOops::~SmpsOops() {
 /** Read the smps files */
 int SmpsOops::read() {
 
-  int rv = smps.read();
+  int rv = smps.read(true);
   if (rv)
     return rv;
-
-  // take care of slacks
-  smps.modifyCore();
 
   // reorder the nodes according to the level
   rv = orderNodes(smps.getSmpsTree());
