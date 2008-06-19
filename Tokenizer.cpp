@@ -69,6 +69,9 @@ char* Tokenizer::getStartNextToken() {
 /** Check if there are other non-space characters in the line */
 bool Tokenizer::hasMoreTokens() {
 
+  if (!pos)
+    return false;
+
   // skip all whitespace characters
   while (*pos == ' ' || *pos == '\t' || *pos == '\n')
     ++pos;
