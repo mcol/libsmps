@@ -29,6 +29,9 @@ class Tokenizer {
     return length;
   }
 
+  /** Extract a token from the line */
+  char* getToken();
+
   /** Find the starting position of the next token from the line */
   char* getStartNextToken();
 
@@ -41,7 +44,7 @@ class Tokenizer {
  private:
 
   /** The line to tokenize */
-  char *line;
+  char line[100];
 
   /** Current position in the line (part of the line still to tokenize) */
   char *pos;

@@ -17,13 +17,39 @@
 
 /** Constructor */
 Tokenizer::Tokenizer(char *rLine) :
-  line(rLine),
   pos(rLine),
   length(-1) {
+  strcpy(line, rLine);
 }
 
 /** Destructor */
 Tokenizer::~Tokenizer() {}
+
+/** Extract a token from the line */
+char* Tokenizer::getToken() {
+
+  // token delimiters
+  const char* blanks = " \t";
+
+  // strtok needs to be called with the line to tokenize the first time,
+  // and with NULL all subsequent times
+  char *param = (length == -1) ? line : NULL;
+
+  // extract the token
+  char *token = strtok(param, blanks);
+
+  // compute the length of the token
+  length = token ? strlen(token) : 0;
+
+  // find the next non-space character
+  while (*pos == ' ' || *pos == '\t')
+    ++pos;
+
+  // move the pointer to the end of the token
+  pos += length;
+
+  return token;
+}
 
 /** Find the starting position of the next token from the line */
 char* Tokenizer::getStartNextToken() {

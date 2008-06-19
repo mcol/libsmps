@@ -22,12 +22,28 @@ testTokenizer(const string line, const string expToken,
   char *rline = const_cast<char *>(line.c_str());
   Tokenizer tokenLine(rline);
 
-  char *rtoken = tokenLine.getStartNextToken();
+  char *rtoken = tokenLine.getToken();
   string token = rtoken ? rtoken : "";
 
   rv = checkEqual(token, expToken, "token");
   rv = checkEqual(tokenLine.getLength(), expLength, "length");
   rv = checkEqual(tokenLine.hasMoreTokens(), expMore, "more");
+
+  return rv;
+}
+
+static int
+testGetStartNextToken(const string line, const string expLine) {
+
+  int rv;
+
+  char *rline = const_cast<char *>(line.c_str());
+  Tokenizer tokenLine(rline);
+
+  char *rtoken = tokenLine.getStartNextToken();
+  string token = rtoken ? rtoken : "";
+
+  rv = checkEqual(token, expLine, "nextToken");
 
   return rv;
 }
@@ -57,16 +73,30 @@ int unitTokenizer(void) {
   testTokenizer("line", "line", 4);
   testTokenizer(" line", "line", 4);
   testTokenizer("  line", "line", 4);
-  testTokenizer("  line  ", "line  ", 4);
-  testTokenizer("  line\t", "line\t", 4);
-  testTokenizer("\tline  ", "line  ", 4);
+  testTokenizer("  line  ", "line", 4);
+  testTokenizer("  line\t", "line", 4);
+  testTokenizer("\tline  ", "line", 4);
+  testTokenizer("line cont", "line", 4, true);
+  testTokenizer(" line cont", "line", 4, true);
+  testTokenizer("  line cont", "line", 4, true);
+  testTokenizer("  line  cont", "line", 4, true);
+  testTokenizer("  line\tcont", "line", 4, true);
+  testTokenizer("\tline  cont", "line", 4, true);
 
-  testTokenizer("line cont", "line cont", 4, true);
-  testTokenizer(" line cont", "line cont", 4, true);
-  testTokenizer("  line cont", "line cont", 4, true);
-  testTokenizer("  line  cont", "line  cont", 4, true);
-  testTokenizer("  line\tcont", "line\tcont", 4, true);
-  testTokenizer("\tline  cont", "line  cont", 4, true);
+  setFamily("testGetStartNextToken");
+  testGetStartNextToken("", "");
+  testGetStartNextToken("line", "line");
+  testGetStartNextToken(" line", "line");
+  testGetStartNextToken("  line", "line");
+  testGetStartNextToken("  line  ", "line  ");
+  testGetStartNextToken("  line\t", "line\t");
+  testGetStartNextToken("\tline  ", "line  ");
+  testGetStartNextToken("line cont", "line cont");
+  testGetStartNextToken(" line cont", "line cont");
+  testGetStartNextToken("  line cont", "line cont");
+  testGetStartNextToken("  line  cont", "line  cont");
+  testGetStartNextToken("  line\tcont", "line\tcont");
+  testGetStartNextToken("\tline  cont", "line  cont");
 
   setFamily("testCountTokens");
   testCountTokens("one", 1);
