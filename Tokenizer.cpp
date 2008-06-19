@@ -62,7 +62,6 @@ char* Tokenizer::getStartNextToken() {
 
   // check if we have reached the end of the line (marked by '\0')
   if (*pos == 0) {
-    length = 0;
     return NULL;
   }
 
@@ -74,20 +73,16 @@ char* Tokenizer::getStartNextToken() {
 
   // the space character was not found
   if (p2 == NULL) {
-    length = strlen(pos);
-    pos = &(pos[length]);
+    int len = strlen(pos);
+    pos = &(pos[len]);
   }
 
   // the space character was found
   else {
-    length = p2 - pos;
     pos = p2;
     while (*pos == ' ' || *pos == '\t')
       ++pos;
   }
-
-  if (oldpos[length - 1] == '\n')
-    --length;
 
   return oldpos;
 }
