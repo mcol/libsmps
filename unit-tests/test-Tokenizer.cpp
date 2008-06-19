@@ -22,7 +22,8 @@ testTokenizer(const string line, const string expToken,
   char *rline = const_cast<char *>(line.c_str());
   Tokenizer tokenLine(rline);
 
-  string token = tokenLine.getStartNextToken();
+  char *rtoken = tokenLine.getStartNextToken();
+  string token = rtoken ? rtoken : "";
 
   rv = checkEqual(token, expToken, "token");
   rv = checkEqual(tokenLine.getLength(), expLength, "length");
@@ -52,6 +53,7 @@ testCountTokens(const string line, const int expTokens) {
 int unitTokenizer(void) {
 
   setFamily("testTokenizer");
+  testTokenizer("", "", 0);
   testTokenizer("line", "line", 4);
   testTokenizer(" line", "line", 4);
   testTokenizer("  line", "line", 4);
