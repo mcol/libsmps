@@ -19,7 +19,6 @@
 Tokenizer::Tokenizer(char *rLine) :
   pos(rLine),
   length(-1) {
-  strcpy(line, rLine);
 }
 
 /** Destructor */
@@ -30,6 +29,10 @@ char* Tokenizer::getToken() {
 
   // token delimiters
   const char* blanks = " \t";
+
+  // start tokenizing from the current position
+  if (length == -1)
+    strcpy(line, pos);
 
   // strtok needs to be called with the line to tokenize the first time,
   // and with NULL all subsequent times
