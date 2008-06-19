@@ -73,6 +73,24 @@ testMultipleTokens(const string line, const string expToken,
 }
 
 static int
+testMultipleTokens2(const string line, const string expToken) {
+
+  int rv;
+
+  char *rline = const_cast<char *>(line.c_str());
+  Tokenizer tokenLine(rline);
+
+  char *rtoken = tokenLine.getToken();
+  tokenLine.getStartNextToken();
+  rtoken = tokenLine.getToken();
+  string token = rtoken ? rtoken : "";
+
+  rv = checkEqual(token, expToken, "token3");
+
+  return rv;
+}
+
+static int
 testCountTokens(const string line, const int expTokens) {
 
   int rv;
@@ -136,6 +154,13 @@ int unitTokenizer(void) {
   testMultipleTokens("  first\tsecond third\t", "second", "third");
   testMultipleTokens("\tfirst  second\tthird  ", "second", "third");
   testMultipleTokens(" first second\t third fourth", "second", "third");
+  testMultipleTokens2("", "");
+  testMultipleTokens2("first ", "");
+  testMultipleTokens2(" first second", "");
+  testMultipleTokens2("  first second\t ", "");
+  testMultipleTokens2("  first  second third", "third");
+  testMultipleTokens2("\tfirst  second\tthird  ", "third");
+  testMultipleTokens2(" first second\t third fourth", "third");
 
   setFamily("testCountTokens");
   testCountTokens("one", 1);

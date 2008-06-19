@@ -18,6 +18,7 @@
 /** Constructor */
 Tokenizer::Tokenizer(char *rLine) :
   pos(rLine),
+  ready(false),
   length(-1) {
 }
 
@@ -30,13 +31,17 @@ char* Tokenizer::getToken() {
   // token delimiters
   const char* blanks = " \t";
 
-  // start tokenizing from the current position
-  if (length == -1)
-    strcpy(line, pos);
+  char *param = NULL;
 
   // strtok needs to be called with the line to tokenize the first time,
   // and with NULL all subsequent times
-  char *param = (length == -1) ? line : NULL;
+  if (!ready) {
+
+    // start tokenizing from the current position
+    strcpy(line, pos);
+    param = line;
+    ready = true;
+  }
 
   // extract the token
   char *token = strtok(param, blanks);
@@ -62,6 +67,9 @@ char* Tokenizer::getStartNextToken() {
     ++pos;
 
   char *oldpos = pos;
+
+  // since pos has changed, we will have to reset the tokenizer
+  ready = false;
 
   // check if we have reached the end of the line (marked by '\0')
   if (*pos == 0) {

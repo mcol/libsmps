@@ -49,6 +49,9 @@ class Tokenizer {
   /** Current position in the line (part of the line still to tokenize) */
   char *pos;
 
+  /** Whether the tokenizer is ready to extract tokens */
+  bool ready;
+
   /** Length of the token extracted */
   int length;
 
