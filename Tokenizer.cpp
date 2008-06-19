@@ -66,8 +66,6 @@ char* Tokenizer::getStartNextToken() {
   while (*pos == ' ' || *pos == '\t')
     ++pos;
 
-  char *oldpos = pos;
-
   // since pos has changed, we will have to reset the tokenizer
   ready = false;
 
@@ -76,7 +74,10 @@ char* Tokenizer::getStartNextToken() {
     return NULL;
   }
 
-  // pos now points to the next non-space character
+  // pos points to the next non-space character (beginning of the next token)
+  char *oldpos = pos;
+
+  // now we move pos to the end of the next token
 
   // find the position of the first occurrence of a space or a tab
   // in the string pointed by pos
