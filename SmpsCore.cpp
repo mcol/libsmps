@@ -669,16 +669,16 @@ int* SmpsCore::countNzPeriodBlocks() const {
  */
 void SmpsCore::modifyCore() {
 
-  int i, j, nSlacks;
+  int i, j, nSlacks, nExpSlacks;
   int new_col, new_nnz;
 
   // count number of inequality rows in CORE matrix
-  for (i = 0, nSlacks = 0; i < nRows; ++i)
-    if (rwstat[i] == 2 || rwstat[i] == 3) ++nSlacks;
+  for (i = 0, nExpSlacks = 0; i < nRows; ++i)
+    if (rwstat[i] == 2 || rwstat[i] == 3) ++nExpSlacks;
 
   // new number of columns and nonzeros
-  nCols += nSlacks;
-  nza   += nSlacks;
+  nCols += nExpSlacks;
+  nza   += nExpSlacks;
 
   // allocate the resized arrays
   int *new_clpnts = new int[nCols + 1];
@@ -746,6 +746,10 @@ void SmpsCore::modifyCore() {
   // last column definitions
   new_clpnts[new_col] = new_nnz;
   new_clname[8 * new_col - 1] = '\0';
+
+  // ensure that we have added as many slacks as expected
+  // a divergence may be caused by an error in the time file
+  assert(nSlacks == nExpSlacks);
 
   char name[9];
   int kcode;
