@@ -1116,6 +1116,14 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	    exit(1);
 	  }
 	}
+#ifdef DEBUG_SCEN
+	// the change is in a different period, so we don't apply it now
+	else {
+	  int pchange = (pdr > pdc) ? pdr: pdc;
+	  printf("   Ignored change in period %d (now is period %d)\n",
+		 pchange + 1, period + 1);
+	}
+#endif
       }
 
       // walk up the tree to the parent node at the previous period
