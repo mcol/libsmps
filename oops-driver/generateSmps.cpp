@@ -445,6 +445,7 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
 
   Ret->b = NewDenseVector(ttm, "RHS");
   Ret->c = NewDenseVector(ttn, "Obj");
+  Ret->l = NewDenseVector(ttn, "LB");
   Ret->u = NewDenseVector(ttn, "UB");
 
   // rankcor part
@@ -678,6 +679,7 @@ void SmpsOops::freeSmpsReturn(SmpsReturn *ret) {
   FreeAlgebraAlg(ret->AlgQ);
   FreeDenseVector(ret->b);
   FreeDenseVector(ret->c);
+  FreeDenseVector(ret->l);
   FreeDenseVector(ret->u);
 
   delete[] ret->is_col_diag;
@@ -819,7 +821,7 @@ void setupRhs(const Smps &smps, SmpsReturn *Ret) {
 void setupObjective(const Smps &smps, SmpsReturn *Ret) {
 
   int firstColNode, begColPeriod;
-  DenseVector *obj = Ret->c, *upb = Ret->u;
+  DenseVector *obj = Ret->c, *lob = Ret->l, *upb = Ret->u;
   const Node *node = Ret->rootNode;
 
   // leave immediately if there is no root node
@@ -845,7 +847,8 @@ void setupObjective(const Smps &smps, SmpsReturn *Ret) {
       // copy the objective coefficients weighted by probability of the node
       obj->elts[firstColNode + i] = probNode * coreObj[begColPeriod + i];
 
-      // copy the upper bounds
+      // copy the bounds
+      lob->elts[firstColNode + i] = smps.getLowerBound(begColPeriod + i);
       upb->elts[firstColNode + i] = smps.getUpperBound(begColPeriod + i);
     }
 
@@ -1158,12 +1161,13 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
   if (!node)
     return;
 
-  DenseVector *obj = Ret->c, *upb = Ret->u;
+  DenseVector *obj = Ret->c, *lob = Ret->l, *upb = Ret->u;
   int *is_col_diag = Ret->is_col_diag;
   char **colnames  = Ret->colnames;
 
   double *objCopy = (double *) malloc(ttn * sizeof(double));
   double *upbCopy = (double *) malloc(ttn * sizeof(double));
+  double *lobCopy = (double *) malloc(ttn * sizeof(double));
   char  **clnCopy = NULL;
   if (colnames)
     clnCopy = (char **) malloc(ttn * sizeof(char *));
@@ -1178,6 +1182,7 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
   // copy objective and bounds into temporary arrays
   for (int i = 0; i < ttn; ++i) {
     objCopy[i] = obj->elts[i];
+    lobCopy[i] = lob->elts[i];
     upbCopy[i] = upb->elts[i];
     if (colnames)
       clnCopy[i] = colnames[i];
@@ -1198,6 +1203,7 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
     assert(coreCol <= smps.getCols());
     if (is_col_diag[coreCol] == 1) {
       obj->elts[nb_el] = objCopy[col];
+      lob->elts[nb_el] = lobCopy[col];
       upb->elts[nb_el] = upbCopy[col];
       if (colnames)
 	colnames[nb_el] = clnCopy[col];
@@ -1210,6 +1216,7 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
   // copy the other diagonal entries  (Diag-1 ... Diag-n)
   for (col = firstColDiag; col < ttn; ++col) {
     obj->elts[nb_el] = objCopy[col];
+    lob->elts[nb_el] = lobCopy[col];
     upb->elts[nb_el] = upbCopy[col];
     if (colnames)
       colnames[nb_el] = clnCopy[col];
@@ -1231,6 +1238,7 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
     assert(coreCol <= smps.getCols());
     if (is_col_diag[coreCol] == 0) {
       obj->elts[nb_el] = objCopy[col];
+      lob->elts[nb_el] = lobCopy[col];
       upb->elts[nb_el] = upbCopy[col];
       if (colnames)
 	colnames[nb_el] = clnCopy[col];
@@ -1242,6 +1250,7 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
 
   // clean up
   free(objCopy);
+  free(lobCopy);
   free(upbCopy);
   free(clnCopy);
 }

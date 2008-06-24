@@ -154,7 +154,10 @@ struct SmpsReturn {
   /** Objective vector */
   DenseVector *c;
 
-   /** Upper bounds vector */
+  /** Lower bounds vector */
+  DenseVector *l;
+
+  /** Upper bounds vector */
   DenseVector *u;
 
   /** Names of the rows in the deterministic equivalent */
