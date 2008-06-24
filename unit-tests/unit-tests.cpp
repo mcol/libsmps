@@ -58,6 +58,6 @@ int callSuite(int (*testSuite)(void), const char name[]) {
 }
 
 /** Print a separator with the name for a family of tests */
-void setFamily(string testFamily) {
+void setFamily(const string& testFamily) {
   cout << "   = " << testFamily << endl;
 }

@@ -36,12 +36,12 @@ enum TestResults {
 int callSuite(int (*testSuite)(void), const char name[]);
 
 /** Print a separator with the name for a family of tests */
-void setFamily(string testFamily);
+void setFamily(const string& testFamily);
 
 /** Check equality between two values. */
 template<class T>
 int checkEqual(const T& value, const T& expValue,
-	       const string valueName, const string testName = "") {
+	       const string& valueName, const string& testName = "") {
 
   nTests++;
   if (value != expValue) {
