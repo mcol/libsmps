@@ -670,13 +670,18 @@ void SmpsOops::freeSmpsReturn(SmpsReturn *ret) {
   if (!ret)
     return;
 
-  FreeTree(ret->AlgA->Trow);
-  FreeTree(ret->AlgA->Tcol);
-  FreeTree(ret->AlgQ->Trow);
-  FreeTree(ret->AlgQ->Tcol);
+  if (ret->AlgA) {
+    FreeTree(ret->AlgA->Trow);
+    FreeTree(ret->AlgA->Tcol);
+    FreeAlgebraAlg(ret->AlgA);
+  }
 
-  FreeAlgebraAlg(ret->AlgA);
-  FreeAlgebraAlg(ret->AlgQ);
+  if (ret->AlgQ) {
+    FreeTree(ret->AlgQ->Trow);
+    FreeTree(ret->AlgQ->Tcol);
+    FreeAlgebraAlg(ret->AlgQ);
+  }
+
   FreeDenseVector(ret->b);
   FreeDenseVector(ret->c);
   FreeDenseVector(ret->l);
