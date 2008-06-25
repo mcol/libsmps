@@ -757,7 +757,7 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
   // diagonal
   else {
     if (blk != colBlk && p_pd_rw[per] != p_pd_rw[per + 1]) {
-      printf("Entry in non diagonal part of diagonal\n");
+      printf("\nEntry in non diagonal part of diagonal\n");
       exit(1);
     }
 
@@ -1120,7 +1120,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	    }
 	  }
 	  if (!found) {
-	    printf("Entry not found\n");
+	    printf("\nEntry not found\n");
 	    exit(1);
 	  }
 	}
