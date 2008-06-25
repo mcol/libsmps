@@ -36,6 +36,9 @@
 static int
 getStocType(const char *buffer);
 
+static void
+printErrorLine(const char *buffer);
+
 
 /** Constructor */
 SmpsStoc::SmpsStoc(string stocFileName) :
@@ -371,8 +374,7 @@ int SmpsStoc::scanIndepType(ifstream &stoc) {
 
     // we cannot parse this line
     else {
-      cerr << "Something wrong with this line?" << endl
-	   << ">" << buffer << "<" << endl;
+      printErrorLine(buffer);
       return ERROR_STOC_FORMAT;
     }
   }
@@ -430,8 +432,7 @@ int SmpsStoc::scanBlocksType(ifstream &stoc) {
 
       // check that the format is the one expected
       if (strcmp(bl, "BL") != 0) {
-	cerr << "Something wrong with this line?" << endl
-	     << ">" << buffer << "<" << endl;
+	printErrorLine(buffer);
 	return ERROR_STOC_FORMAT;
       }
 
@@ -482,8 +483,7 @@ int SmpsStoc::scanBlocksType(ifstream &stoc) {
 
     // we cannot parse this line
     else {
-      cerr << "Something wrong with this line?" << endl
-	   << ">" << buffer << "<" << endl;
+      printErrorLine(buffer);
       return ERROR_STOC_FORMAT;
     }
   }
@@ -537,8 +537,7 @@ int SmpsStoc::scanScenariosType(ifstream &stoc) {
 
       // check that the format is the one expected
       if (strcmp(sc, "SC") != 0) {
-	cerr << "Something wrong with this line?" << endl
-	     << ">" << buffer << "<" << endl;
+	printErrorLine(buffer);
 	return ERROR_STOC_FORMAT;
       }
 
@@ -570,8 +569,7 @@ int SmpsStoc::scanScenariosType(ifstream &stoc) {
 
     // we cannot parse this line
     else {
-      cerr << "Something wrong with this line?" << endl
-	   << ">" << buffer << "<" << endl;
+      printErrorLine(buffer);
       return ERROR_STOC_FORMAT;
     }
   }
@@ -624,4 +622,11 @@ void SmpsTree::print() const {
     for (int i = 0; i < node->nChildren(); ++i)
       qNodes.push(node->getChild(i));
   }
+}
+
+/** Report an error message for an unparseable line */
+void printErrorLine(const char *buffer) {
+
+  cerr << "Something wrong with this line?\n"
+       << ">" << buffer << "<\n";
 }
