@@ -337,6 +337,10 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
     found = false;
     for (int j = 0; j < nRows; ++j) {
 
+#ifdef DEBUG_TIME_FILE
+      cout << "   Comparing with >" << rowNames[j] << "<\n";
+#endif
+
       if (rowNames[j] == begPeriodRowName[i]) {
 
 	// allow the objective row to be a period start in the time file
@@ -363,6 +367,10 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
     // find col-period begin
     found = false;
     for (int j = 0; j < nCols; ++j) {
+
+#ifdef DEBUG_TIME_FILE
+      cout << "   Comparing with >" << colNames[j] << "<\n";
+#endif
 
       if (colNames[j] == begPeriodColName[i]) {
 
