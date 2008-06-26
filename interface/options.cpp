@@ -25,12 +25,12 @@ Options::Options(const int argc, const char *argv[]) :
   _smpsFile("") {
 
   // add the common options
-  addOption("-m", "write the deterministic equivalent in MPS format",
-	    &_writeMps);
   addOption("-s", "print the solution",
 	    &_printSolution);
   addOption("-d", "do not solve the problem",
 	    &_dontSolve);
+  addOption("-m", "write the deterministic equivalent in MPS format",
+	    &_writeMps);
 }
 
 /** Destructor */
