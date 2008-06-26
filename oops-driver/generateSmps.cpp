@@ -1029,6 +1029,9 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	// if the change affects the matrix
 	else if (pdc >= 0 && pdr >= 0 && pdr == period) {
 
+	  // we cannot deal with above-diagonal entries
+	  assert((pdr == pdc) || (pdr == pdc + 1));
+
 	  // indices in the deterministic equivalent
 	  row = scNode->firstRow() + entryRow[corr] - 1
 	    - smps.getBegPeriodRow(pdr);
@@ -1130,6 +1133,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	  int pchange = (pdr > pdc) ? pdr: pdc;
 	  printf("   Ignored change in period %d (now is period %d)\n",
 		 pchange + 1, period + 1);
+	  assert(pchange != period);
 	}
 #endif
       }
