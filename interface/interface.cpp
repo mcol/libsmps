@@ -147,10 +147,11 @@ ProbData *setupMatrix(Smps &smps) {
 
 	  int pdr = smps.getRowPeriod(data.rwnmbs[cIndex]);
 	  int pdc = smps.getColPeriod(curCol);
-	  const Node *rowNode = node;
+	  assert(pdc > pdr);
 
 	  // node corresponds to the column period
 	  // find the node corresponding to the row period
+	  const Node *rowNode = node;
 	  while (rowNode->level() > pdr)
 	    rowNode = rowNode->parent();
 	  rwnmbs[dIndex] = data.rwnmbs[cIndex]
@@ -168,7 +169,6 @@ ProbData *setupMatrix(Smps &smps) {
 	  printf("%2d (%2d)| %10f  place at (%2d, %2d)\n",
 		 dIndex, cIndex, acoeff[dIndex], rwnmbs[dIndex], col);
 #endif
-	  assert(pdc > pdr);
 	  assert(rwnmbs[dIndex] >= 0);
 	  assert(rwnmbs[dIndex] < ttm);
 
@@ -416,6 +416,7 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
 	  int pchange = (pdr > pdc) ? pdr: pdc;
 	  printf("   Ignored change in period %d (now is period %d)\n",
 		 pchange + 1, period + 1);
+	  assert(pchange != period);
 	}
 #endif
       }
