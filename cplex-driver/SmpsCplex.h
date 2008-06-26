@@ -57,6 +57,9 @@ class SmpsCplex {
 /** Command line options for the Cplex interface */
 class OptionsCplex : public Options {
 
+  /** Whether an lp file has to be produced */
+  int _writeLp;
+
   /** Whether the presolver should be used */
   int _usePresolve;
 
@@ -70,6 +73,11 @@ class OptionsCplex : public Options {
 
   /** Parse the command line options */
   int parse(void);
+
+  /** Retrieve the value of the writeLp option */
+  int writeLp(void) const {
+    return _writeLp;
+  }
 
   /** Retrieve the value of the usePresolve option */
   int usePresolve(void) const {

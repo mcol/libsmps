@@ -41,6 +41,7 @@ ProbData* SmpsCplex::generateProblem() {
 /** Constructor */
 OptionsCplex::OptionsCplex(const int argc, const char *argv[]) :
   Options(argc, argv),
+  _writeLp(0),
   _usePresolve(0),
   _useBarrier(0) {
 }
@@ -49,6 +50,8 @@ OptionsCplex::OptionsCplex(const int argc, const char *argv[]) :
 int OptionsCplex::parse() {
 
   // add the specialised options
+  Options::addOption("-l", "write the deterministic equivalent in LP format",
+		     &_writeLp);
   Options::addOption("-b", "use a barrier solver", &_useBarrier);
   Options::addOption("-p", "turn on the presolve", &_usePresolve);
 

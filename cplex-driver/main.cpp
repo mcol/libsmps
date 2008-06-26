@@ -94,7 +94,7 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
     goto TERMINATE;
   }
 
-  if (opt.writeMps()) {
+  if (opt.writeMps() || opt.writeLp()) {
     smps.setBuildNames();
   }
 
@@ -117,6 +117,15 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
     status = CPXwriteprob(env, lp, "smps.mps", NULL);
     if (status) {
       fprintf(stderr, "Failed to write the mps file.\n");
+      return 1;
+    }
+  }
+
+  // write the deterministic equivalent in lp format
+  if (opt.writeLp()) {
+    status = CPXwriteprob(env, lp, "smps.lp", NULL);
+    if (status) {
+      fprintf(stderr, "Failed to write the lp file.\n");
       return 1;
     }
   }
