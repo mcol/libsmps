@@ -378,8 +378,40 @@ int applyScenarios(ProbData *PROB, const Smps &smps) {
 #endif
 	}
 
+	// the change is in an above-diagonal element
+	else if (pdr >= 0 && pdc > pdr && pdc == period) {
+
+	  // node corresponds to the column period
+	  // find the node corresponding to the row period
+	  const Node *rowNode = scNode;
+	  while (rowNode->level() > pdr)
+	    rowNode = rowNode->parent();
+
+	  // indices in the deterministic equivalent
+	  row = rowNode->firstRow() + entryRow[corr] - 1
+	    - smps.getBegPeriodRow(pdr);
+	  col = scNode->firstCol() + entryCol[corr] - 1
+	    - smps.getBegPeriodCol(pdc);
+
+	  assert(row <= smps.getTotRows());
+	  assert(col <= smps.getTotCols());
+
+	  index = PROB->clpnts[col];
+	  while (PROB->rwnmbs[index] != row)
+	    index++;
+
+#ifdef DEBUG_SCEN
+	  printf("   Abd entry: core row %3d col %3d, det.eq. row %3d col %3d,"
+		 " (%g -> %g)\n",
+		 entryRow[corr], entryCol[corr], row, col,
+		 PROB->acoeff[index], entryVal[corr]);
+#endif
+	  PROB->acoeff[index] = entryVal[corr]
+	    * scNode->probNode() / rowNode->probNode();
+	}
+
 	// if the change affects the matrix
-	else if (pdr >= 0 && pdc >= 0 && pdr == period) {
+	else if (pdc >= 0 && pdr >= pdc && pdr == period) {
 
 	  assert((pdr == pdc) || (pdr == pdc + 1));
 
