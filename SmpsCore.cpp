@@ -356,7 +356,8 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
     }
 
     if (!found) {
-      printf("Not found Row corresponding to start of period %d\n", i);
+      printf("Row \"%s\" corresponding to start of period %d not found.\n",
+             begPeriodRowName[i].c_str(), i + 1);
       rv = 1;
       goto TERMINATE;
     }
@@ -383,7 +384,8 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
     }
 
     if (!found) {
-      printf("Not found Col corresponding to start of period %d\n", i);
+      printf("Column \"%s\" corresponding to start of period %d not found.\n",
+             begPeriodColName[i].c_str(), i + 1);
       rv = 1;
       goto TERMINATE;
     }
