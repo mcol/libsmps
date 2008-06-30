@@ -10,6 +10,7 @@
  */
 
 #include <vector>
+#include <stdio.h>
 #include <assert.h>
 #include "Node.h"
 using namespace std;

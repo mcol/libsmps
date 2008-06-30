@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <string.h>
+#include <assert.h>
 #include <fstream>
 #include <sstream>
 #include "Smps.h"

@@ -9,6 +9,8 @@
  *
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include <iostream>
 #include <string>
 #include "options.h"
