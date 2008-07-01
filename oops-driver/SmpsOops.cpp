@@ -83,8 +83,8 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   // write the deterministic equivalent in mps format
   if (opt.writeMps()) {
     FILE *fout = fopen("smps.mps", "w");
-    Write_MpsFile(fout, pdProb->AlgAug, pdProb->b, pdProb->c, pdProb->u, 0,
-		  prob->colnames, prob->rownames);
+    Write_MpsFile(fout, pdProb->AlgAug, pdProb->b, pdProb->c,
+		  pdProb->u, pdProb->l, 0, prob->colnames, prob->rownames);
     fclose(fout);
   }
 
@@ -161,8 +161,8 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   // write the deterministic equivalent in mps format
   if (opt.writeMps()) {
     FILE *fout = fopen("smps-red.mps", "w");
-    Write_MpsFile(fout, pdProb->AlgAug, pdProb->b, pdProb->c, pdProb->u, 0,
-		  prob->colnames, prob->rownames);
+    Write_MpsFile(fout, pdProb->AlgAug, pdProb->b, pdProb->c,
+		  pdProb->u, pdProb->l, 0, prob->colnames, prob->rownames);
     fclose(fout);
   }
 
