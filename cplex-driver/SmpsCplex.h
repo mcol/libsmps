@@ -49,8 +49,6 @@ class SmpsCplex {
   /** Generate the deterministic equivalent for the smps instance */
   ProbData* generateProblem(void);
 
-  friend ProbData* setupProblem(Smps &smps);
-
 };
 
 
@@ -90,6 +88,5 @@ class OptionsCplex : public Options {
   }
 
 };
-
 
 #endif /* _SMPS_CPLEX_H_ */

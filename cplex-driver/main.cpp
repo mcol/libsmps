@@ -102,6 +102,7 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
   prob = generateProblem();
   if (!prob) {
     fprintf(stderr, "Failed to generate the deterministic equivalent.\n");
+    status = 1;
     goto TERMINATE;
   }
 
@@ -117,7 +118,7 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
     status = CPXwriteprob(env, lp, "smps.mps", NULL);
     if (status) {
       fprintf(stderr, "Failed to write the mps file.\n");
-      return 1;
+      goto TERMINATE;
     }
   }
 
@@ -126,7 +127,7 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
     status = CPXwriteprob(env, lp, "smps.lp", NULL);
     if (status) {
       fprintf(stderr, "Failed to write the lp file.\n");
-      return 1;
+      goto TERMINATE;
     }
   }
 
@@ -150,7 +151,7 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
   // get and print the solution
   status = getSolution(env, lp, opt);
   if (status) {
-    fprintf(stderr, "Failed to obtain the solution.\n");
+    fprintf(stderr, "Failed to retrieve the solution.\n");
     goto TERMINATE;
   }
 
