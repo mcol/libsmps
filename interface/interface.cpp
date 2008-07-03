@@ -203,11 +203,10 @@ ProbData *setupMatrix(Smps &smps) {
       // copy the linking blocks in the current period
       for (int block = 0; block < node->nChildren(); ++block) {
 
-	const Node *fChild = node->getChild(0);
+	const Node *child = node->getChild(block);
 
 	// determine the offset in row numbers for the children nodes
-	offsetChild = fChild->firstRow() + block * fChild->nRows()
-	  - smps.getBegPeriodRow(period + 1);
+	offsetChild = child->firstRow() - smps.getBegPeriodRow(period + 1);
 
 	// restore the row index of core and the number of nonzeros
 	cIndex = sIndex;
