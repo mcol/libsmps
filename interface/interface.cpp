@@ -19,6 +19,9 @@
 static ProbData* setupMatrix(Smps &smps);
 static int setupRhs(ProbData *PROB, const Smps &smps);
 static int applyScenarios(ProbData *PROB, const Smps &smps);
+static int copyLinkingBlocks(Smps &smps, SparseData &data, const Node *node,
+			     const int period, double *acoeff, int *rwnmbs,
+			     int &cIndex, int &dIndex, int &nnzCol);
 
 
 /** Generate the deterministic equivalent problem */
@@ -52,7 +55,7 @@ ProbData *setupMatrix(Smps &smps) {
     return NULL;
 
   int period, col = 0;
-  int curCol, nnzCol, snzCol, sIndex;
+  int curCol, nnzCol;
   int f_cl_nd, f_cl_pd;
   int *rwnmbs, *clpnts;
   double *acoeff, *obj, *blo, *bup;
@@ -98,7 +101,6 @@ ProbData *setupMatrix(Smps &smps) {
 
     // offset in row numbers between core and deterministic equivalent
     int offset = node->firstRow() - smps.getBegPeriodRow(period);
-    int offsetChild;
 
     // first column of the period for the deterministic equivalent and core
     f_cl_nd = node->firstCol();
@@ -194,42 +196,9 @@ ProbData *setupMatrix(Smps &smps) {
 	--nnzCol;
       }
 
-      // store the current row index of core
-      sIndex = cIndex;
-
-      // store the number of remaining nonzeros in the column
-      snzCol = nnzCol;
-
       // copy the linking blocks in the current period
-      for (int block = 0; block < node->nChildren(); ++block) {
-
-	const Node *child = node->getChild(block);
-
-	// determine the offset in row numbers for the children nodes
-	offsetChild = child->firstRow() - smps.getBegPeriodRow(period + 1);
-
-	// restore the row index of core and the number of nonzeros
-	cIndex = sIndex;
-	nnzCol = snzCol;
-
-	// for all the remaining nonzeros in the column
-	while (nnzCol > 0) {
-
-	  acoeff[dIndex] = data.acoeff[cIndex];
-	  rwnmbs[dIndex] = data.rwnmbs[cIndex] + offsetChild;
-#ifdef DEBUG_MATRIX
-	  printf("%2d (%2d)| %10f  %d\n",
-		 dIndex, cIndex, acoeff[dIndex], rwnmbs[dIndex]);
-#endif
-
-	  assert(rwnmbs[dIndex] >= 0);
-	  assert(rwnmbs[dIndex] < ttm);
-
-	  ++cIndex;
-	  ++dIndex;
-	  --nnzCol;
-	}
-      }
+      copyLinkingBlocks(smps, data, node, period,
+			acoeff, rwnmbs, cIndex, dIndex, nnzCol);
 
       // go to the next column
       ++col;
@@ -261,6 +230,53 @@ ProbData *setupMatrix(Smps &smps) {
   PROB->clnames = smps.getColNames();
 
   return PROB;
+}
+
+/** Copy the elements in the linking blocks in the current column */
+int copyLinkingBlocks(Smps &smps, SparseData &data, const Node *node,
+		      const int period, double *acoeff, int *rwnmbs,
+		      int &cIndex, int &dIndex, int &nnzCol) {
+
+  const int ttm = smps.getTotRows();
+
+  // store the current row index of core
+  const int sIndex = cIndex;
+
+  // store the number of remaining nonzeros in the column
+  const int snzCol = nnzCol;
+
+  // copy the linking blocks from the current period
+  for (int block = 0; block < node->nChildren(); ++block) {
+
+    const Node *child = node->getChild(block);
+
+    // determine the offset in row numbers for the children nodes
+    int offsetChild = child->firstRow() - smps.getBegPeriodRow(period + 1);
+
+    // restore the row index of core and the number of nonzeros
+    cIndex = sIndex;
+    nnzCol = snzCol;
+
+    // copy all the remaining nonzeros in the current column
+    while (nnzCol > 0) {
+
+      acoeff[dIndex] = data.acoeff[cIndex];
+      rwnmbs[dIndex] = data.rwnmbs[cIndex] + offsetChild;
+#ifdef DEBUG_MATRIX
+      printf("%2d (%2d)| %10f  %d from node %d\n",
+	     dIndex, cIndex, acoeff[dIndex], rwnmbs[dIndex], node->name());
+#endif
+
+      assert(rwnmbs[dIndex] >= 0);
+      assert(rwnmbs[dIndex] < ttm);
+
+      ++cIndex;
+      ++dIndex;
+      --nnzCol;
+    }
+  }
+
+  return 0;
 }
 
 /** Setup the right-hand side */
