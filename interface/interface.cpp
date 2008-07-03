@@ -260,19 +260,35 @@ int copyLinkingBlocks(Smps &smps, SparseData &data, const Node *node,
     // copy all the remaining nonzeros in the current column
     while (nnzCol > 0) {
 
-      acoeff[dIndex] = data.acoeff[cIndex];
-      rwnmbs[dIndex] = data.rwnmbs[cIndex] + offsetChild;
+      // an element in a linking block may belong to the next period,
+      // in which case it has to be copied as many times as there are
+      // children of the current node, or it belongs to a period after
+      // the next (not staircase structure), in which case it has to be
+      // copied as many times as there are nodes in that period.
+      // this second case is accomplished by recursion on the children
+      // of the current node
+
+      // this element belongs to the next period
+      if (data.rwnmbs[cIndex] < smps.getBegPeriodRow(period + 2)) {
+	acoeff[dIndex] = data.acoeff[cIndex];
+	rwnmbs[dIndex] = data.rwnmbs[cIndex] + offsetChild;
 #ifdef DEBUG_MATRIX
-      printf("%2d (%2d)| %10f  %d from node %d\n",
-	     dIndex, cIndex, acoeff[dIndex], rwnmbs[dIndex], node->name());
+	printf("%2d (%2d)| %10f  %d from node %d\n",
+	       dIndex, cIndex, acoeff[dIndex], rwnmbs[dIndex], node->name());
 #endif
 
-      assert(rwnmbs[dIndex] >= 0);
-      assert(rwnmbs[dIndex] < ttm);
+	assert(rwnmbs[dIndex] >= 0);
+	assert(rwnmbs[dIndex] < ttm);
 
-      ++cIndex;
-      ++dIndex;
-      --nnzCol;
+	++cIndex;
+	++dIndex;
+	--nnzCol;
+      }
+
+      // this element belongs to a period after the next
+      else
+	copyLinkingBlocks(smps, data, child, period + 1,
+			  acoeff, rwnmbs, cIndex, dIndex, nnzCol);
     }
   }
 
