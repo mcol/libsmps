@@ -145,12 +145,16 @@ int Smps::countNonzeros(const SmpsTree &tree) {
 
   } while (node = node->next());
 
+  // print the number of nonzeros in each block of the core matrix
+  printf("Nonzeros in period blocks of core:\n");
+
   // count the number of nonzero elements
   for (int per = 0; per < nPeriod; ++per) {
 
     // number of nonzeros in the period
     for (int j = 0; j < nPeriod; ++j) {
 
+      printf("  %6d", nzPeriod[per + nPeriod * j]);
       nzTotal += nzPeriod[per + nPeriod * j] * nnPer[per];
 
       // adjust nonzeros for elements above the diagonal
@@ -158,6 +162,8 @@ int Smps::countNonzeros(const SmpsTree &tree) {
 	// -1 because it's been added already once at the line above
 	nzTotal += nzPeriod[per + nPeriod * j] * (nnPer[j] - 1);
     }
+
+    printf("\n");
   }
 
   // clean up
