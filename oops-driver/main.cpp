@@ -66,7 +66,7 @@ int main(const int argc, const char *argv[]) {
  LEAVE_WARMSTART:
 
   // solve the problem
-  data.solve(opt, hopdmOpts);
+  rv = data.solve(opt, hopdmOpts);
 
 #ifdef WITH_TIME
   reportTimes(stdout);
@@ -82,7 +82,7 @@ int main(const int argc, const char *argv[]) {
   MPI_Finalize();
 #endif
 
-  return 0;
+  return rv;
 }
 
 /**
