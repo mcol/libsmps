@@ -21,6 +21,20 @@ static int
 convertType(const int type);
 
 
+/** Return status from solve() */
+const char *solveStatus[10] = {
+  "optimal",
+  "suboptimal",
+  "infeasible",
+  "unbounded",
+  "degenerate",
+  "numerical failure",
+  "user aborted",
+  "timeout",
+  "",
+  "presolved"
+};
+
 /** Constructor */
 SmpsLpsolve::SmpsLpsolve(string smpsFile) :
   smps(smpsFile) {}
@@ -116,7 +130,8 @@ int SmpsLpsolve::solve(const OptionsLpsolve &opt) {
   // solve the problem
   status = ::solve(lp);
   if (status) {
-    fprintf(stderr, "Failed to optimize the LP problem.\n");
+    fprintf(stderr, "Failed to optimize the LP problem (%s).\n",
+	    solveStatus[status]);
     goto TERMINATE;
   }
 
