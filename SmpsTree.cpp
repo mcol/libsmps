@@ -138,15 +138,17 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
     break;
 
   default:
-    rv = stocType;
+    rv = -1;
   }
 
   // close the input file
   stoc.close();
 
   // early return if something has gone wrong
-  if (rv)
+  if (rv) {
+    printf("Problem while scanning the stochastic file.\n");
     return rv;
+  }
 
   scenLength = maxScenLength = getMaxReals();
   ++maxScenLength;
