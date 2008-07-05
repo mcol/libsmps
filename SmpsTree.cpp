@@ -218,6 +218,8 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
   if (rv)
     goto TERMINATE;
 
+  printf("Found %d scenarios.\n", nScens);
+
   // Convert the event tree from an array-based representation into a
   // node-based one. We go through the nodes in the array and set up a
   // tree in breadth-first order.
