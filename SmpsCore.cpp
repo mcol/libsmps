@@ -305,7 +305,7 @@ int SmpsCore::readTimeFile(string timeFileName) {
 
   // we may have reached the end of the file without having found
   // the information we wanted
-  if (!foundName || !foundPeriods) {
+  if (!foundName || !foundPeriods || nPeriods == 0) {
     cerr << "Problem reading the time file." << endl;
     rv = ERROR_TIME_FORMAT;
     goto TERMINATE;
