@@ -67,11 +67,13 @@ ProbData *setupMatrix(Smps &smps) {
   int ttm = smps.getTotRows();
   int ttn = smps.getTotCols();
 
-  // count the number of nonzero elements
-  int ttnz = smps.countNonzeros(smps.getSmpsTree());
-
+  // these assertions may be triggered if the time file leaves
+  // some rows or columns unassigned to any period
   assert(ttm >= smps.getRows() - 1);
   assert(ttn >= smps.getCols());
+
+  // count the number of nonzero elements
+  int ttnz = smps.countNonzeros(smps.getSmpsTree());
 
   // dimensions of the deterministic equivalent
   printf("The deterministic equivalent matrix is %dx%d, %d nonzeros.\n",

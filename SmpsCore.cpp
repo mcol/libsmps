@@ -653,6 +653,10 @@ int* SmpsCore::countNzPeriodBlocks() const {
     // keep track of current column block
     colPeriod = getColPeriod(i) * nPeriods;
 
+    // this assertion may be triggered if the time file leaves
+    // some rows or columns unassigned to any period
+    assert(colPeriod >= 0);
+
     // for all nonzeros in this column
     for (int k = clpnts[i]; k < clpnts[i + 1]; ++k) {
 
