@@ -308,12 +308,15 @@ int SmpsCore::readTimeFile(string timeFileName) {
   if (!foundName || !foundPeriods) {
     cerr << "Problem reading the time file." << endl;
     rv = ERROR_TIME_FORMAT;
+    goto TERMINATE;
   }
+
+  rv = findTimeCoreMatches(begPeriodRowName, begPeriodColName);
+
+ TERMINATE:
 
   // close the time file
   time.close();
-
-  rv = findTimeCoreMatches(begPeriodRowName, begPeriodColName);
 
   return rv;
 }
