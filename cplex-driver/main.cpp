@@ -57,7 +57,7 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
   CPXLPptr lp;
   ProbData *prob = NULL;
 
-  printf(" --------------- cplexSolve ----------------\n");
+  printf(" --------------- solve ---------------------\n");
 
   // initialize the CPLEX environment
   env = CPXopenCPLEX(&status);
@@ -131,7 +131,7 @@ int SmpsCplex::solve(const OptionsCplex &opt) {
     }
   }
 
-  // leave early if we don't have to solve the problem
+  // exit early if we don't have to solve the problem
   if (opt.dontSolve()) {
     printf("Problem not solved by request.\n");
     goto TERMINATE;

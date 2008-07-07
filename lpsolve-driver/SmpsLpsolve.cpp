@@ -68,7 +68,7 @@ int SmpsLpsolve::solve(const OptionsLpsolve &opt) {
   lprec *lp = NULL;
   ProbData *prob = NULL;
 
-  printf(" --------------- lpsolveSolve --------------\n");
+  printf(" --------------- solve ---------------------\n");
 
   if (opt.writeMps() || opt.writeLp()) {
     smps.setBuildNames();
@@ -115,7 +115,7 @@ int SmpsLpsolve::solve(const OptionsLpsolve &opt) {
     }
   }
 
-  // leave early if we don't have to solve the problem
+  // exit early if we don't have to solve the problem
   if (opt.dontSolve()) {
     printf("Problem not solved by request.\n");
     goto TERMINATE;

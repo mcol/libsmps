@@ -48,6 +48,7 @@ class SmpsOops {
   /** Generate a reduced tree by choosing a subset of scenarios */
   int reduceTree(const int nScenarios);
 
+  /** Retrieve the solution information */
   int getSolution(PDProblem *Prob, SmpsReturn *Ret);
 
  private:

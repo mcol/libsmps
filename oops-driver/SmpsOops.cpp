@@ -93,6 +93,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   hopdm_ret *ret = NULL;
   PrintOptions Prt(PRINT_ITER);
 
+  // exit early if we don't have to solve the problem
   if (opt.dontSolve()) {
     printf("Problem not solved by request.\n");
     goto TERMINATE;
@@ -171,6 +172,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   hopdm_ret *ret = NULL;
   PrintOptions Prt(PRINT_ITER);
 
+  // exit early if we don't have to solve the problem
   if (opt.dontSolve()) {
     printf("Problem not solved by request.\n");
     goto TERMINATE;
