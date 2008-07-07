@@ -96,6 +96,11 @@ class SmpsCore {
     return nCols;
   }
 
+  /** Retrieve the number of nonzero elements in the core file */
+  int getNnzs(void) const {
+    return nza;
+  }
+
   /** Retrieve the number of periods in the time file */
   int getPeriods(void) const {
     return nPeriods;
