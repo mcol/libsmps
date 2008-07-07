@@ -177,6 +177,7 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
   // initialise to zero
   memset(entryRow, 0, maxScenLength * sizeof(int));
   memset(entryCol, 0, maxScenLength * sizeof(int));
+  memset(period, 0, maxNodes * sizeof(int));
   memset(n_chd, 0, maxNodes * sizeof(int));
   memset(f_chd, 0, maxNodes * sizeof(int));
 
