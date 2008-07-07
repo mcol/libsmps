@@ -486,6 +486,7 @@ PDProblem* SmpsOops::setupProblem(SmpsReturn *Pb) {
   Vector *vb = NewVector(A->Trow, "vb");
   Vector *vc = NewVector(A->Tcol, "vc");
   Vector *vu = NewVector(A->Tcol, "vu");
+  Vector *vl = NewVector(A->Tcol, "vl");
 
   Vector *vx = NewVector(A->Tcol, "vx");
   Vector *vy = NewVector(A->Trow, "vy");
@@ -510,6 +511,7 @@ PDProblem* SmpsOops::setupProblem(SmpsReturn *Pb) {
   CopyDenseToVector(Pb->b, vb);
   CopyDenseToVector(Pb->c, vc);
   CopyDenseToVector(Pb->u, vu);
+  CopyDenseToVector(Pb->l, vl);
 
   // create the primal dual problem
   PDProblem *Prob = NewPDProblem(AlgAug, vb, vc, vu, vx, vy, vz);
@@ -517,6 +519,7 @@ PDProblem* SmpsOops::setupProblem(SmpsReturn *Pb) {
     Prob->s = vs;
     Prob->w = vw;
   }
+  Prob->l= vl;
 
   return Prob;
 }
