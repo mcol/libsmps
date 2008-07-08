@@ -68,7 +68,7 @@ struct ProbData {
 int freeProbData(ProbData *data);
 
 /** Setup the deterministic equivalent */
-ProbData* setupProblem(Smps &smps);
+ProbData* setupProblem(Smps &smps, const Node *node = NULL);
 
 /** Print the solution */
 void printSolution(const Node *root,

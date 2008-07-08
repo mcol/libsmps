@@ -16,39 +16,40 @@
 #include <assert.h>
 #include "interface.h"
 
-static ProbData* setupMatrix(Smps &smps);
-static int setupRhs(ProbData *PROB, const Smps &smps);
-static int applyScenarios(ProbData *PROB, const Smps &smps);
+static ProbData* setupMatrix(Smps &smps, const Node *node);
+static int setupRhs(ProbData *PROB, const Smps &smps, const Node *node);
+static int applyScenarios(ProbData *PROB, const Smps &smps, const Node *node);
 static int copyLinkingBlocks(Smps &smps, SparseData &data, const Node *node,
 			     const int period, double *acoeff, int *rwnmbs,
 			     int &cIndex, int &dIndex, int &nnzCol);
 
 
 /** Generate the deterministic equivalent problem */
-ProbData* setupProblem(Smps &smps) {
+ProbData* setupProblem(Smps &smps, const Node *node) {
 
   ProbData *PROB;
 
   printf(" --------------- setupProblem --------------\n");
 
   // setup the matrix
-  PROB = setupMatrix(smps);
+  PROB = setupMatrix(smps, node);
   if (!PROB)
     return NULL;
 
   // setup the right-hand side
-  setupRhs(PROB, smps);
+  setupRhs(PROB, smps, node);
 
   // apply the scenario corrections
-  applyScenarios(PROB, smps);
+  applyScenarios(PROB, smps, node);
 
   return PROB;
 }
 
 /** Setup the constraint matrix */
-ProbData *setupMatrix(Smps &smps) {
+ProbData *setupMatrix(Smps &smps, const Node *node) {
 
-  const Node *node = smps.getRootNode();
+  if (!node)
+    node = smps.getRootNode();
 
   // leave immediately if there is no root node
   if (!node)
@@ -298,9 +299,10 @@ int copyLinkingBlocks(Smps &smps, SparseData &data, const Node *node,
 }
 
 /** Setup the right-hand side */
-int setupRhs(ProbData *PROB, const Smps &smps) {
+int setupRhs(ProbData *PROB, const Smps &smps, const Node *node) {
 
-  const Node *node = smps.getRootNode();
+  if (!node)
+    node = smps.getRootNode();
 
   // leave immediately if there is no root node
   if (!node)
@@ -338,14 +340,17 @@ int setupRhs(ProbData *PROB, const Smps &smps) {
 }
 
 /** Apply the scenario corrections */
-int applyScenarios(ProbData *PROB, const Smps &smps) {
+int applyScenarios(ProbData *PROB, const Smps &smps, const Node *node) {
 
   int period, firstEntry, lastEntry;
   int row, col, pdr, pdc, index;
   const int *entryRow = smps.getEntryRow();
   const int *entryCol = smps.getEntryCol();
   const double *entryVal = smps.getEntryVal();
-  const Node *node = smps.getRootNode(), *scNode;
+  const Node *scNode;
+
+  if (!node)
+    node = smps.getRootNode();
 
   // We start from the leaf nodes and traverse the tree up to the root,
   // applying the changes corresponding to the nodes in the scenario
