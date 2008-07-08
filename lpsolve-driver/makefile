@@ -4,8 +4,6 @@ LIBDIR	:= $(DEPTH)/libs
 
 include $(OOPS)/mkincl
 
-LPSOLVE  = /usr/Projects/lpsolve
-
 LIBS	+= \
 	-L $(LIBDIR) \
 	-L $(LPSOLVE) \
