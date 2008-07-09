@@ -20,7 +20,7 @@ static ProbData* setupMatrix(Smps &smps, const Node *node);
 static int setupRhs(ProbData *PROB, const Smps &smps, const Node *node);
 static int applyScenarios(ProbData *PROB, const Smps &smps, const Node *node);
 static int copyLinkingBlocks(Smps &smps, SparseData &data, const Node *node,
-			     const int period, double *acoeff, int *rwnmbs,
+			     double *acoeff, int *rwnmbs,
 			     int &cIndex, int &dIndex, int &nnzCol);
 
 
@@ -200,7 +200,7 @@ ProbData *setupMatrix(Smps &smps, const Node *node) {
       }
 
       // copy the linking blocks in the current period
-      copyLinkingBlocks(smps, data, node, period,
+      copyLinkingBlocks(smps, data, node,
 			acoeff, rwnmbs, cIndex, dIndex, nnzCol);
 
       // go to the next column
@@ -237,7 +237,7 @@ ProbData *setupMatrix(Smps &smps, const Node *node) {
 
 /** Copy the elements in the linking blocks in the current column */
 int copyLinkingBlocks(Smps &smps, SparseData &data, const Node *node,
-		      const int period, double *acoeff, int *rwnmbs,
+		      double *acoeff, int *rwnmbs,
 		      int &cIndex, int &dIndex, int &nnzCol) {
 
   const int ttm = smps.getTotRows();
@@ -247,6 +247,9 @@ int copyLinkingBlocks(Smps &smps, SparseData &data, const Node *node,
 
   // store the number of remaining nonzeros in the column
   const int snzCol = nnzCol;
+
+  // the period of the node
+  const int period = node->level();
 
   // copy the linking blocks from the current period
   for (int block = 0; block < node->nChildren(); ++block) {
@@ -290,7 +293,7 @@ int copyLinkingBlocks(Smps &smps, SparseData &data, const Node *node,
 
       // this element belongs to a period after the next
       else
-	copyLinkingBlocks(smps, data, child, period + 1,
+	copyLinkingBlocks(smps, data, child,
 			  acoeff, rwnmbs, cIndex, dIndex, nnzCol);
     }
   }
