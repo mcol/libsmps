@@ -24,6 +24,10 @@ class OptionsOops;
 class WSPoint;
 struct SmpsReturn;
 
+// the maximum cutoff level
+// note that the current implementation doesn't exploit a cutoff larger than 1
+static const int MAX_CUTOFF = 2;
+
 
 /** The SmpsOops class */
 class SmpsOops {

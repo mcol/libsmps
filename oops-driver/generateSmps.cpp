@@ -174,9 +174,12 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
     is_col_diag = Ret->is_col_diag = new int[f_cldiag];
 
     int *nzpddg0 = new int[nPeriods];
-    int *nzpddg  = (int *) calloc(cutoff, sizeof(int));
-    int *clpddg  = (int *) calloc(cutoff, sizeof(int));
+    int nzpddg[MAX_CUTOFF];
+    int clpddg[MAX_CUTOFF];
     bool found;
+
+    for (j = 0; j < cutoff; ++j)
+      nzpddg[j] = clpddg[j] = 0;
 
     // for all columns in border block
     for (i = 0; i < f_cldiag; ++i) {
@@ -256,8 +259,6 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
 
     // clean up
     delete[] nzpddg0;
-    free(nzpddg);
-    free(clpddg);
   }
 
   /* nzdg0 = Total nonzeros in final matrix in Border columns that could

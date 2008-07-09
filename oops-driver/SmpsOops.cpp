@@ -814,6 +814,10 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
     return 1;
   }
 
+  // reset the cutoff level to the maximum supported
+  if (cutoff > MAX_CUTOFF)
+    cutoff = MAX_CUTOFF;
+
   // reset the number of blocks, because we may call orderNodes multiple
   // times and on different trees
   nBlocks = 0;
