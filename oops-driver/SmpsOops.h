@@ -22,7 +22,7 @@
 // forward declarations
 class OptionsOops;
 class WSPoint;
-struct SmpsReturn;
+class SmpsReturn;
 
 // the maximum cutoff level
 // note that the current implementation doesn't exploit a cutoff larger than 1
@@ -82,7 +82,7 @@ class SmpsOops {
   int nBlocks;
 
   /** Generate the deterministic equivalent for the smps instance */
-  SmpsReturn* generateSmps(const SmpsTree &tree);
+  int generateSmps(const SmpsTree &tree, SmpsReturn &ret);
 
   /** Set up the Oops algebras and vectors and build the primal-dual problem */
   PDProblem* setupProblem(SmpsReturn *Pb);
@@ -136,9 +136,6 @@ class SmpsOops {
   void forwOrderRowVector(double *x, const SmpsReturn *Ret);
   void forwOrderColVector(double *x, const SmpsReturn *Ret);
 
-  /** Free the space allocated for the SmpsReturn structure */
-  void freeSmpsReturn(SmpsReturn *ret);
-
 };
 
 
@@ -148,7 +145,15 @@ class SmpsOops {
  *  This structure is used to pass the Algebras and Vectors from the
  *  SMPS generator to OOPS.
  */
-struct SmpsReturn {
+class SmpsReturn {
+
+ public:
+
+  /** Constructor */
+  SmpsReturn();
+
+  /** Destructor */
+  ~SmpsReturn();
 
   /** Algebra for the linear part */
   Algebra *AlgA;
@@ -177,21 +182,21 @@ struct SmpsReturn {
   /* The following entries are for the ordering/re-ordering routines
      (these values have to be remembered from the generating phase) */
 
-  /** Columns in Rnk part of RankCor */
-  int nb_col_rnk;
-
-  /** Columns in D0 part of RnkCor */
-  int nb_col_diag;
-
-  /** Rows in first periods (making up [D0Rnk]) */
-  int nb_row_rnk;
+  /** Root node of the tree for which the problem has been generated */
+  const Node *rootNode;
 
   /** Columns in first 'level' periods of core matrix that can be shifted
       to the first diagonal block */
   int *is_col_diag;
 
-  /** Root node of the tree for which the problem has been generated */
-  const Node *rootNode;
+  /** Rows in first periods (making up [D0Rnk]) */
+  int nb_row_rnk;
+
+  /** Columns in Rnk part of RankCor */
+  int nb_col_rnk;
+
+  /** Columns in D0 part of RnkCor */
+  int nb_col_diag;
 
 };
 

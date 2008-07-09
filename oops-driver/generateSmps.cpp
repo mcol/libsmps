@@ -61,25 +61,20 @@ setupObjective(const Smps &smps, SmpsReturn *Ret);
  *  (4c) Correct RHS and objvalue.
  *	 Do this on whole Matrix (therefore needs to be done after 5a)
  */
-SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
+int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 
   // extract the root node
   const Node *rootNode = tree.getRootNode();
 
   // ensure that the root node exists
   if (!rootNode)
-    return NULL;
-
-  // whole matrices A/Q
-  Algebra *AlgA, *AlgQ;
-
-  SmpsReturn *Ret = new SmpsReturn;
+    return 1;
 
   int i, j, k;
   const Node *node;
 
   // store the root node
-  Ret->rootNode = rootNode;
+  Ret.rootNode = rootNode;
 
   // col and nonzeros in new D-0 matrix
   int nzdg0, cldg0;
@@ -171,7 +166,7 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
   */
 
   {
-    is_col_diag = Ret->is_col_diag = new int[f_cldiag];
+    is_col_diag = Ret.is_col_diag = new int[f_cldiag];
 
     int *nzpddg0 = new int[nPeriods];
     int nzpddg[MAX_CUTOFF];
@@ -418,9 +413,9 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
   diag_n_blk[0] = cldg0;
 
   // save dimensions for postprocess
-  Ret->nb_row_rnk  = diag_m_blk[0];
-  Ret->nb_col_rnk  = rnkc_n_blk[0];
-  Ret->nb_col_diag = diag_n_blk[0];
+  Ret.nb_row_rnk  = diag_m_blk[0];
+  Ret.nb_col_rnk  = rnkc_n_blk[0];
+  Ret.nb_col_diag = diag_n_blk[0];
 
   // first row/col of given block (in big matrix before reordering)
   int *f_rw_blk = new int[nBlocks + 2];
@@ -445,10 +440,10 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
   // allocate sparse the matrices for rankcorrector and diagonal components
   //
 
-  Ret->b = NewDenseVector(ttm, "RHS");
-  Ret->c = NewDenseVector(ttn, "Obj");
-  Ret->l = NewDenseVector(ttn, "LB");
-  Ret->u = NewDenseVector(ttn, "UB");
+  Ret.b = NewDenseVector(ttm, "RHS");
+  Ret.c = NewDenseVector(ttn, "Obj");
+  Ret.l = NewDenseVector(ttn, "LB");
+  Ret.u = NewDenseVector(ttn, "UB");
 
   // rankcor part
   Algebra **RightColEntries = (Algebra**) malloc((nBlocks + 1) * sizeof(Algebra *));
@@ -608,28 +603,28 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
 			node, cu_blk_cl, ncol_rc, coreCol);
   }
 
-  assert(Ret->nb_col_rnk == ncol_rc);
+  assert(Ret.nb_col_rnk == ncol_rc);
 
   // write the final pointer for the last+1 column
   for (j = 0; j <= nBlocks; ++j) {
     sparse = (SparseSimpleMatrix *) RightColEntries[j]->Matrix;
-    sparse->col_beg[Ret->nb_col_rnk] = sparse->nb_el;
+    sparse->col_beg[Ret.nb_col_rnk] = sparse->nb_el;
 
     sparse = (SparseSimpleMatrix *) DiagEntries[j]->Matrix;
     sparse->col_beg[sparse->nb_col] = sparse->nb_el;
   }
 
   // setup the right-hand side
-  setupRhs(smps, Ret);
+  setupRhs(smps, &Ret);
 
   // setup objective and bounds
-  setupObjective(smps, Ret);
+  setupObjective(smps, &Ret);
 
   // apply scenario corrections
-  applyScenarios(tree, Ret, DiagEntries, RightColEntries, f_rw_blk, f_cl_blk);
+  applyScenarios(tree, &Ret, DiagEntries, RightColEntries, f_rw_blk, f_cl_blk);
 
   // reorder objective, bounds and column names
-  reorderObjective(tree, Ret, rnkc_n_blk[0]);
+  reorderObjective(tree, &Ret, rnkc_n_blk[0]);
 
   // set up the deterministic equivalent as a DblBordDiagAlgebra
   DblBordDiagSimpleMatrix *MA = NewDblBordDiagSimpleMatrix(nBlocks + 1, Bottom,
@@ -639,11 +634,8 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
   BlockDiagSimpleMatrix *MQ = NewBlockDiagSimpleMatrix(nBlocks + 2, QDiag,
 						       "Q_main");
 
-  AlgA = NewDblBordDiagSimpleAlgebra(MA);
-  AlgQ = NewBlockDiagSimpleAlgebra(MQ);
-
-  Ret->AlgA = AlgA;
-  Ret->AlgQ = AlgQ;
+  Ret.AlgA = NewDblBordDiagSimpleAlgebra(MA);
+  Ret.AlgQ = NewBlockDiagSimpleAlgebra(MQ);
 
   // clean up
   delete[] p_pd_rw;
@@ -658,52 +650,7 @@ SmpsReturn* SmpsOops::generateSmps(const SmpsTree &tree) {
   delete[] f_cl_blk;
   delete[] f_rw_blk;
 
-  return Ret;
-}
-
-/** Free the space allocated for the SmpsReturn structure */
-void SmpsOops::freeSmpsReturn(SmpsReturn *ret) {
-
-  int i;
-  const int ttm = ret->b->dim;
-  const int ttn = ret->c->dim;
-
-  // early return if the structure has not been allocated
-  if (!ret)
-    return;
-
-  if (ret->AlgA) {
-    FreeTree(ret->AlgA->Trow);
-    FreeTree(ret->AlgA->Tcol);
-    FreeAlgebraAlg(ret->AlgA);
-  }
-
-  if (ret->AlgQ) {
-    FreeTree(ret->AlgQ->Trow);
-    FreeTree(ret->AlgQ->Tcol);
-    FreeAlgebraAlg(ret->AlgQ);
-  }
-
-  FreeDenseVector(ret->b);
-  FreeDenseVector(ret->c);
-  FreeDenseVector(ret->l);
-  FreeDenseVector(ret->u);
-
-  delete[] ret->is_col_diag;
-
-  if (ret->rownames) {
-    for (i = 0; i < ttm; ++i)
-      delete[] ret->rownames[i];
-    delete[] ret->rownames;
-  }
-
-  if (ret->colnames) {
-    for (i = 0; i < ttn; ++i)
-      delete[] ret->colnames[i];
-    delete[] ret->colnames;
-  }
-
-  delete ret;
+  return 0;
 }
 
 /**

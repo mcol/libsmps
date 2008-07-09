@@ -73,21 +73,23 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
     smps.setBuildNames();
   }
 
+  SmpsReturn prob;
+
   // generate the problem
-  SmpsReturn *prob = generateSmps(smps.getSmpsTree());
-  if (!prob) {
+  rv = generateSmps(smps.getSmpsTree(), prob);
+  if (rv) {
     printf("Failed to generate the deterministic equivalent.\n");
     return 1;
   }
 
   // setup the primal-dual problem
-  PDProblem *pdProb = setupProblem(prob);
+  PDProblem *pdProb = setupProblem(&prob);
 
   // write the deterministic equivalent in mps format
   if (opt.writeMps()) {
     FILE *fout = fopen("smps.mps", "w");
     Write_MpsFile(fout, pdProb->AlgAug, pdProb->b, pdProb->c,
-		  pdProb->u, pdProb->l, 0, prob->colnames, prob->rownames);
+		  pdProb->u, pdProb->l, 0, prob.colnames, prob.rownames);
     fclose(fout);
   }
 
@@ -126,14 +128,13 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   fprintf(printout, "Elapsed time: %.10g seconds.\n", tt_end - tt_start);
 
   if (opt.printSolution())
-    getSolution(pdProb, prob);
+    getSolution(pdProb, &prob);
 
  TERMINATE:
 
   // clean up
   delete ret;
   FreePDProblem(pdProb);
-  freeSmpsReturn(prob);
 
   return rv;
 }
@@ -152,21 +153,23 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 
   int rv = 0;
 
+  SmpsReturn prob;
+
   // generate a reduced problem
-  SmpsReturn *prob = generateSmps(rTree);
-  if (!prob) {
+  rv = generateSmps(rTree, prob);
+  if (rv) {
     printf("Failed to generate the deterministic equivalent.\n");
     return 1;
   }
 
   // setup the primal-dual problem
-  PDProblem *pdProb = setupProblem(prob);
+  PDProblem *pdProb = setupProblem(&prob);
 
   // write the deterministic equivalent in mps format
   if (opt.writeMps()) {
     FILE *fout = fopen("smps-red.mps", "w");
     Write_MpsFile(fout, pdProb->AlgAug, pdProb->b, pdProb->c,
-		  pdProb->u, pdProb->l, 0, prob->colnames, prob->rownames);
+		  pdProb->u, pdProb->l, 0, prob.colnames, prob.rownames);
     fclose(fout);
   }
 
@@ -192,10 +195,10 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   }
 
   // extract and store the solution
-  storeSolution(pdProb, prob);
+  storeSolution(pdProb, &prob);
 
   // generate a warmstart point for the complete problem
-  setupWarmStart(prob);
+  setupWarmStart(&prob);
 
   if (pdPoint) {
     FreeVector(pdPoint->x);
@@ -212,7 +215,6 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   // clean up
   delete ret;
   FreePDProblem(pdProb);
-  freeSmpsReturn(prob);
 
   return rv;
 }
@@ -914,6 +916,60 @@ void SmpsOops::dfsNode(queue<Node*> &qOrder, Node *node) {
   for (int i = 0; i < node->nChildren(); i++) {
     dfsNode(qOrder, node->getChild(i));
   }
+}
+
+/** Constructor */
+SmpsReturn::SmpsReturn() :
+  AlgA(NULL),
+  AlgQ(NULL),
+  b(NULL),
+  c(NULL),
+  l(NULL),
+  u(NULL),
+  rownames(NULL),
+  colnames(NULL),
+  rootNode(NULL),
+  is_col_diag(NULL),
+  nb_row_rnk(0),
+  nb_col_rnk(0),
+  nb_col_diag(0) {
+}
+
+/** Destructor */
+SmpsReturn::~SmpsReturn() {
+
+  if (AlgA) {
+    FreeTree(AlgA->Trow);
+    FreeTree(AlgA->Tcol);
+    FreeAlgebraAlg(AlgA);
+  }
+
+  if (AlgQ) {
+    FreeTree(AlgQ->Trow);
+    FreeTree(AlgQ->Tcol);
+    FreeAlgebraAlg(AlgQ);
+  }
+
+  if (rownames) {
+    const int ttm = b->dim;
+    for (int i = 0; i < ttm; ++i)
+      delete[] rownames[i];
+    delete[] rownames;
+  }
+
+  if (colnames) {
+    const int ttn = c->dim;
+    for (int i = 0; i < ttn; ++i)
+      delete[] colnames[i];
+    delete[] colnames;
+  }
+
+  FreeDenseVector(b);
+  FreeDenseVector(c);
+  FreeDenseVector(l);
+  FreeDenseVector(u);
+
+  delete[] is_col_diag;
 }
 
 /** Constructor */
