@@ -1,5 +1,5 @@
 /*
- *  setupProblem.c
+ *  interface.c
  *
  *  Generate the deterministic equivalent from the SMPS data structures.
  *

@@ -36,7 +36,7 @@ forwOrderRowVector(const SmpsReturn *Ret, double *x);
 /**
  *  Generate the OOPS structures for the SMPS problem.
  *
- *  Uses the information from the SMPS files create the deterministic
+ *  Uses the information from the SMPS files to create the deterministic
  *  equivalent problem.
  *
  *  All nodes in periods < cutoff are treated in a RankCorrector, nodes
@@ -95,23 +95,14 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // nonzeros and number of columns in the new diagonal block D-0
   int nzdg0 = 0, cldg0 = 0;
 
-  // period/block of current row/col
-  int cu_pd_rw, cu_blk_cl;
-
   // period of the given node
   int perNode;
 
-  // counter of cols added to RnkC so far
-  int ncol_rc;
-
-  // first col in current block
-  int b_cu_blk_cl;
+  // block of the given node
+  int blkNode;
 
   // number of periods
   const int nPeriods = smps.getPeriods();
-
-  // pointer to start of period information in core for this column
-  int *p_pd_rw = new int[nPeriods + 1];
 
   // dimensions and nonzeros of rank corrector blocks
   int *rnkc_m_blk  = new int[nBlocks + 1];
@@ -124,28 +115,23 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   int *diag_nz_blk = new int[nBlocks + 1];
 
   // initialise to zero
+  memset(rnkc_nz_blk, 0, (nBlocks + 1) * sizeof(int));
   memset(diag_m_blk,  0, (nBlocks + 1) * sizeof(int));
   memset(diag_n_blk,  0, (nBlocks + 1) * sizeof(int));
   memset(diag_nz_blk, 0, (nBlocks + 1) * sizeof(int));
-  memset(rnkc_nz_blk, 0, (nBlocks + 1) * sizeof(int));
-
-  // nonzeros in RnkC, Diag parts for certain periods in core
-  int *rnkc_nz_pd = new int[nPeriods];
-  int *diag_nz_pd = new int[nPeriods];
 
   // dimensions of the deterministic equivalent
-  int ttm = tree.getTotRows();
-  int ttn = tree.getTotCols();
+  const int ttm = tree.getTotRows();
+  const int ttn = tree.getTotCols();
 
   // first row/col in the diagonal part of the deterministic equivalent
-  int f_rwdiag = smps.getBegPeriodRow(cutoff);
-  int f_cldiag = smps.getBegPeriodCol(cutoff);
+  const int f_rwdiag = smps.getBegPeriodRow(cutoff);
+  const int f_cldiag = smps.getBegPeriodCol(cutoff);
 
-  int objRow = smps.getObjRowIndex();
+  // index of the objective row
+  const int objRow = smps.getObjRowIndex();
 
   const SparseData data = smps.getSparseData();
-
-  SparseSimpleMatrix *sparse;
 
   printf(" --------------- generateSmps --------------\n");
 
@@ -190,6 +176,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     // whether the column has entries in rows associated with diagonal blocks
     bool found;
 
+    int row;
+
     // initialise the vectors
     for (j = 0; j < cutoff; ++j)
       nzpddg[j] = clpddg[j] = 0;
@@ -209,18 +197,17 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       // for all elements in this column
       for (j = data.clpnts[i]; j < data.clpnts[i + 1]; ++j) {
 
-	// not objective
-	if (data.rwnmbs[j] != objRow) {
+	row = data.rwnmbs[j];
 
-	  // get correct row time period for this entry
-	  int cu_pd_rw = smps.getRowPeriod(data.rwnmbs[j]);
+	// not objective
+	if (row != objRow) {
 
 	  // count nonzeros this column will create in final matrix
-	  nzpdd0[cu_pd_rw]++;
+	  nzpdd0[smps.getRowPeriod(row)]++;
 	}
 
 	// this entry is associated with a diagonal block
-	if (data.rwnmbs[j] >= f_rwdiag)
+	if (row >= f_rwdiag)
 	  found = true;
       }
 
@@ -377,6 +364,10 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // compute the dimensions of the submatrices
   //
 
+  // nonzeros in RnkC, Diag parts for certain periods in core
+  int *rnkc_nz_pd = new int[nPeriods];
+  int *diag_nz_pd = new int[nPeriods];
+
   // count nonzeros in parts of big matrix
   for (i = 0; i < nPeriods; ++i) {
 
@@ -387,8 +378,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       diag_nz_pd[i] += smps.getNzPeriod(i, j);
 
 #ifdef DEBUG_GENERATE_SMPS
-    printf("Nonzeros RNKCR/Diag[%d]: %4d %4d\n",
-	   i, rnkc_nz_pd[i], diag_nz_pd[i]);
+    printf("Nonzeros RNKCR[%d]: %5d\tDiag[%d]: %5d\n",
+           i, rnkc_nz_pd[i], i, diag_nz_pd[i]);
 #endif
   }
 
@@ -396,8 +387,10 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 
   do {
 
-    int blkNode = node->block();
     perNode = node->level();
+    blkNode = node->block();
+    assert(blkNode < nBlocks + 1);
+
     for (i = 0; i < node->nLevels(); ++i) {
       rnkc_nz_blk[blkNode] += rnkc_nz_pd[perNode + i];
       diag_nz_blk[blkNode] += diag_nz_pd[perNode + i];
@@ -417,11 +410,13 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   diag_n_blk[0] = cldg0;
 
   // save dimensions for postprocess
-  Ret.nb_row_rnk  = diag_m_blk[0];
-  Ret.nb_col_rnk  = rnkc_n_blk[0];
-  Ret.nb_col_diag = diag_n_blk[0];
+  Ret.nRowsRnkc = diag_m_blk[0];
+  Ret.nColsRnkc = rnkc_n_blk[0];
+  Ret.nColsDiag = diag_n_blk[0];
 
-  // first row/col of given block (in big matrix before reordering)
+  //
+  // set the first row/col of each block (in big matrix before reordering)
+  //
   int *f_rw_blk = new int[nBlocks + 2];
   int *f_cl_blk = new int[nBlocks + 2];
 
@@ -444,10 +439,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // allocate the sparse matrices for rank corrector and diagonal components
   //
 
-  Ret.b = NewDenseVector(ttm, "RHS");
-  Ret.c = NewDenseVector(ttn, "Obj");
-  Ret.l = NewDenseVector(ttn, "LB");
-  Ret.u = NewDenseVector(ttn, "UB");
+  SparseSimpleMatrix *sparse;
 
   // diagonal algebras
   Algebra **Diagon = (Algebra**) malloc((nBlocks + 2) * sizeof(Algebra *));
@@ -466,7 +458,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   if(IS_ROOT_PAR)
 #endif
   printf("Dimensions and nonzeros of parts of the deterministic equivalent:\n"
-	 " blk |    nonz r/d   |    rows r/d   |    cols r/d   ||"
+         " blk | diagon (rows, cols)  nz | border (rows, cols)  nz ||"
 	 " first row/col\n");
 #endif /* DEBUG_GENERATE_SMPS */
 
@@ -476,9 +468,10 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 #ifdef WITH_MPI
   if(IS_ROOT_PAR)
 #endif
-    printf("%4d | %6d %6d | %6d %6d | %6d %6d || %6d %6d\n", i,
-	   rnkc_nz_blk[i], diag_nz_blk[i], rnkc_m_blk[i], diag_m_blk[i],
-	   rnkc_n_blk[i],  diag_n_blk[i],  f_rw_blk[i],   f_cl_blk[i]);
+    printf("%4d | (%6d, %6d) %6d | (%6d, %6d) %6d || %6d %6d\n", i,
+           diag_m_blk[i], diag_n_blk[i], diag_nz_blk[i],
+           rnkc_m_blk[i], rnkc_n_blk[i], rnkc_nz_blk[i],
+           f_rw_blk[i],   f_cl_blk[i]);
 #endif /* DEBUG_GENERATE_SMPS */
 
     // right-hand columns
@@ -520,13 +513,20 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // build the deterministic equivalent column by column
   //
 
-  ncol_rc  = 0;     // col added to rankcor so far
-  b_cu_blk_cl = 0;  // first column in big matrix of current node
-  cu_blk_cl = 0;
   node = rootNode;
+  blkNode = 0;
+
+  // counter of columns added to Rnkc so far
+  int ncol_rc = 0;
+
+  // first column in current block
+  int fColBlk = 0;
+
+  // pointer to start of period information in core for this column
+  int *p_pd_rw = new int[nPeriods + 1];
 
   // for all columns in the deterministic equivalent
-  for (i = 0; i < ttn; ++i) {
+  for (int col = 0; col < ttn; ++col) {
 
     int lastCol = 0;
     perNode = node->level();
@@ -534,10 +534,10 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     for (j = 0; j < node->nLevels(); ++j)
       lastCol += smps.getNColsPeriod(perNode + j);
 
-    if (i - b_cu_blk_cl >= lastCol) {
+    if (col - fColBlk >= lastCol) {
 
       // first col of current node in big matrix
-      b_cu_blk_cl = i;
+      fColBlk = col;
 
       // current block
       node = node->next();
@@ -547,16 +547,16 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       perNode = node->level();
 
       // current part of big matrix
-      cu_blk_cl = node->block();
+      blkNode = node->block();
 
-      /*
+#ifdef DEBUG_GENERATE_SMPS
       printf("Column %4d - node now %3d  stage now %d  block now %d\n",
-	     i, node->name(), perNode, cu_blk_cl);
-      */
+             col, node->name(), perNode, blkNode);
+#endif
     }
 
     // corresponding column in the core matrix
-    int coreCol = i - b_cu_blk_cl + smps.getBegPeriodCol(perNode);
+    int coreCol = col - fColBlk + smps.getBegPeriodCol(perNode);
     assert(coreCol <= smps.getCols());
 
     // scan through column and set p_pd_rw[pd]:
@@ -564,13 +564,13 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     // p_pd_rw[pd] is start of info for period 'pd' in current col in CORE
 
     // period corresponding to current row
-    cu_pd_rw = 0;
+    int cu_pd_rw = 0;
     for (k = data.clpnts[coreCol]; k < data.clpnts[coreCol + 1]; ++k) {
+
       if (k != data.clpnts[coreCol] && (data.rwnmbs[k - 1] > data.rwnmbs[k]))
 	printf("WARNING: row numbers are not in ascending order!\n");
 
-      j = data.rwnmbs[k];
-      while (j >= smps.getBegPeriodRow(cu_pd_rw)) {
+      while (data.rwnmbs[k] >= smps.getBegPeriodRow(cu_pd_rw)) {
 	p_pd_rw[cu_pd_rw] = k;
 	++cu_pd_rw;
       }
@@ -581,8 +581,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       ++cu_pd_rw;
     }
 
-    // if RankCor Column
-    if (cu_blk_cl == 0 && is_col_diag[coreCol] == 0) {
+    // if RankCor column
+    if (blkNode == 0 && is_col_diag[coreCol] == 0) {
 
       // initialise col in all border matrices
       for (j = 0; j <= nBlocks; ++j) {
@@ -592,10 +592,11 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       }
       ++ncol_rc;
     }
+
     // if not RankCor column
     else {
       // initialise col in corresponding diagonal matrix
-      sparse = (SparseSimpleMatrix *) Diagon[cu_blk_cl]->Matrix;
+      sparse = (SparseSimpleMatrix *) Diagon[blkNode]->Matrix;
       sparse->col_beg[sparse->nb_col] = sparse->nb_el;
       sparse->col_len[sparse->nb_col] = 0;
       sparse->nb_col++;
@@ -604,19 +605,24 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     // write all parts of this column in the correct border and diagonal
     // matrices by scanning through the node and its children
     setNodeChildrenRnkc(Diagon, Border, p_pd_rw, f_rw_blk,
-                        is_col_diag, data, node, cu_blk_cl, ncol_rc, coreCol);
+                        is_col_diag, data, node, blkNode, ncol_rc, coreCol);
   }
 
-  assert(Ret.nb_col_rnk == ncol_rc);
+  assert(Ret.nColsRnkc == ncol_rc);
 
   // write the final pointer for the last+1 column
   for (j = 0; j <= nBlocks; ++j) {
     sparse = (SparseSimpleMatrix *) Border[j]->Matrix;
-    sparse->col_beg[Ret.nb_col_rnk] = sparse->nb_el;
+    sparse->col_beg[Ret.nColsRnkc] = sparse->nb_el;
 
     sparse = (SparseSimpleMatrix *) Diagon[j]->Matrix;
     sparse->col_beg[sparse->nb_col] = sparse->nb_el;
   }
+
+  Ret.b = NewDenseVector(ttm, "RHS");
+  Ret.c = NewDenseVector(ttn, "Obj");
+  Ret.l = NewDenseVector(ttn, "LB");
+  Ret.u = NewDenseVector(ttn, "UB");
 
   // setup the right-hand side
   setupRhs(smps, &Ret);
@@ -650,8 +656,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   delete[] diag_n_blk;
   delete[] diag_nz_blk;
   delete[] diag_nz_pd;
-  delete[] f_cl_blk;
   delete[] f_rw_blk;
+  delete[] f_cl_blk;
 
   return 0;
 }
@@ -667,22 +673,22 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
  *         Array of diagonal algebras
  *  @param Border:
  *         Array of rank corrector algebras
- * @param p_pd_rw:
- *        Pointer to start of this period, this col in CORE
- * @param f_rw_blk[blk]:
- *        First row of BLOCK blk in big matrix
- * @param is_col_diag[i]:
- *        1 if col 'i' should be in Diagonal part;
- *        0 otherwise (Rank Corrector part)
- * @param node:
- *        Node in the deterministic equivalent at which to start
- * @param colBlk:
- *        Block of current column in the deterministic equivalent
- * @param rnkCol:
- *        Index of current column in RankCor part (if in block 0)
- * @param coreCol:
- *        Column in core corresponding to the current column in the
- *        deterministic equivalent
+ *  @param p_pd_rw:
+ *         Pointer to start of this period, this col in CORE
+ *  @param f_rw_blk[blk]:
+ *         First row of BLOCK blk in big matrix
+ *  @param is_col_diag[i]:
+ *         Whether the column should be in the diagonal (1) or in the
+ *         rank corrector (0)
+ *  @param node:
+ *         Node in the deterministic equivalent at which to start
+ *  @param colBlk:
+ *         Block of current column in the deterministic equivalent
+ *  @param rnkCol:
+ *         Index of current column in RankCor part (if in block 0)
+ *  @param coreCol:
+ *         Column in core corresponding to the current column in the
+ *         deterministic equivalent
  */
 void SmpsOops::setNodeChildrenRnkc(Algebra **Diagon, Algebra **Border,
 				   int *p_pd_rw, int *f_rw_blk,
@@ -691,10 +697,10 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **Diagon, Algebra **Border,
 				   const Node *node, const int colBlk,
 				   const int rnkCol, const int coreCol) {
 
+  int index;
   const int blk = node->block();
   const int per = node->level();
   const int end = per + node->nLevels();
-  int index;
   SparseSimpleMatrix *sparse;
 
   // rank corrector
@@ -716,12 +722,11 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **Diagon, Algebra **Border,
   }
 
   // copy the information for this node into the deterministic equivalent
+  int offset = node->firstRow() - smps.getBegPeriodRow(per) - f_rw_blk[blk];
   for (int k = p_pd_rw[per]; k < p_pd_rw[end]; ++k) {
 
     sparse->element[sparse->nb_el] = data.acoeff[k];
-    sparse->row_nbs[sparse->nb_el] = data.rwnmbs[k]
-      - smps.getBegPeriodRow(per) + node->firstRow()
-      - f_rw_blk[blk];
+    sparse->row_nbs[sparse->nb_el] = data.rwnmbs[k] + offset;
 
     /*
     printf(" %2d  - %2d :> %2d, %2d, %2d, %2d  ", per, node->name(),
@@ -816,83 +821,36 @@ void setupObjective(const Smps &smps, SmpsReturn *Ret) {
 /**
  *  Apply the scenarios changes.
  *
-  IN:
-   scenario change data:
-     sc_first[sc]   pointer to first entry for scenario sc
-     sc_len[sc]     number of entries for scenario sc
-     row_nbs[i]     affected row
-     col_nbs[i]     affected col
-     entry[i]       new entry
-     NOTE: sc_first, row_nbs, col_nbs are in FORTRAN numbnering!
-   obj,rhs,matrix:
-     Ret->b           current RHS
-     Ret->c           current objective
-                   these two are arrays of double in a depth first node
-                   ordering. Starting rows and columns corresponding to each
-                   node are given by f_cl_nd, f_rw_nd in SmpsTree.
-                   These vectors are reordered later.
-     DiagEntries      Diagonal Matrix blocks
-     RightColEntries  Right Column Matrix blocks
-                   these are arrays of Algebras. They are already in final
-		   ordering. The ordering is as follows
-                   Variables:
-                     RnkCor: proper first stage decision variable
-                     D[0]  : first stage variables that are not refered to by
-                             later stages
-                   Constraints:
-                     D[1] -D[n]: scenario blocks
-                     D[0]      : internal first stage constraints
-
-  Need mapping from DetEq row/col to Block number in
-  DiagEntries/RightColEntries and row/col number within these.
-  Within each matrix blocks nodes are ordered in a depth first ordering
-
-  block[i]:          number of block that node belongs to
-  scenario[i]        scenario that node belongs to
-  period[i]          period that node belongs to
-
-  Need: for each node, start of row/col within its DetEquivMatrix blck
-    -   for diagonal blocks can take row/col from f_cl_nd, f_rw_nd and
-        substract starting row/col for seed node of this block
-    -   for nondiag node need to do breadth first count
-        the correct column within the RncD0 part is obtained
-	by looping through all columns within RncD0 (breadth first over nodes)
-	and counting how many end up in Rnc and D0
-  OUT: changed RHSm objective, system matrix
-
-  Every scenario is a path from the root node to one of the leaf
-  nodes.  the scenario change data has for all scenarios a list of
-  changes that need to be applied. These changes can apply to any
-  period of the tree (not just the leaf nodes).
-
-  FIXME: we should do this by looping over scenarios first
-
-  We apply the scenario change data by the following algorithm
-
-  LOOP over all leaf nodes lf
-
-     LOOP walk up from leaf node to root node: scNode
-
-       work out which scenario scNode corresponds to: scen
-
-       scan through all the scenario changes:
-         Scenario changes are stored by entries in rhs,obj,matrix of the core
-
-         get row/col period of this change
-
-         apply only changes that correspond to this period
-
-         if (objective change)
-           work out column of change and apply
-         if (rhs change)
-           work out row of change and apply
-	 if (matrix change)
-	   work out row and column of change and apply
-
-     END
-
-  END
-*/
+ *  Every scenario is a path from the root node to one of the leaf
+ *  nodes. The scenario change data has for all scenarios a list of
+ *  changes that need to be applied. These changes can apply to any
+ *  period of the tree (not just the leaf nodes).
+ *
+ *  @param tree
+ *         The tree for which we are building the deterministic equivalent
+ *  @param Ret
+ *         The SmpsReturn structure of the problem
+ *  @param Diagon
+ *         Array of diagonal algebras
+ *  @param Border
+ *         Array of right column algebras already in final ordering: rows
+ *         are ordered as [D1, ..., Dn, D0], columns as [RnkCor, D0]
+ *  @param f_rw_blk
+ *         First row of each block in the deterministic equivalent
+ *  @param f_cl_blk
+ *         First column of each block in the deterministic equivalent
+ *
+ *  @note
+ *  The entryCol[] and entryRow[] vectors are in FORTRAN numbering.
+ *
+ *  Need: for each node, start of row/col within its DetEquivMatrix blck
+ *   -   for diagonal blocks can take row/col from f_cl_nd, f_rw_nd and
+ *       substract starting row/col for seed node of this block
+ *   -   for nondiag node need to do breadth first count
+ *       the correct column within the RnckD0 part is obtained by looping
+ *       through all columns within RnckD0 (breadth first over nodes)
+ *       and counting how many end up in Rnck and D0
+ */
 int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
                              Algebra **Diagon, Algebra **Border,
 			     int *f_rw_blk, int *f_cl_blk) {
@@ -1001,7 +959,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 		 entryRow[corr], entryCol[corr], row, col);
 #endif
 
-	  // work out the correct row and column block of the correction
+	  // work out the row and column block of the correction
 	  int rowBlock = 0;
 	  while (row >= f_rw_blk[rowBlock + 1]) ++rowBlock;
 	  jblk = row - f_rw_blk[rowBlock];
@@ -1276,15 +1234,15 @@ void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
  *  order of these columns in the core matrix.
  *
  *  Needed from main method (passed through SmpsReturn *Ret)
- *  - nb_col_rnk:  number of columns in actual rankcor (Rnk) part
- *  - nb_col_diag: number of columns in diag rankcor (D0) part
+ *  - nColsRnkc: number of columns in actual rankcor (Rnk) part
+ *  - nColsDiag: number of columns in diag rankcor (D0) part
  */
 void backOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
 
   const Node *node = Ret->rootNode;
 
   // total number of columns in RankCor (D0|Rnk)
-  const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
+  const int ncol_ttrc = Ret->nColsRnkc + Ret->nColsDiag;
   const int ttn = Ret->c->dim;
 
   double *dtmp  = new double[ttn];
@@ -1296,7 +1254,7 @@ void backOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
 
   // set the start of the D0 and Rnk blocks
   int nx_col_d0 = 0;                      // next column to take from D0
-  int nx_col_rc = ttn - Ret->nb_col_rnk;  // next column to take from Rnk
+  int nx_col_rc = ttn - Ret->nColsRnkc;   // next column to take from Rnk
   int currPer   = 0;                      // period of the current column
 
 #ifdef DEBUG_SMPS_ORDER
@@ -1356,15 +1314,15 @@ void backOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
  *  order of these columns in the core matrix.
  *
  *  Needed from main method (passed through SmpsReturn *Ret)
- *  - nb_col_rnk:  number of columns in actual rankcor (Rnk) part
- *  - nb_col_diag: number of columns in diag rankcor (D0) part
+ *  - nColsRnkc: number of columns in actual rankcor (Rnk) part
+ *  - nColsDiag: number of columns in diag rankcor (D0) part
  */
 void forwOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
 
   const Node *node = Ret->rootNode;
 
   // total number of columns in RankCor (D0|Rnk)
-  const int ncol_ttrc = Ret->nb_col_rnk + Ret->nb_col_diag;
+  const int ncol_ttrc = Ret->nColsRnkc + Ret->nColsDiag;
   const int ttn = Ret->c->dim;
   double *dtmp  = new double[ttn];
 
@@ -1376,7 +1334,7 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
 
   // set the start of the D0 and Rnk blocks
   int nx_col_d0 = 0;                      // next column in D0
-  int nx_col_rc = ttn - Ret->nb_col_rnk;  // next column in Rnk
+  int nx_col_rc = ttn - Ret->nColsRnkc;   // next column in Rnk
   int currPer   = 0;                      // period of the current column
 
 #ifdef DEBUG_SMPS_ORDER
@@ -1434,7 +1392,7 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
 void backOrderRowVector(const SmpsReturn *Ret, double *x) {
 
   int i;
-  const int ttm = Ret->b->dim, nRowsRnkc = Ret->nb_row_rnk;
+  const int ttm = Ret->b->dim, nRowsRnkc = Ret->nRowsRnkc;
   double *dtmp = new double[ttm];
 
   for (i = 0; i < ttm; ++i)
@@ -1471,7 +1429,7 @@ void backOrderRowVector(const SmpsReturn *Ret, double *x) {
 void forwOrderRowVector(const SmpsReturn *Ret, double *x) {
 
   int i;
-  const int ttm = Ret->b->dim, nRowsRnkc = Ret->nb_row_rnk;
+  const int ttm = Ret->b->dim, nRowsRnkc = Ret->nRowsRnkc;
   double *dtmp = new double[ttm];
 
   for (i = 0; i < ttm; ++i)

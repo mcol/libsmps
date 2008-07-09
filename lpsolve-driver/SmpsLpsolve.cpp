@@ -279,7 +279,7 @@ int SmpsLpsolve::getSolution(lprec *lp, const OptionsLpsolve &opt) {
     double *psol = new double[1 + nRows + nCols];
     get_primal_solution(lp, psol);
 
-    // this contains a null value [0], the duals of the constraints [1, nRows], 
+    // this contains a null value [0], the duals of the constraints [1, nRows],
     // and the duals of the variables [nRows + 1, nRows + nCols]
     double *dsol = new double[1 + nRows + nCols];
     get_dual_solution(lp, dsol);

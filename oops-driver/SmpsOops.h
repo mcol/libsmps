@@ -186,13 +186,13 @@ class SmpsReturn {
   int *is_col_diag;
 
   /** Rows in first periods (making up [D0Rnk]) */
-  int nb_row_rnk;
+  int nRowsRnkc;
 
   /** Columns in Rnk part of RankCor */
-  int nb_col_rnk;
+  int nColsRnkc;
 
   /** Columns in D0 part of RnkCor */
-  int nb_col_diag;
+  int nColsDiag;
 
 };
 

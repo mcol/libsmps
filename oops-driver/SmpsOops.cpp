@@ -931,9 +931,9 @@ SmpsReturn::SmpsReturn() :
   colnames(NULL),
   rootNode(NULL),
   is_col_diag(NULL),
-  nb_row_rnk(0),
-  nb_col_rnk(0),
-  nb_col_diag(0) {
+  nRowsRnkc(0),
+  nColsRnkc(0),
+  nColsDiag(0) {
 }
 
 /** Destructor */
