@@ -67,7 +67,8 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
   // XXX This call is needed because nBlocks is in SmpsOops and we need it to
   // update it, since otherwise we may still use the one of the reduced tree
-  orderNodes(smps.getSmpsTree());
+  if (rTree.getRootNode())
+    orderNodes(smps.getSmpsTree());
 
   if (opt.writeMps()) {
     smps.setBuildNames();
