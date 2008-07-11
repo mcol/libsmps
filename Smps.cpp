@@ -42,6 +42,8 @@ int Smps::read(const bool addSlacks) {
 
   int rv;
 
+  printf(" --------------- readSmpsFiles -------------\n");
+
   rv = readSmpsFile(smpsFile);
   if (rv)
     return rv;

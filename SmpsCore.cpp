@@ -208,6 +208,9 @@ int SmpsCore::readCoreFile(string coreFileName) {
   if (rv)
     goto TERMINATE;
 
+  printf("Core matrix (objective included) is %dx%d, %d nonzeros.\n",
+	 nRows, nCols, nza);
+
   // find out if there are any upper bounded variables
   for (int i = 0; i < nCols; ++i) {
     if (varType[i] == 1 || varType[i] == 3) {
@@ -397,6 +400,9 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
   // set the last elements
   begPeriodRow[nPeriods] = nRows;
   begPeriodCol[nPeriods] = nCols;
+
+  // report the number of periods
+  printf("Found %d periods.\n", nPeriods);
 
  TERMINATE:
 
