@@ -167,9 +167,6 @@ int createLP(lprec *lp, ProbData *prob) {
   char **rwnm = prob->rwnames;
   char **clnm = prob->clnames;
 
-  // array of column numbers
-  int *colnmbs = new int[nNonz];
-
   // set the direction of optimization
   set_minim(lp);
 
@@ -218,7 +215,6 @@ int createLP(lprec *lp, ProbData *prob) {
  TERMINATE:
 
   // clean up
-  delete[] colnmbs;
   freeProbData(prob);
 
   return !status;
