@@ -28,6 +28,7 @@ DEPENDS := \
 APPS	:= \
 	interface \
 	cplex-driver \
+	hopdm-driver \
 	lpsolve-driver \
 	oops-driver \
 	$(NULL)
