@@ -76,12 +76,13 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // store the root node
   Ret.rootNode = rootNode;
 
-  // col and nonzeros in new D-0 matrix
-  int nzdg0, cldg0;
-  int *is_col_diag;   /* indicates columns in first periods that should be
-			 in RankCor part but are not used outside these
-			 periods. Hence they are taken out of the RankCor
-			 and form an additional diagonal block */
+  // indicates columns in first periods that should be in RankCor part
+  // but are not used outside these periods, so they are taken out of the
+  // RankCor and form an additional diagonal block D-0
+  int *is_col_diag;
+
+  // nonzeros and number of columns in the new diagonal block D-0
+  int nzdg0 = 0, cldg0 = 0;
 
   // period/block of current row/col
   int cu_pd_rw, cu_blk_cl;
@@ -138,6 +139,17 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   printf(" --------------- generateSmps --------------\n");
 
   /*
+     Columns within periods <= cutoff are designated to go into the border
+     part of the matrix. However some of them have no entries in rows
+     corresponding to other time periods, and they can be treated differently.
+     This code identifies these columns (is_col_diag[i]) and counts them.
+     These columns can then be considered part of a new diagonal block.
+
+     Since periods other than the first one may be in the border and non-first
+     period columns of the core matrix will be repeated according to the
+     scenario tree, we will need to count how many border columns go to the
+     diagonal from every period.
+
      Scan through the columns of RankCorrector block to see which can go in
      the diagonal.
      For all row periods <= cutoff, count the number of nonzeros in columns
@@ -146,91 +158,77 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
      For all col periods <= cutoff, count the number of columns that
      can go in the diagonal part (used to obtain col of diag).
 
-     Columns within periods <= cutoff are designated to go into the Border
-     part of the matrix. However some of them have no entries in rows
-     corresponding to other time periods, and they can be treated differently.
-
-     This code identifies these columns (is_col_diag[i]) and counts them.
-     Since periods other than the first one might be in the rank corrector,
-     and non-first period columns of the core matrix will be repeated according
-     to the scenario tree, we will need to count how many RankCor columns go
-     to the diagonal from every period.
-
-     clpddg[0-(cutoff-1)]  number of CORE-columns to go in diagonal from
-                           RankCor in period i
      nzpddg[0-(cutoff-1)]  number of nonzeros in above columns
                            (this time sorted by their row-period in CORE)
                           FIXME: is this correct? Do we not need to
                                  distiguish by both row/col period
-     nzpddg0               local contribution of current col to nzpddg0
   */
-
   {
     is_col_diag = Ret.is_col_diag = new int[f_cldiag];
 
-    int *nzpddg0 = new int[nPeriods];
-    int nzpddg[MAX_CUTOFF];
+    // nonzeros in this column for each row-period
+    int *nzpdd0 = new int[nPeriods];
+
+    // total number of columns that have no entries in rows associated with
+    // diagonal blocks and so can go into a new diagonal block
     int clpddg[MAX_CUTOFF];
+
+    // total number of entries in the above columns for each row-period
+    int nzpddg[MAX_CUTOFF];
+
+    // whether the column has entries in rows associated with diagonal blocks
     bool found;
 
+    // initialise the vectors
     for (j = 0; j < cutoff; ++j)
       nzpddg[j] = clpddg[j] = 0;
 
     // for all columns in border block
     for (i = 0; i < f_cldiag; ++i) {
 
-      // nonzeros in current column
-      int nzcl = 0;
-
       found = false;
       is_col_diag[i] = 0;
 
-      // set the correct period block of CORE matrix
-      perNode = smps.getColPeriod(i);
-
-      // count nonzeros in columns and distribution into row period blocks:
-      // - is_col_diag[i]: 1 if no entries in row-blocks assoc with diagonals
-      // - nzpddg0[0 - nPeriods-1]: nonzeros for this column in row periods
-      // - clpddg[0 - nPeriods-1]: total number of columns that have no entries
-      //                           in rows associated with diagonal blocks
-      // - nzpddg[0 - nPeriods-1]: total number of entries in above columns
-      //                           sorted by which row-periods they occur in
+      // count the number of nonzero entries in the column and their
+      // distribution into row period blocks
 
       for (j = 0; j < cutoff; ++j)
-	nzpddg0[j] = 0;
+	nzpdd0[j] = 0;
 
+      // for all elements in this column
       for (j = data.clpnts[i]; j < data.clpnts[i + 1]; ++j) {
 
 	// not objective
 	if (data.rwnmbs[j] != objRow) {
 
 	  // get correct row time period for this entry
-	  cu_pd_rw = smps.getRowPeriod(data.rwnmbs[j]);
+	  int cu_pd_rw = smps.getRowPeriod(data.rwnmbs[j]);
 
 	  // count nonzeros this column will create in final matrix
-	  nzpddg0[cu_pd_rw]++;
-	  ++nzcl;
+	  nzpdd0[cu_pd_rw]++;
 	}
 
+	// this entry is associated with a diagonal block
 	if (data.rwnmbs[j] >= f_rwdiag)
 	  found = true;
       }
 
-      // the column can go in the diagonal part
+      // no linking elements have been found
       if (!found) {
 
+	// the column can go in the diagonal part
 	is_col_diag[i] = 1;
-	clpddg[perNode]++;
+	clpddg[smps.getColPeriod(i)]++;
+
 	for (j = 0; j < cutoff; ++j)
-	  nzpddg[j] += nzpddg0[j];
+	  nzpddg[j] += nzpdd0[j];
       }
     }
 
-    // scan through all nodes in first 'cutoff' periods and count
-    // col in diagonal and nonzeros in them
+    // scan through all nodes up to the cutoff level and count the total
+    // number of columns that can be moved into a diagonal block and the
+    // corresponding number of nonzero elements
 
-    nzdg0 = 0;    // total nonzeros in first diagonal
-    cldg0 = 0;    // total columns in first diagonal
     node = rootNode;
 
     do {
@@ -249,18 +247,13 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     } while (node = node->next());
 
 #ifdef DEBUG_GENERATE_SMPS
-    printf("Cols from RNKCR to DIAG[0]: %d (%d nonzeros).\n", cldg0, nzdg0);
+    printf("Moved %d border columns (%d nonzeros) into a diagonal block.\n",
+	   cldg0, nzdg0);
 #endif
 
     // clean up
-    delete[] nzpddg0;
+    delete[] nzpdd0;
   }
-
-  /* nzdg0 = Total nonzeros in final matrix in Border columns that could
-             be treated separately (i.e. don't affect periods > cutoff)
-     cldg0 = # of columns in final matrix in Border that could be
-             treated separately
-  */
 
   /* Predict sizes of components of big Matrix:
      The matrix generated by DblBordDiagAlgebra looks like this
