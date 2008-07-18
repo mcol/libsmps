@@ -430,7 +430,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   diag_nz_blk[0] += nzdg0;
 
   //
-  // allocate sparse the matrices for rankcorrector and diagonal components
+  // allocate the sparse matrices for rank corrector and diagonal components
   //
 
   Ret.b = NewDenseVector(ttm, "RHS");
@@ -438,11 +438,11 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   Ret.l = NewDenseVector(ttn, "LB");
   Ret.u = NewDenseVector(ttn, "UB");
 
-  // rankcor part
-  Algebra **RightColEntries = (Algebra**) malloc((nBlocks + 1) * sizeof(Algebra *));
-
   // diagonal algebras
-  Algebra **DiagEntries = (Algebra**) malloc((nBlocks + 2) * sizeof(Algebra *));
+  Algebra **Diagon = (Algebra**) malloc((nBlocks + 2) * sizeof(Algebra *));
+
+  // rankcor part
+  Algebra **Border = (Algebra**) malloc((nBlocks + 1) * sizeof(Algebra *));
 
   // bottom algebras (set to zero)
   Algebra **Bottom = (Algebra**) malloc((nBlocks + 1) * sizeof(Algebra *));
@@ -475,12 +475,12 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 			     rnkc_nz_blk[i], "RankCorPart");
     sparse->cbf = (CallBackFunction) CallBackVoid;
     sparse->nb_el = 0;
-    RightColEntries[i] = NewSparseSimpleAlgebra(sparse);
+    Border[i] = NewSparseSimpleAlgebra(sparse);
 
     // diagonal entries
     sparse = NewSparseMatrix(diag_m_blk[i], diag_n_blk[i],
 			     diag_nz_blk[i], "DiagPart");
-    DiagEntries[i] = NewSparseSimpleAlgebra(sparse);
+    Diagon[i] = NewSparseSimpleAlgebra(sparse);
     sparse->cbf = (CallBackFunction) CallBackVoid;
     sparse->nb_el  = 0;
     sparse->nb_col = 0;
@@ -496,9 +496,10 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     QDiag[i] = NewSparseSimpleAlgebra(sparse);
   }
 
+  // last diagonal corresponding to the bottom blocks
   sparse = NewSparseMatrix(0, rnkc_n_blk[0], 0, "DiagPart");
   sparse->cbf = (CallBackFunction) CallBackVoid;
-  DiagEntries[nBlocks + 1] = NewSparseSimpleAlgebra(sparse);
+  Diagon[nBlocks + 1] = NewSparseSimpleAlgebra(sparse);
 
   sparse = NewSparseMatrix(rnkc_n_blk[0], rnkc_n_blk[0], 0, "QDiagPart");
   sparse->cbf = (CallBackFunction) CallBackVoid;
@@ -572,9 +573,9 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     // if RankCor Column
     if (cu_blk_cl == 0 && is_col_diag[coreCol] == 0) {
 
-      // initialise col in all RightColEntry matrices
+      // initialise col in all border matrices
       for (j = 0; j <= nBlocks; ++j) {
-	sparse = (SparseSimpleMatrix *) RightColEntries[j]->Matrix;
+	sparse = (SparseSimpleMatrix *) Border[j]->Matrix;
 	sparse->col_beg[ncol_rc] = sparse->nb_el;
 	sparse->col_len[ncol_rc] = 0;
       }
@@ -582,28 +583,27 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     }
     // if not RankCor column
     else {
-      // initialise col in corresponding diag matrix
-      sparse = (SparseSimpleMatrix *) DiagEntries[cu_blk_cl]->Matrix;
+      // initialise col in corresponding diagonal matrix
+      sparse = (SparseSimpleMatrix *) Diagon[cu_blk_cl]->Matrix;
       sparse->col_beg[sparse->nb_col] = sparse->nb_el;
       sparse->col_len[sparse->nb_col] = 0;
       sparse->nb_col++;
     }
 
-    // write all parts of this column in the correct RightColEntries,
-    // DiagEntries matrices by scanning through the node and its children
-    setNodeChildrenRnkc(RightColEntries, DiagEntries,
-			p_pd_rw, f_rw_blk, is_col_diag, data,
-			node, cu_blk_cl, ncol_rc, coreCol);
+    // write all parts of this column in the correct border and diagonal
+    // matrices by scanning through the node and its children
+    setNodeChildrenRnkc(Diagon, Border, p_pd_rw, f_rw_blk,
+                        is_col_diag, data, node, cu_blk_cl, ncol_rc, coreCol);
   }
 
   assert(Ret.nb_col_rnk == ncol_rc);
 
   // write the final pointer for the last+1 column
   for (j = 0; j <= nBlocks; ++j) {
-    sparse = (SparseSimpleMatrix *) RightColEntries[j]->Matrix;
+    sparse = (SparseSimpleMatrix *) Border[j]->Matrix;
     sparse->col_beg[Ret.nb_col_rnk] = sparse->nb_el;
 
-    sparse = (SparseSimpleMatrix *) DiagEntries[j]->Matrix;
+    sparse = (SparseSimpleMatrix *) Diagon[j]->Matrix;
     sparse->col_beg[sparse->nb_col] = sparse->nb_el;
   }
 
@@ -614,15 +614,14 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   setupObjective(smps, &Ret);
 
   // apply scenario corrections
-  applyScenarios(tree, &Ret, DiagEntries, RightColEntries, f_rw_blk, f_cl_blk);
+  applyScenarios(tree, &Ret, Diagon, Border, f_rw_blk, f_cl_blk);
 
   // reorder objective, bounds and column names
   reorderObjective(tree, &Ret, rnkc_n_blk[0]);
 
   // set up the deterministic equivalent as a DblBordDiagAlgebra
   DblBordDiagSimpleMatrix *MA = NewDblBordDiagSimpleMatrix(nBlocks + 1, Bottom,
-							   RightColEntries,
-							   DiagEntries,
+                                                           Border, Diagon,
 							   "SMPSAlgA");
   BlockDiagSimpleMatrix *MQ = NewBlockDiagSimpleMatrix(nBlocks + 2, QDiag,
 						       "Q_main");
@@ -647,18 +646,16 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 }
 
 /**
- * setNodeChildrenRnkc
+ *  Copy the elements in the column and the linking blocks.
  *
- * Go through the given node and all its children (recursively): for each
- * node find the correct Block-Matrix (RC[blk], DG[blk]) and append the
- * relevant period part of CORE to it (using the correct row numbers).
+ *  Go through the given node and its children (recursively): for each node
+ *  find the correct Block-Matrix (Diagon[blk], Border[blk]) and append the
+ *  relevant period part of the core matrix column to it.
  *
- * SETS: - RC[blk], DG[blk], sparse matrix entries
- *
- * @param RC:
- *        Array of rank corrector algebras
- * @param DG:
- *        Array of diagonal algebras
+ *  @param Diagon:
+ *         Array of diagonal algebras
+ *  @param Border:
+ *         Array of rank corrector algebras
  * @param p_pd_rw:
  *        Pointer to start of this period, this col in CORE
  * @param f_rw_blk[blk]:
@@ -676,7 +673,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
  *        Column in core corresponding to the current column in the
  *        deterministic equivalent
  */
-void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
+void SmpsOops::setNodeChildrenRnkc(Algebra **Diagon, Algebra **Border,
 				   int *p_pd_rw, int *f_rw_blk,
 				   const int *is_col_diag,
 				   const SparseData &data,
@@ -692,7 +689,7 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
   // rank corrector
   if (colBlk == 0 && is_col_diag[coreCol] == 0) {
 
-    sparse = (SparseSimpleMatrix *) RC[blk]->Matrix;
+    sparse = (SparseSimpleMatrix *) Border[blk]->Matrix;
     index  = rnkCol;
   }
 
@@ -703,7 +700,7 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
       exit(1);
     }
 
-    sparse = (SparseSimpleMatrix *) DG[blk]->Matrix;
+    sparse = (SparseSimpleMatrix *) Diagon[blk]->Matrix;
     index  = sparse->nb_col;
   }
 
@@ -730,7 +727,7 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
   }
 
   for (int i = 0; i < node->nChildren(); ++i) {
-    setNodeChildrenRnkc(RC, DG, p_pd_rw, f_rw_blk, is_col_diag,
+    setNodeChildrenRnkc(Diagon, Border, p_pd_rw, f_rw_blk, is_col_diag,
 			data, node->getChild(i), colBlk, rnkCol, coreCol);
   }
 }
@@ -886,7 +883,7 @@ void setupObjective(const Smps &smps, SmpsReturn *Ret) {
   END
 */
 int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
-			     Algebra **DiagEntries, Algebra **RightColEntries,
+                             Algebra **Diagon, Algebra **Border,
 			     int *f_rw_blk, int *f_cl_blk) {
 
   int period, lastPd, firstEntry, lastEntry;
@@ -1037,10 +1034,10 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	    }
 
 	    if (Ret->is_col_diag[coreCol]) {
-	      sparse = (SparseSimpleMatrix *) DiagEntries[0]->Matrix;
+	      sparse = (SparseSimpleMatrix *) Diagon[0]->Matrix;
 	      iblk = iblkd0;
 	    } else {
-	      sparse = (SparseSimpleMatrix *) RightColEntries[rowBlock]->Matrix;
+	      sparse = (SparseSimpleMatrix *) Border[rowBlock]->Matrix;
 	      iblk = iblkrnc;
 	    }
 	  }
@@ -1051,7 +1048,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	    // ensure we are in a diagonal block
 	    assert(colBlock == rowBlock);
 
-	    sparse = (SparseSimpleMatrix *) DiagEntries[colBlock]->Matrix;
+	    sparse = (SparseSimpleMatrix *) Diagon[colBlock]->Matrix;
 	  }
 
 	  // apply the change

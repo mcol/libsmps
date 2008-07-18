@@ -110,13 +110,14 @@ class SmpsOops {
 
   /** Apply the scenario changes */
   int applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
-		     Algebra **DiagEntries, Algebra **RightColEntries,
+                     Algebra **Diagon, Algebra **Border,
 		     int *f_rw_blk, int *f_cl_blk);
 
   /** Reorder objective and bounds */
   void reorderObjective(const SmpsTree &tree, SmpsReturn *Ret, const int rnkn);
 
-  void setNodeChildrenRnkc(Algebra **RC, Algebra **DG,
+  /** Copy the elements in the column and the linking blocks */
+  void setNodeChildrenRnkc(Algebra **Diagon, Algebra **Border,
 			   int *p_pd_rw, int *f_rw_blk,
 			   const int *is_col_diag,
 			   const SparseData &data,
