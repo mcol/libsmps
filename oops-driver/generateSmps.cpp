@@ -21,6 +21,17 @@ setupRhs(const Smps &smps, SmpsReturn *Ret);
 static void
 setupObjective(const Smps &smps, SmpsReturn *Ret);
 
+static void
+backOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x);
+
+static void
+forwOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x);
+
+static void
+backOrderRowVector(const SmpsReturn *Ret, double *x);
+
+static void
+forwOrderRowVector(const SmpsReturn *Ret, double *x);
 
 /**
  *  Generate the OOPS structures for the SMPS problem.
@@ -1217,9 +1228,9 @@ void SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
 
   // reorder according to the SMPS breadth-first order
   if (rowcol == ORDER_COL)
-    backOrderColVector(dx->elts, Ret);
+    backOrderColVector(smps, Ret, dx->elts);
   else
-    backOrderRowVector(dx->elts, Ret);
+    backOrderRowVector(Ret, dx->elts);
 }
 
 /**
@@ -1240,17 +1251,17 @@ void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
 
   // go for memory saving option
   if (rowcol == ORDER_COL)
-    forwOrderColVector(dx->elts, Ret);
+    forwOrderColVector(smps, Ret, dx->elts);
   else
-    forwOrderRowVector(dx->elts, Ret);
+    forwOrderRowVector(Ret, dx->elts);
 
   CopyDenseToVector(dx, x);
 
   // and reverse the order, to leave the dense vector intact
   if (rowcol == ORDER_COL)
-    backOrderColVector(dx->elts, Ret);
+    backOrderColVector(smps, Ret, dx->elts);
   else
-    backOrderRowVector(dx->elts, Ret);
+    backOrderRowVector(Ret, dx->elts);
 }
 
 /**
@@ -1268,7 +1279,7 @@ void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
  *  - nb_col_rnk:  number of columns in actual rankcor (Rnk) part
  *  - nb_col_diag: number of columns in diag rankcor (D0) part
  */
-void SmpsOops::backOrderColVector(double *x, const SmpsReturn *Ret) {
+void backOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
 
   const Node *node = Ret->rootNode;
 
@@ -1348,7 +1359,7 @@ void SmpsOops::backOrderColVector(double *x, const SmpsReturn *Ret) {
  *  - nb_col_rnk:  number of columns in actual rankcor (Rnk) part
  *  - nb_col_diag: number of columns in diag rankcor (D0) part
  */
-void SmpsOops::forwOrderColVector(double *x, const SmpsReturn *Ret) {
+void forwOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
 
   const Node *node = Ret->rootNode;
 
@@ -1411,8 +1422,16 @@ void SmpsOops::forwOrderColVector(double *x, const SmpsReturn *Ret) {
   delete[] dtmp;
 }
 
-/** Reorder the rows */
-void SmpsOops::backOrderRowVector(double *x, const SmpsReturn *Ret) {
+/**
+ *  Reorder the rows into SMPS breadth-first order.
+ *
+ *  @param Ret:
+ *         Information about the problem with respect to which the
+ *         reordering should be done
+ *  @param x:
+ *         The vector to be reordered
+ */
+void backOrderRowVector(const SmpsReturn *Ret, double *x) {
 
   int i;
   const int ttm = Ret->b->dim, nRowsRnkc = Ret->nb_row_rnk;
@@ -1436,18 +1455,20 @@ void SmpsOops::backOrderRowVector(double *x, const SmpsReturn *Ret) {
 }
 
 /**
+ *  Reorder the rows into the order used by OOPS.
+ *
  *  Order the rows from the SMPS breadth-first order into the order used
  *  internally by OOPS (the only difference is that OOPS has the rows
  *  correspoding to the first 'cutoff' periods at the end, whereas the SMPS
  *  breadth-first order has them at the beginning).
  *
- *  @param x:
- *         The vector that should be reordered
  *  @param Ret:
  *         Information about the problem with respect to which the
  *         reordering should be done
+ *  @param x:
+ *         The vector to be reordered
  */
-void SmpsOops::forwOrderRowVector(double *x, const SmpsReturn *Ret) {
+void forwOrderRowVector(const SmpsReturn *Ret, double *x) {
 
   int i;
   const int ttm = Ret->b->dim, nRowsRnkc = Ret->nb_row_rnk;

@@ -132,11 +132,6 @@ class SmpsOops {
   void SmpsDenseToVector(DenseVector *dv, Vector *v,
 			 const SmpsReturn *Ret, const int ordering);
 
-  void backOrderRowVector(double *x, const SmpsReturn *Ret);
-  void backOrderColVector(double *x, const SmpsReturn *Ret);
-  void forwOrderRowVector(double *x, const SmpsReturn *Ret);
-  void forwOrderColVector(double *x, const SmpsReturn *Ret);
-
 };
 
 
