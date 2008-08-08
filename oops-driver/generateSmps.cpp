@@ -462,6 +462,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 	 " first row/col\n");
 #endif /* DEBUG_GENERATE_SMPS */
 
+  char name[] = "";
+
   for (i = 0; i <= nBlocks; ++i) {
 
 #ifdef DEBUG_GENERATE_SMPS
@@ -475,22 +477,25 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 #endif /* DEBUG_GENERATE_SMPS */
 
     // right-hand columns
+    sprintf(name, "Border[%d]", i);
     sparse = NewSparseMatrix(rnkc_m_blk[i], rnkc_n_blk[i],
-			     rnkc_nz_blk[i], "RankCorPart");
+			     rnkc_nz_blk[i], name);
     sparse->cbf = (CallBackFunction) CallBackVoid;
     sparse->nb_el = 0;
     Border[i] = NewSparseSimpleAlgebra(sparse);
 
     // diagonal entries
+    sprintf(name, "Diagon[%d]", i);
     sparse = NewSparseMatrix(diag_m_blk[i], diag_n_blk[i],
-			     diag_nz_blk[i], "DiagPart");
+			     diag_nz_blk[i], name);
     Diagon[i] = NewSparseSimpleAlgebra(sparse);
     sparse->cbf = (CallBackFunction) CallBackVoid;
     sparse->nb_el  = 0;
     sparse->nb_col = 0;
 
     // bottom part
-    sparse = NewSparseMatrix(0, diag_n_blk[i], 0, "BottomPart");
+    sprintf(name, "Bottom[%d]", i);
+    sparse = NewSparseMatrix(0, diag_n_blk[i], 0, name);
     sparse->cbf = (CallBackFunction) CallBackVoid;
     Bottom[i] = NewSparseSimpleAlgebra(sparse);
 
