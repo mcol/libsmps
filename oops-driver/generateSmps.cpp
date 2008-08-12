@@ -244,7 +244,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 
     } while (node = node->next());
 
-#ifdef DEBUG_GENERATE_SMPS
+#ifdef DEBUG
     printf("Moved %d border columns (%d nonzeros) into a diagonal block.\n",
 	   cldg0, nzdg0);
 #endif
@@ -378,8 +378,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       diag_nz_pd[i] += smps.getNzPeriod(i, j);
 
 #ifdef DEBUG_GENERATE_SMPS
-    printf("Nonzeros RNKCR[%d]: %5d\tDiag[%d]: %5d\n",
-           i, rnkc_nz_pd[i], i, diag_nz_pd[i]);
+    printf("Nonzeros Diagon[%d]: %5d\tBorder[%d]: %5d\n",
+           i, diag_nz_pd[i], i, rnkc_nz_pd[i]);
 #endif
   }
 
@@ -457,7 +457,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 #ifdef WITH_MPI
   if(IS_ROOT_PAR)
 #endif
-  printf("Dimensions and nonzeros of parts of the deterministic equivalent:\n"
+  printf("Dimensions and nonzeros of the deterministic equivalent blocks:\n"
          " blk | diagon (rows, cols)  nz | border (rows, cols)  nz ||"
 	 " first row/col\n");
 #endif /* DEBUG_GENERATE_SMPS */
@@ -586,7 +586,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       ++cu_pd_rw;
     }
 
-    // if RankCor column
+    // border column
     if (blkNode == 0 && is_col_diag[coreCol] == 0) {
 
       // initialise col in all border matrices
@@ -598,9 +598,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       ++ncol_rc;
     }
 
-    // if not RankCor column
+    // diagonal column
     else {
-      // initialise col in corresponding diagonal matrix
       sparse = (SparseSimpleMatrix *) Diagon[blkNode]->Matrix;
       sparse->col_beg[sparse->nb_col] = sparse->nb_el;
       sparse->col_len[sparse->nb_col] = 0;
@@ -619,7 +618,6 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   for (j = 0; j <= nBlocks; ++j) {
     sparse = (SparseSimpleMatrix *) Border[j]->Matrix;
     sparse->col_beg[Ret.nColsRnkc] = sparse->nb_el;
-
     sparse = (SparseSimpleMatrix *) Diagon[j]->Matrix;
     sparse->col_beg[sparse->nb_col] = sparse->nb_el;
   }
@@ -730,21 +728,23 @@ void SmpsOops::setNodeChildrenRnkc(Algebra **Diagon, Algebra **Border,
   int offset = node->firstRow() - smps.getBegPeriodRow(per) - f_rw_blk[blk];
   for (int k = p_pd_rw[per]; k < p_pd_rw[end]; ++k) {
 
+    assert(sparse->nb_el < sparse->max_nb_el);
     sparse->element[sparse->nb_el] = data.acoeff[k];
     sparse->row_nbs[sparse->nb_el] = data.rwnmbs[k] + offset;
 
-    /*
-    printf(" %2d  - %2d :> %2d, %2d, %2d, %2d  ", per, node->name(),
+#ifdef DEBUG_GENERATE_SMPS
+    printf(" node %2d :> %2d - %2d + %2d - %2d  ", node->name(),
 	   data.rwnmbs[k], smps.getBegPeriodRow(per),
 	   node->firstRow(), f_rw_blk[blk]);
-    printf(":: %lf  %d\n", sparse->element[sparse->nb_el],
+    printf(":: %lf  (row %d)\n", sparse->element[sparse->nb_el],
 	   sparse->row_nbs[sparse->nb_el]);
-    */
+#endif
+
+    assert(sparse->row_nbs[sparse->nb_el] >= 0);
+    assert(sparse->row_nbs[sparse->nb_el] < sparse->nb_row);
 
     sparse->nb_el++;
     sparse->col_len[index - 1]++;
-
-    assert(sparse->nb_el <= sparse->max_nb_el);
   }
 
   for (int i = 0; i < node->nChildren(); ++i) {
