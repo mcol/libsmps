@@ -116,14 +116,6 @@ class SmpsOops {
   /** Reorder objective and bounds */
   void reorderObjective(const SmpsTree &tree, SmpsReturn *Ret, const int rnkn);
 
-  /** Copy the elements in the column and the linking blocks */
-  void setNodeChildrenRnkc(Algebra **Diagon, Algebra **Border,
-			   int *p_pd_rw, int *f_rw_blk,
-			   const int *is_col_diag,
-			   const SparseData &data,
-			   const Node *node, const int colBlk,
-			   const int rnkCol, const int coreCol);
-
   /** Copy a Vector into a breadth-first ordered DenseVector */
   void VectorToSmpsDense(Vector *v, DenseVector *dv,
 			 const SmpsReturn *Ret, const int ordering);

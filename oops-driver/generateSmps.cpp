@@ -33,6 +33,11 @@ backOrderRowVector(const SmpsReturn *Ret, double *x);
 static void
 forwOrderRowVector(const SmpsReturn *Ret, double *x);
 
+static int
+copyLinkingBlocks(Smps &smps, Algebra **Array, const SparseData &data,
+                  const Node *node, int *f_rw_blk,
+                  int &idxCol, int &cIndex, int &nnzCol);
+
 /**
  *  Generate the OOPS structures for the SMPS problem.
  *
@@ -81,7 +86,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   if (!rootNode)
     return 1;
 
-  int i, j, k;
+  int i, j;
   const Node *node;
 
   // store the root node
@@ -527,8 +532,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // first column in current block
   int fColBlk = 0;
 
-  // pointer to start of period information in core for this column
-  int *p_pd_rw = new int[nPeriods + 1];
+  int cIndex = 0, idxCol;
+  Algebra **Array;
 
   // for all columns in the deterministic equivalent
   for (int col = 0; col < ttn; ++col) {
@@ -554,6 +559,9 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       // current part of big matrix
       blkNode = node->block();
 
+      // index in the core matrix
+      cIndex = data.clpnts[smps.getBegPeriodCol(perNode)];
+
 #ifdef DEBUG_GENERATE_SMPS
       printf("Column %4d - node now %3d  stage now %d  block now %d\n",
              col, node->name(), perNode, blkNode);
@@ -564,52 +572,79 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     int coreCol = col - fColBlk + smps.getBegPeriodCol(perNode);
     assert(coreCol <= smps.getCols());
 
-    // scan through column and set p_pd_rw[pd]:
-    // pointers to start of period information in CORE matrix
-    // p_pd_rw[pd] is start of info for period 'pd' in current col in CORE
-
-    // period corresponding to current row
-    int cu_pd_rw = 0;
-    for (k = data.clpnts[coreCol]; k < data.clpnts[coreCol + 1]; ++k) {
-
-      if (k != data.clpnts[coreCol] && (data.rwnmbs[k - 1] > data.rwnmbs[k]))
-	printf("WARNING: row numbers are not in ascending order!\n");
-
-      while (data.rwnmbs[k] >= smps.getBegPeriodRow(cu_pd_rw)) {
-	p_pd_rw[cu_pd_rw] = k;
-	++cu_pd_rw;
-      }
-    }
-
-    while (cu_pd_rw <= nPeriods) {
-      p_pd_rw[cu_pd_rw] = data.clpnts[coreCol + 1];
-      ++cu_pd_rw;
-    }
+    //
+    // initialise the column in the current block
+    //
 
     // border column
     if (blkNode == 0 && is_col_diag[coreCol] == 0) {
 
-      // initialise col in all border matrices
       for (j = 0; j <= nBlocks; ++j) {
-	sparse = (SparseSimpleMatrix *) Border[j]->Matrix;
-	sparse->col_beg[ncol_rc] = sparse->nb_el;
-	sparse->col_len[ncol_rc] = 0;
+        sparse = (SparseSimpleMatrix *) Border[j]->Matrix;
+        sparse->col_beg[ncol_rc] = sparse->nb_el;
       }
+      sparse = (SparseSimpleMatrix *) Border[0]->Matrix;
+      idxCol = ncol_rc;
       ++ncol_rc;
+      Array = Border;
     }
 
     // diagonal column
     else {
       sparse = (SparseSimpleMatrix *) Diagon[blkNode]->Matrix;
       sparse->col_beg[sparse->nb_col] = sparse->nb_el;
-      sparse->col_len[sparse->nb_col] = 0;
+      idxCol = sparse->nb_col;
       sparse->nb_col++;
+      Array = Diagon;
+    }
+
+    int offset = node->firstRow() - smps.getBegPeriodRow(perNode)
+      - f_rw_blk[blkNode];
+
+    // number of nonzeros in the current column of the core matrix
+    int nnzCol = data.clpnts[coreCol + 1] - data.clpnts[coreCol];
+
+    while (nnzCol > 0) {
+
+      int row = data.rwnmbs[cIndex];
+
+      // stop early before starting a new period
+      if (row >= smps.getBegPeriodRow(perNode + 1))
+	break;
+
+      // objective row
+      if (row == smps.getObjRowIndex()) {
+	// nothing to do
+      }
+
+      else {
+        assert(sparse->nb_el < sparse->max_nb_el);
+        sparse->element[sparse->nb_el] = data.acoeff[cIndex];
+        sparse->row_nbs[sparse->nb_el] = row + offset;
+
+#ifdef DEBUG_GENERATE_SMPS
+	printf(" node %2d :> %2d - %2d + %2d - %2d  ", node->name(),
+	       row, smps.getBegPeriodRow(perNode),
+	       node->firstRow(), f_rw_blk[blkNode]);
+	printf(":: % lf  (row %d)\n", sparse->element[sparse->nb_el],
+	       sparse->row_nbs[sparse->nb_el]);
+#endif
+
+        assert(sparse->row_nbs[sparse->nb_el] >= 0);
+        assert(sparse->row_nbs[sparse->nb_el] < sparse->nb_row);
+
+	sparse->nb_el++;
+	sparse->col_len[idxCol]++;
+      }
+
+      ++cIndex;
+      --nnzCol;
     }
 
     // write all parts of this column in the correct border and diagonal
     // matrices by scanning through the node and its children
-    setNodeChildrenRnkc(Diagon, Border, p_pd_rw, f_rw_blk,
-                        is_col_diag, data, node, blkNode, ncol_rc, coreCol);
+    copyLinkingBlocks(smps, Array, data, node, f_rw_blk,
+                      idxCol, cIndex, nnzCol);
   }
 
   assert(Ret.nColsRnkc == ncol_rc);
@@ -650,7 +685,6 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   Ret.AlgQ = NewBlockDiagSimpleAlgebra(MQ);
 
   // clean up
-  delete[] p_pd_rw;
   delete[] rnkc_m_blk;
   delete[] rnkc_n_blk;
   delete[] rnkc_nz_blk;
@@ -666,91 +700,106 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 }
 
 /**
- *  Copy the elements in the column and the linking blocks.
+ *  Copy the elements in the linking blocks.
  *
  *  Go through the given node and its children (recursively): for each node
- *  find the correct Block-Matrix (Diagon[blk], Border[blk]) and append the
- *  relevant period part of the core matrix column to it.
+ *  append the relevant period part of the core matrix column to the current
+ *  column.
  *
- *  @param Diagon:
- *         Array of diagonal algebras
- *  @param Border:
- *         Array of rank corrector algebras
- *  @param p_pd_rw:
- *         Pointer to start of this period, this col in CORE
- *  @param f_rw_blk[blk]:
- *         First row of BLOCK blk in big matrix
- *  @param is_col_diag[i]:
- *         Whether the column should be in the diagonal (1) or in the
- *         rank corrector (0)
+ *  @param smps:
+ *         The smps instance
+ *  @param Array:
+ *         Pointer to an array of algebras
+ *  @param data:
+ *         The sparse representation of the core matrix
  *  @param node:
  *         Node in the deterministic equivalent at which to start
- *  @param colBlk:
- *         Block of current column in the deterministic equivalent
- *  @param rnkCol:
- *         Index of current column in RankCor part (if in block 0)
- *  @param coreCol:
- *         Column in core corresponding to the current column in the
- *         deterministic equivalent
+ *  @param f_rw_blk:
+ *         First row of each block in the deterministic equivalent
+ *  @param idxCol:
+ *         Index of the current column in the deterministic equivalent
+ *  @param cIndex:
+ *         Index of the sparse core data
+ *  @param nnzCol:
+ *         Remaining number of nonzeros in the current column
  */
-void SmpsOops::setNodeChildrenRnkc(Algebra **Diagon, Algebra **Border,
-				   int *p_pd_rw, int *f_rw_blk,
-				   const int *is_col_diag,
-				   const SparseData &data,
-				   const Node *node, const int colBlk,
-				   const int rnkCol, const int coreCol) {
+int copyLinkingBlocks(Smps &smps, Algebra **Array, const SparseData &data,
+                      const Node *node, int *f_rw_blk,
+                      int &idxCol, int &cIndex, int &nnzCol) {
 
-  int index;
-  const int blk = node->block();
-  const int per = node->level();
-  const int end = per + node->nLevels();
+  // store the current row index of core
+  const int sIndex = cIndex;
+
+  // store the number of remaining nonzeros in the column
+  const int snzCol = nnzCol;
+
+  // the offset in row numbers between core and deterministic equivalent
+  int offset;
+
+  // the period of the node
+  const int period = node->level();
+
   SparseSimpleMatrix *sparse;
 
-  // rank corrector
-  if (colBlk == 0 && is_col_diag[coreCol] == 0) {
+  // copy the linking blocks from the current period
+  for (int chd = 0; chd < node->nChildren(); ++chd) {
 
-    sparse = (SparseSimpleMatrix *) Border[blk]->Matrix;
-    index  = rnkCol;
-  }
+    const Node *child = node->getChild(chd);
+    sparse = (SparseSimpleMatrix *) Array[child->block()]->Matrix;
 
-  // diagonal
-  else {
-    if (blk != colBlk && p_pd_rw[per] != p_pd_rw[per + 1]) {
-      printf("\nEntry in non diagonal part of diagonal\n");
-      exit(1);
-    }
+    // determine the offset in row numbers for the children nodes
+    offset = child->firstRow() - smps.getBegPeriodRow(child->level()) -
+      f_rw_blk[child->block()];
 
-    sparse = (SparseSimpleMatrix *) Diagon[blk]->Matrix;
-    index  = sparse->nb_col;
-  }
+    // restore the row index of core and the number of nonzeros
+    cIndex = sIndex;
+    nnzCol = snzCol;
 
-  // copy the information for this node into the deterministic equivalent
-  int offset = node->firstRow() - smps.getBegPeriodRow(per) - f_rw_blk[blk];
-  for (int k = p_pd_rw[per]; k < p_pd_rw[end]; ++k) {
+    // copy all the remaining nonzeros in the current column
+    while (nnzCol > 0) {
 
-    assert(sparse->nb_el < sparse->max_nb_el);
-    sparse->element[sparse->nb_el] = data.acoeff[k];
-    sparse->row_nbs[sparse->nb_el] = data.rwnmbs[k] + offset;
+      // an element in a linking block may belong to the next period,
+      // in which case it has to be copied as many times as there are
+      // children of the current node, or it belongs to a period after
+      // the next (not staircase structure), in which case it has to be
+      // copied as many times as there are nodes in that period.
+      // this second case is accomplished by recursion on the children
+      // of the current node
+
+      int row = data.rwnmbs[cIndex];
+
+      // this element belongs to the next period
+      if (row < smps.getBegPeriodRow(period + 2)) {
+	assert(sparse->nb_el < sparse->max_nb_el);
+        sparse->element[sparse->nb_el] = data.acoeff[cIndex];
+	sparse->row_nbs[sparse->nb_el] = row + offset;
 
 #ifdef DEBUG_GENERATE_SMPS
-    printf(" node %2d :> %2d - %2d + %2d - %2d  ", node->name(),
-	   data.rwnmbs[k], smps.getBegPeriodRow(per),
-	   node->firstRow(), f_rw_blk[blk]);
-    printf(":: %lf  (row %d)\n", sparse->element[sparse->nb_el],
-	   sparse->row_nbs[sparse->nb_el]);
+        printf(" node %2d :> %2d - %2d + %2d - %2d  ", child->name(),
+               row, smps.getBegPeriodRow(child->level()),
+               child->firstRow(), f_rw_blk[child->block()]);
+        printf(":: % lf  (row %d)\n", sparse->element[sparse->nb_el],
+               sparse->row_nbs[sparse->nb_el]);
 #endif
 
-    assert(sparse->row_nbs[sparse->nb_el] >= 0);
-    assert(sparse->row_nbs[sparse->nb_el] < sparse->nb_row);
+	assert(sparse->row_nbs[sparse->nb_el] >= 0);
+	assert(sparse->row_nbs[sparse->nb_el] < sparse->nb_row);
 
-    sparse->nb_el++;
-    sparse->col_len[index - 1]++;
+	sparse->nb_el++;
+	sparse->col_len[idxCol]++;
+
+	++cIndex;
+	--nnzCol;
+      }
+
+      // this element belongs to a period after the next
+      else
+	copyLinkingBlocks(smps, Array, data, child, f_rw_blk,
+                          idxCol, cIndex, nnzCol);
+    }
   }
 
-  for (int i = 0; i < node->nChildren(); ++i) {
-    setNodeChildrenRnkc(Diagon, Border, p_pd_rw, f_rw_blk, is_col_diag,
-			data, node->getChild(i), colBlk, rnkCol, coreCol);
-  }
+  return 0;
 }
 
 /** Set up the right-hand side */
