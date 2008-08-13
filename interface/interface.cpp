@@ -138,20 +138,22 @@ ProbData *setupMatrix(Smps &smps, const Node *node) {
       // copy the rows of the period
       while (nnzCol > 0) {
 
+	int row = data.rwnmbs[cIndex];
+
 	// stop early before starting a new period
-	if (data.rwnmbs[cIndex] >= smps.getBegPeriodRow(period + 1))
+	if (row >= smps.getBegPeriodRow(period + 1))
       	  break;
 
 	// objective row
-	if (data.rwnmbs[cIndex] == iob) {
+	if (row == iob) {
 
 	  obj[col] = data.acoeff[cIndex] * node->probNode();
 	}
 
 	// this element is above the diagonal
-	else if (data.rwnmbs[cIndex] < smps.getBegPeriodRow(period)) {
+	else if (row < smps.getBegPeriodRow(period)) {
 
-	  int pdr = smps.getRowPeriod(data.rwnmbs[cIndex]);
+	  int pdr = smps.getRowPeriod(row);
 	  int pdc = smps.getColPeriod(curCol);
 	  assert(pdc > pdr);
 
@@ -160,7 +162,7 @@ ProbData *setupMatrix(Smps &smps, const Node *node) {
 	  const Node *rowNode = node;
 	  while (rowNode->level() > pdr)
 	    rowNode = rowNode->parent();
-	  rwnmbs[dIndex] = data.rwnmbs[cIndex]
+	  rwnmbs[dIndex] = row
 	    + rowNode->firstRow() - smps.getBegPeriodRow(pdr);
 
 	  // scale the element by the conditional probability
@@ -169,8 +171,7 @@ ProbData *setupMatrix(Smps &smps, const Node *node) {
 
 #ifdef DEBUG_MATRIX
 	  printf("Got it! %3g, %d (per %d) node %d\t",
-		 data.acoeff[cIndex], data.rwnmbs[cIndex], period,
-		 node->name());
+		 data.acoeff[cIndex], row, period, node->name());
 	  printf("pdr: %d, pdc: %d\n", pdr, pdc);
 	  printf("%2d (%2d)| %10f  place at (%2d, %2d)\n",
 		 dIndex, cIndex, acoeff[dIndex], rwnmbs[dIndex], col);
@@ -183,7 +184,7 @@ ProbData *setupMatrix(Smps &smps, const Node *node) {
 
 	else {
 	  acoeff[dIndex] = data.acoeff[cIndex];
-	  rwnmbs[dIndex] = data.rwnmbs[cIndex] + offset;
+	  rwnmbs[dIndex] = row + offset;
 
 	  assert(rwnmbs[dIndex] >= 0);
 	  assert(rwnmbs[dIndex] < ttm);
