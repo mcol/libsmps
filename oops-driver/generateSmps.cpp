@@ -505,7 +505,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     Bottom[i] = NewSparseSimpleAlgebra(sparse);
 
     // Q diagonal part
-    sparse = NewSparseMatrix(diag_n_blk[i], diag_n_blk[i], 0, "QDiagPart");
+    sprintf(name, "Q_Diag[%d]", i);
+    sparse = NewSparseMatrix(diag_n_blk[i], diag_n_blk[i], 0, name);
     sparse->cbf = (CallBackFunction) CallBackVoid;
     QDiag[i] = NewSparseSimpleAlgebra(sparse);
   }
@@ -675,11 +676,10 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   reorderObjective(tree, &Ret, rnkc_n_blk[0]);
 
   // set up the deterministic equivalent as a DblBordDiagAlgebra
-  DblBordDiagSimpleMatrix *MA = NewDblBordDiagSimpleMatrix(nBlocks + 1, Bottom,
-                                                           Border, Diagon,
-							   "SMPSAlgA");
-  BlockDiagSimpleMatrix *MQ = NewBlockDiagSimpleMatrix(nBlocks + 2, QDiag,
-						       "Q_main");
+  DblBordDiagSimpleMatrix *MA =
+    NewDblBordDiagSimpleMatrix(nBlocks + 1, Bottom, Border, Diagon, "SmpsA");
+  BlockDiagSimpleMatrix *MQ =
+    NewBlockDiagSimpleMatrix(nBlocks + 2, QDiag, "Q_main");
 
   Ret.AlgA = NewDblBordDiagSimpleAlgebra(MA);
   Ret.AlgQ = NewBlockDiagSimpleAlgebra(MQ);
