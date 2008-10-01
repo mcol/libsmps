@@ -672,14 +672,13 @@ int* SmpsCore::countNzPeriodBlocks() const {
     }
   }
 
-#ifdef DEBUG_SMPSCORE
+  // print the number of nonzeros in each block of the core matrix
   printf("Nonzeros in period blocks of the core matrix:\n");
   for (int i = 0; i < nPeriods; ++i) {
     for (int j = 0; j < nPeriods; ++j)
       printf("  %6d", nzPeriod[i + j * nPeriods]);
     printf("\n");
   }
-#endif
 
   return nzPeriod;
 }
