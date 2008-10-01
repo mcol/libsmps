@@ -458,6 +458,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // diagonal elements of Q
   Algebra **QDiag = (Algebra**) malloc((nBlocks + 2) * sizeof(Algebra *));
 
+  char name[15];
+
 #ifdef DEBUG_GENERATE_SMPS
 #ifdef WITH_MPI
   if(IS_ROOT_PAR)
@@ -466,8 +468,6 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
          " blk | diagon (rows, cols)  nz | border (rows, cols)  nz ||"
 	 " first row/col\n");
 #endif /* DEBUG_GENERATE_SMPS */
-
-  char name[] = "";
 
   for (i = 0; i <= nBlocks; ++i) {
 
