@@ -421,7 +421,8 @@ int SmpsOops::aggregateStages(const int nAggr) {
       rNode = new Node(++nodeName);
       rNode->copy(cNode);
       rNode->setProb(cNode->probNode());
-      nMap[cNode->parent()]->addChild(rNode);
+      if (cNode->parent())
+        nMap[cNode->parent()]->addChild(rNode);
 
       // map the complete node to the reduced node
       nMap[cNode] = rNode;
