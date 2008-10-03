@@ -319,6 +319,10 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
     rParent->addChild(child);
     nMap[ttt] = child;
 
+#ifdef DEBUG_RTREE
+    printf("Node %d: chosen for the reduced tree.\n", ttt->name());
+#endif
+
     // enter the recursion
     if (rest > 0) {
       reduceScenarios(ttt, child, each + 1);
@@ -642,6 +646,14 @@ int SmpsOops::setupWarmStart(const SmpsReturn &Ret) {
 
   printf("Reduced matrix:  %dx%d\n", rRows, rCols);
   printf("Complete matrix: %dx%d\n", nRows, nCols);
+
+#ifdef DEBUG_RTREE
+  // print the mapping between complete and reduced tree
+  map<const Node*, Node*>::iterator it;
+  printf("Mapping: cNode => rNode:\n");
+  for (it = nMap.begin(); it != nMap.end(); it++)
+    printf("%3d => %3d\n", (*it).first->name(), (*it).second->name());
+#endif
 
   // allocate space for the vectors in the reduced iterate
   xred = NewDenseVector(rCols, "xred");
