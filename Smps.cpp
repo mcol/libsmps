@@ -88,12 +88,28 @@ int Smps::readSmpsFile(string smpsFileName) {
   string path = dirname(const_cast<char *>(smpsFile.c_str()));
 
   // read the filenames
-  smps >> coreFile >> timeFile >> stocFile;
+  string line, fileName[3];
+  int nRead = 0;
+  while (nRead < 3 && !smps.eof()) {
+
+    smps >> line;
+
+    // skip the comment lines
+    if (line[0] == '#')
+      continue;
+
+    fileName[nRead++] = line;
+  }
+
+  if (nRead != 3) {
+    cerr << "The input file should specify the 3 smps files." << endl;
+    return ERROR_SMPS_FORMAT;
+  }
 
   // insert the path before the filenames
-  coreFile = path + "/" + coreFile;
-  timeFile = path + "/" + timeFile;
-  stocFile = path + "/" + stocFile;
+  coreFile = path + "/" + fileName[0];
+  timeFile = path + "/" + fileName[1];
+  stocFile = path + "/" + fileName[2];
 
   // close the smps file
   smps.close();
