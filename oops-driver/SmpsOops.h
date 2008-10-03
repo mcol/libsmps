@@ -56,7 +56,7 @@ class SmpsOops {
   int aggregateStages(const int nAggr);
 
   /** Retrieve the solution information */
-  int getSolution(PDProblem *Prob, SmpsReturn *Ret);
+  int getSolution(PDProblem *Prob, SmpsReturn &Ret);
 
  private:
 
@@ -85,16 +85,16 @@ class SmpsOops {
   int generateSmps(const SmpsTree &tree, SmpsReturn &ret);
 
   /** Set up the Oops algebras and vectors and build the primal-dual problem */
-  PDProblem* setupProblem(SmpsReturn *Pb);
+  PDProblem* setupProblem(SmpsReturn &Pb);
 
   /** Create a reduced tree in a recursive manner */
   void reduceScenarios(const Node *cNode, Node *rParent, const int nWanted);
 
   /** Store the solution from the reduced problem */
-  int storeSolution(const PDProblem *pdProb, const SmpsReturn *Ret);
+  int storeSolution(const PDProblem *pdProb, const SmpsReturn &Ret);
 
   /** Set up the warmstart point from a reduced-tree solution */
-  int setupWarmStart(const SmpsReturn *Pb);
+  int setupWarmStart(const SmpsReturn &Pb);
 
   /** Find the complete tree node that represents the given node */
   const Node* findNode(const Node *node);
@@ -118,11 +118,11 @@ class SmpsOops {
 
   /** Copy a Vector into a breadth-first ordered DenseVector */
   void VectorToSmpsDense(Vector *v, DenseVector *dv,
-			 const SmpsReturn *Ret, const int ordering);
+                         const SmpsReturn &Ret, const int ordering);
 
   /** Copy a breadth-first ordered DenseVector into a Vector */
   void SmpsDenseToVector(DenseVector *dv, Vector *v,
-			 const SmpsReturn *Ret, const int ordering);
+                         const SmpsReturn &Ret, const int ordering);
 
 };
 

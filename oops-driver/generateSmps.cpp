@@ -22,16 +22,16 @@ static void
 setupObjective(const Smps &smps, SmpsReturn *Ret);
 
 static void
-backOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x);
+backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x);
 
 static void
-forwOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x);
+forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x);
 
 static void
-backOrderRowVector(const SmpsReturn *Ret, double *x);
+backOrderRowVector(const SmpsReturn &Ret, double *x);
 
 static void
-forwOrderRowVector(const SmpsReturn *Ret, double *x);
+forwOrderRowVector(const SmpsReturn &Ret, double *x);
 
 static int
 copyLinkingBlocks(Smps &smps, Algebra **Array, const SparseData &data,
@@ -1233,7 +1233,7 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
  *  breadth-first ordering of the scenario tree.
  */
 void SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
-				 const SmpsReturn *Ret, const int rowcol) {
+                                 const SmpsReturn &Ret, const int rowcol) {
 
   SetExactVector(x);
   CopyToDenseVector(x, dx);
@@ -1257,7 +1257,7 @@ void SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
  *  diagonal block, rather than in the RankCor block.
  */
 void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
-				 const SmpsReturn *Ret, const int rowcol) {
+                                 const SmpsReturn &Ret, const int rowcol) {
 
   // should attempt to leave the original element order intact
 
@@ -1291,13 +1291,13 @@ void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
  *  - nColsRnkc: number of columns in actual rankcor (Rnk) part
  *  - nColsDiag: number of columns in diag rankcor (D0) part
  */
-void backOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
+void backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
 
-  const Node *node = Ret->rootNode;
+  const Node *node = Ret.rootNode;
 
   // total number of columns in RankCor (D0|Rnk)
-  const int ncol_ttrc = Ret->nColsRnkc + Ret->nColsDiag;
-  const int ttn = Ret->c->dim;
+  const int ncol_ttrc = Ret.nColsRnkc + Ret.nColsDiag;
+  const int ttn = Ret.c->dim;
 
   double *dtmp  = new double[ttn];
 
@@ -1308,7 +1308,7 @@ void backOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
 
   // set the start of the D0 and Rnk blocks
   int nx_col_d0 = 0;                      // next column to take from D0
-  int nx_col_rc = ttn - Ret->nColsRnkc;   // next column to take from Rnk
+  int nx_col_rc = ttn - Ret.nColsRnkc;    // next column to take from Rnk
   int currPer   = 0;                      // period of the current column
 
 #ifdef DEBUG_SMPS_ORDER
@@ -1337,7 +1337,7 @@ void backOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
     }
 
     // copy the value depending on whether it is in D0 or Rnk
-    if (Ret->is_col_diag[coreCol])
+    if (Ret.is_col_diag[coreCol])
       x[col] = dtmp[nx_col_d0++];
     else
       x[col] = dtmp[nx_col_rc++];
@@ -1371,13 +1371,13 @@ void backOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
  *  - nColsRnkc: number of columns in actual rankcor (Rnk) part
  *  - nColsDiag: number of columns in diag rankcor (D0) part
  */
-void forwOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
+void forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
 
-  const Node *node = Ret->rootNode;
+  const Node *node = Ret.rootNode;
 
   // total number of columns in RankCor (D0|Rnk)
-  const int ncol_ttrc = Ret->nColsRnkc + Ret->nColsDiag;
-  const int ttn = Ret->c->dim;
+  const int ncol_ttrc = Ret.nColsRnkc + Ret.nColsDiag;
+  const int ttn = Ret.c->dim;
   double *dtmp  = new double[ttn];
 
   for (int i = 0; i < ttn; ++i)
@@ -1388,7 +1388,7 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
 
   // set the start of the D0 and Rnk blocks
   int nx_col_d0 = 0;                      // next column in D0
-  int nx_col_rc = ttn - Ret->nColsRnkc;   // next column in Rnk
+  int nx_col_rc = ttn - Ret.nColsRnkc;    // next column in Rnk
   int currPer   = 0;                      // period of the current column
 
 #ifdef DEBUG_SMPS_ORDER
@@ -1416,7 +1416,7 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
     }
 
     // copy the value depending on whether it is in D0 or Rnk
-    if (Ret->is_col_diag[coreCol])
+    if (Ret.is_col_diag[coreCol])
       x[nx_col_d0++] = dtmp[col];
     else
       x[nx_col_rc++] = dtmp[col];
@@ -1443,10 +1443,10 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn *Ret, double *x) {
  *  @param x:
  *         The vector to be reordered
  */
-void backOrderRowVector(const SmpsReturn *Ret, double *x) {
+void backOrderRowVector(const SmpsReturn &Ret, double *x) {
 
   int i;
-  const int ttm = Ret->b->dim, nRowsRnkc = Ret->nRowsRnkc;
+  const int ttm = Ret.b->dim, nRowsRnkc = Ret.nRowsRnkc;
   double *dtmp = new double[ttm];
 
   for (i = 0; i < ttm; ++i)
@@ -1480,10 +1480,10 @@ void backOrderRowVector(const SmpsReturn *Ret, double *x) {
  *  @param x:
  *         The vector to be reordered
  */
-void forwOrderRowVector(const SmpsReturn *Ret, double *x) {
+void forwOrderRowVector(const SmpsReturn &Ret, double *x) {
 
   int i;
-  const int ttm = Ret->b->dim, nRowsRnkc = Ret->nRowsRnkc;
+  const int ttm = Ret.b->dim, nRowsRnkc = Ret.nRowsRnkc;
   double *dtmp = new double[ttm];
 
   for (i = 0; i < ttm; ++i)

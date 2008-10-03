@@ -58,7 +58,7 @@ int SmpsOops::read() {
  *  @param opt:
  *         Command line options.
  *  @param hopdmOpts:
- *         Pointer to the options for the solver.
+ *         Options for the solver.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
 int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
@@ -84,7 +84,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   }
 
   // setup the primal-dual problem
-  PDProblem *pdProb = setupProblem(&prob);
+  PDProblem *pdProb = setupProblem(prob);
 
   // write the deterministic equivalent in mps format
   if (opt.writeMps()) {
@@ -129,7 +129,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   fprintf(printout, "Elapsed time: %.10g seconds.\n", tt_end - tt_start);
 
   if (opt.printSolution())
-    getSolution(pdProb, &prob);
+    getSolution(pdProb, prob);
 
  TERMINATE:
 
@@ -146,7 +146,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
  *  @param opt:
  *         Command line options.
  *  @param hopdmOpts:
- *         Pointer to the options for the solver.
+ *         Options for the solver.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
 int SmpsOops::solveReduced(const OptionsOops &opt,
@@ -164,7 +164,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   }
 
   // setup the primal-dual problem
-  PDProblem *pdProb = setupProblem(&prob);
+  PDProblem *pdProb = setupProblem(prob);
 
   // write the deterministic equivalent in mps format
   if (opt.writeMps()) {
@@ -196,10 +196,10 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   }
 
   // extract and store the solution
-  storeSolution(pdProb, &prob);
+  storeSolution(pdProb, prob);
 
   // generate a warmstart point for the complete problem
-  setupWarmStart(&prob);
+  setupWarmStart(prob);
 
   if (pdPoint) {
     FreeVector(pdPoint->x);
@@ -229,10 +229,10 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
  *         The SmpsReturn structure of the reduced problem.
  *  @return 1 If something goes wrong, 0 otherwise.
  */
-int SmpsOops::storeSolution(const PDProblem *pdProb, const SmpsReturn *Ret) {
+int SmpsOops::storeSolution(const PDProblem *pdProb, const SmpsReturn &Ret) {
 
   // allocate space for the new vectors
-  Algebra *A = Ret->AlgA;
+  Algebra *A = Ret.AlgA;
   Vector *x = NewVector(A->Tcol, "vx");
   Vector *y = NewVector(A->Trow, "vy");
   Vector *z = NewVector(A->Tcol, "vz");
@@ -471,19 +471,18 @@ void dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode) {
  *  Set up the Oops algebras and vectors and build the primal-dual problem.
  *
  *  @param Pb:
- *         Pointer to an SmpsReturn structure.
+ *         The SmpsReturn structure of the problem generated.
  *  @return Pointer to the problem to be solved by Oops.
  *
  *  @note
  *  InitAlgebrasNew assumes that a callback function is set up for all
  *  SparseMatrix leaves of A and Q.
  */
-PDProblem* SmpsOops::setupProblem(SmpsReturn *Pb) {
+PDProblem* SmpsOops::setupProblem(SmpsReturn &Pb) {
 
-  Algebra *A = Pb->AlgA;
-  Algebra *Q = Pb->AlgQ;
+  Algebra *A = Pb.AlgA;
+  Algebra *Q = Pb.AlgQ;
 
-  printf(" --------------- InitAlgebras --------------\n");
   Algebra *AlgAug = InitAlgebrasNew(A, Q);
 
   Vector *vb = NewVector(A->Trow, "vb");
@@ -511,10 +510,10 @@ PDProblem* SmpsOops::setupProblem(SmpsReturn *Pb) {
     }
   }
 
-  CopyDenseToVector(Pb->b, vb);
-  CopyDenseToVector(Pb->c, vc);
-  CopyDenseToVector(Pb->u, vu);
-  CopyDenseToVector(Pb->l, vl);
+  CopyDenseToVector(Pb.b, vb);
+  CopyDenseToVector(Pb.c, vc);
+  CopyDenseToVector(Pb.u, vu);
+  CopyDenseToVector(Pb.l, vl);
 
   // create the primal dual problem
   PDProblem *Prob = NewPDProblem(AlgAug, vb, vc, vu, vx, vy, vz);
@@ -621,7 +620,7 @@ void SmpsOops::adjustProbabilities() {
  *         The SmpsReturn structure of the reduced problem.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
-int SmpsOops::setupWarmStart(const SmpsReturn *Ret) {
+int SmpsOops::setupWarmStart(const SmpsReturn &Ret) {
 
   // dense vectors for the reduced solution
   DenseVector *xred, *zred, *yred, *sred = NULL, *wred = NULL;
@@ -748,17 +747,17 @@ int SmpsOops::setupWarmStart(const SmpsReturn *Ret) {
  *  @param Prob:
  *         Pointer to the problem solved by OOPS.
  *  @param Ret:
- *         Pointer to an SmpsReturn structure.
+ *         The SmpsReturn structure of the problem.
  *
  *  @bug
  *  The value of the slacks is always zero, as the slacks would need to be
  *  computed here.
  */
-int SmpsOops::getSolution(PDProblem *Prob, SmpsReturn *Ret) {
+int SmpsOops::getSolution(PDProblem *Prob, SmpsReturn &Ret) {
 
   DenseVector *x, *y, *z, *r;
-  Tree *Trow = Ret->AlgA->Trow;
-  Tree *Tcol = Ret->AlgA->Tcol;
+  Tree *Trow = Ret.AlgA->Trow;
+  Tree *Tcol = Ret.AlgA->Tcol;
   int nRows  = Trow->end - Trow->begin;
   int nCols  = Tcol->end - Tcol->begin;
 
