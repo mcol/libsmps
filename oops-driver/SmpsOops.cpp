@@ -97,7 +97,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   printf(" --------------- solve ---------------------\n");
 
   hopdm_ret *ret = NULL;
-  PrintOptions Prt(PRINT_ITER);
+  PrintOptions Prt(hopdmOpts.glopt->prt);
 
   // exit early if we don't have to solve the problem
   if (opt.dontSolve()) {
@@ -177,7 +177,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   printf(" --------------- solveReduced --------------\n");
 
   hopdm_ret *ret = NULL;
-  PrintOptions Prt(PRINT_ITER);
+  PrintOptions Prt(hopdmOpts.glopt->prt);
 
   // exit early if we don't have to solve the problem
   if (opt.dontSolve()) {
