@@ -610,7 +610,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       int row = data.rwnmbs[cIndex];
 
       // stop early before starting a new period
-      if (row >= smps.getBegPeriodRow(perNode + 1))
+      if (row >= smps.getBegPeriodRow(perNode + node->nLevels()))
 	break;
 
       // objective row
