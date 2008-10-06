@@ -96,9 +96,6 @@ class SmpsOops {
   /** Set up the warmstart point from a reduced-tree solution */
   int setupWarmStart(const SmpsReturn &Pb);
 
-  /** Find the complete tree node that represents the given node */
-  const Node* findNode(const Node *node);
-
   /** Recompute the probabilities in the reduced tree */
   void adjustProbabilities(void);
 

@@ -271,53 +271,61 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
 			       const int nWanted) {
 
   int i, nChildren = cNode->nChildren();
+  int chdIdx = 0, nAdded = 0;
+  int each = 0, rest = 0, step = 1;
   Node *child;
 
-  // nothing more to be done
-  if (nWanted == 0 || nChildren == 0)
-    return;
+  // for each stage cache the reduced tree node from which the
+  // complete tree nodes should be initialised
+  static Node *redChd[10];
 
 #ifdef DEBUG_RTREE
   printf("ReduceScenarios: node %d (%d)\n", cNode->name(), nWanted);
 #endif
 
-  // stop the recursion
-  if (nWanted == 1) {
+  if (nChildren > 0) {
+    // common number of scenarios to be chosen from each child
+    each = nWanted / nChildren;
 
-    // copy the nodes on the path from here to a leaf node
-    while (cNode->nChildren() > 0) {
-
-      // get the first child
-      cNode = cNode->getChild(0);
-
-      // create a new reduced tree node
-      child = new Node(cNode->name());
-      child->copy(cNode);
-      rParent->addChild(child);
-      nMap[cNode] = child;
-      rParent = child;
-    }
-
-    return;
+    // number of nodes that have an extra scenario
+    rest = nWanted % nChildren;
   }
 
-  // common number of scenarios to be chosen from each child
-  int each = nWanted / nChildren;
-
-  // number of nodes that have an extra scenario
-  int rest = nWanted % nChildren;
-
-  // continue the recursion only for as much as needed
-  int last = nChildren < nWanted ? nChildren: nWanted;
+  if (nWanted > 0)
+    step = nChildren / nWanted;
 
   // copy the needed number of children of the complete node
-  for (i = 0; i < last; ++i) {
+  // we copy only the nodes that are at position chdIdx
+  for (i = 0; i < nChildren; ++i) {
 
     Node *ttt = cNode->getChild(i);
+
+    // this node is not going in the reduced tree
+    if (i != chdIdx || nWanted == 0) {
+      assert(redChd[ttt->level()] != NULL);
+
+      // just map the node and its children
+      nMap[ttt] = redChd[ttt->level()];
+      reduceScenarios(ttt, child, each);
+      continue;
+    }
+
+    // copy the node in the reduced tree
     child = new Node(ttt->name());
     child->copy(ttt);
     rParent->addChild(child);
     nMap[ttt] = child;
+
+    // store the child from which to initialise the nodes that
+    // will not be put in the reduced tree
+    redChd[ttt->level()] = child;
+
+    // index of the next child to be put in the reduced tree
+    chdIdx += step;
+
+    // stop adding nodes to the reduced tree
+    if (++nAdded >= nWanted)
+      chdIdx = -1;
 
 #ifdef DEBUG_RTREE
     printf("Node %d: chosen for the reduced tree.\n", ttt->name());
@@ -531,77 +539,6 @@ PDProblem* SmpsOops::setupProblem(SmpsReturn &Pb) {
   return Prob;
 }
 
-/**
- *  Find the complete tree node that represents the given node.
- *
- *  Given a node in the complete tree, find the closest node in the complete
- *  tree that was chosen to appear in the reduced tree.
- *
- *  This is done by recursively walking up the tree until we find a node that
- *  was in the reduced tree; at that point we walk back down and return the
- *  index of a reduced tree node of the same period as the original node.
- *
- *  @param node:
- *         Node in the complete tree.
- *  @return The complete tree node that represents the given node.
- *
- *  @note
- *  This function returns a complete tree node. To find the reduced tree node
- *  from which the solution has to be copied, we have to apply the map again.
- */
-const Node* SmpsOops::findNode(const Node *node) {
-
-  map<const Node*, Node*>::iterator it;
-
-  // find the node in the map
-  assert(node != NULL);
-  it = nMap.find(node);
-
-  // this node was chosen to be in the reduced tree
-  if (it != nMap.end()) {
-
-#ifdef DEBUG_RTREE
-    printf("   Node %d: already chosen.\n", node->name());
-#endif
-
-    return node;
-  }
-
-  // this node was not in the reduced tree, so we have to find the
-  // closest node that was in the reduced tree.
-
-  // find a parent node that was in the reduced tree
-  const Node *parent = findNode(node->parent());
-
-  // find a suitable node among the children of the given parent
-  for (int i = 0; i < parent->nChildren(); ++i) {
-
-    Node *child = parent->getChild(i);
-    it = nMap.find(child);
-
-    // this child is suitable
-    if (it != nMap.end()) {
-
-#ifdef DEBUG_RTREE
-      printf("   Node %d: mapping to node %d.\n", node->name(), child->name());
-#endif
-
-      return it->first;
-    }
-#ifdef DEBUG_RTREE
-    else
-      printf("      %d was not chosen!\n", child->name());
-#endif
-  }
-
-#ifdef DEBUG_RTREE
-  printf("   Returning node %d (parent)\n", parent->name());
-#endif
-
-  // no suitable node found, so for aggregation we return the parent
-  return parent;
-}
-
 /** Recompute the probabilities in the reduced tree */
 void SmpsOops::adjustProbabilities() {
 
@@ -610,7 +547,7 @@ void SmpsOops::adjustProbabilities() {
   do {
 
     // find the corresponding node in the reduced tree
-    Node *rNode = nMap[findNode(cNode)];
+    Node *rNode = nMap[cNode];
 
     // update the probabilities
     rNode->setProb(rNode->probNode() + cNode->probNode());
@@ -689,7 +626,7 @@ int SmpsOops::setupWarmStart(const SmpsReturn &Ret) {
   // go through the nodes in the complete tree
   do {
 
-    rNode  = nMap[findNode(cNode)];
+    rNode  = nMap[cNode];
     cIndex = cNode->firstCol();
     rIndex = rNode->firstCol();
     nElems = cNode->nCols();
