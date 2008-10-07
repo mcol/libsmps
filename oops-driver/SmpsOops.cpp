@@ -277,7 +277,7 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
 
   // for each stage cache the reduced tree node from which the
   // complete tree nodes should be initialised
-  static Node *redChd[10];
+  static Node* redChd[MAX_PERIODS];
 
 #ifdef DEBUG_RTREE
   printf("ReduceScenarios: node %d (%d)\n", cNode->name(), nWanted);

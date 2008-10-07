@@ -28,6 +28,9 @@ using namespace std;
 /** Length of each field in the smps files */
 #define SMPS_FIELD_SIZE 11
 
+/** The maximum numbers of periods we accept */
+static const int MAX_PERIODS = 20;
+
 /** The type of stochastic file */
 enum StocType {
   TYPE_INDEP = 1,
@@ -45,6 +48,7 @@ enum ErrorCodes {
   ERROR_TIME_FORMAT,
   ERROR_STOC_FORMAT,
   ERROR_SMPS_FORMAT,
+  ERROR_MAX_PERIODS,
   LAST_ERROR
 };
 

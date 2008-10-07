@@ -314,6 +314,13 @@ int SmpsCore::readTimeFile(string timeFileName) {
     goto TERMINATE;
   }
 
+  // check that we do not exceed the maximum number of periods supported
+  if (nPeriods > MAX_PERIODS) {
+    cerr << "The time file declared too many periods." << endl;
+    rv = ERROR_MAX_PERIODS;
+    goto TERMINATE;
+  }
+
   rv = findTimeCoreMatches(begPeriodRowName, begPeriodColName);
 
  TERMINATE:
