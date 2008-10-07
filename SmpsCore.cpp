@@ -717,11 +717,12 @@ void SmpsCore::modifyCore() {
   int *new_hdclcd = new int[nCols];
   int *new_lnclcd = new int[nCols];
   int *new_begPeriodCol = new int[nPeriods + 1];
-  char *new_clname   = new char[8 * nCols]; // was a calloc
+  char *new_clname   = new char[8 * nCols];
   double *new_acoeff = new double[nza];
   double *new_blo    = new double[nCols];
   double *new_bup    = new double[nCols];
   memset(new_hdclcd, 0, nCols * sizeof(int));
+  memset(new_clname, 0, 8 * nCols);
 
   nSlacks = 0;
   new_col = 0;
