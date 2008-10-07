@@ -94,7 +94,7 @@ int SmpsCore::countRows() {
   // open the input file
   core.open(coreFile.c_str(), ifstream::in);
   if (core.fail()) {
-    cerr << "Could not open file '" << coreFile << "'." << endl;
+    cerr << "Could not open file '" << coreFile << "'.\n";
     return ERROR_FILE_NOT_FOUND;
   }
 
@@ -128,7 +128,7 @@ int SmpsCore::countRows() {
   // we may have reached the end of the file without having found
   // the information we wanted
   if (!foundRows) {
-    cerr << "Problem reading the core file." << endl;
+    cerr << "Problem reading the core file.\n";
     rv = ERROR_CORE_FORMAT;
   }
 
@@ -162,7 +162,7 @@ int SmpsCore::readCoreFile(string coreFileName) {
   char core[100] = "";
   strcpy(core, coreFile.c_str());
   if (access(core, R_OK)) {
-    cerr << "Could not open file '"  << coreFile << "'." << endl;
+    cerr << "Could not open file '"  << coreFile << "'.\n";
     return ERROR_FILE_NOT_FOUND;
   }
 
@@ -254,7 +254,7 @@ int SmpsCore::readTimeFile(string timeFileName) {
   // open the time file
   time.open(timeFile.c_str(), ifstream::in);
   if (time.fail()) {
-    cerr << "Could not open file '" << timeFile << "'." << endl;
+    cerr << "Could not open file '" << timeFile << "'.\n";
     return ERROR_FILE_NOT_FOUND;
   }
 
@@ -301,7 +301,7 @@ int SmpsCore::readTimeFile(string timeFileName) {
     // we cannot make sense of this line
     else {
       cerr << "Line not recognized (read " << nTokens << " values):\n>"
-	   << buffer << "<" << endl;
+	   << buffer << "<\n";
       continue;
     }
   }
@@ -309,14 +309,14 @@ int SmpsCore::readTimeFile(string timeFileName) {
   // we may have reached the end of the file without having found
   // the information we wanted
   if (!foundName || !foundPeriods || nPeriods == 0) {
-    cerr << "Problem reading the time file." << endl;
+    cerr << "Problem reading the time file.\n";
     rv = ERROR_TIME_FORMAT;
     goto TERMINATE;
   }
 
   // check that we do not exceed the maximum number of periods supported
   if (nPeriods > MAX_PERIODS) {
-    cerr << "The time file declared too many periods." << endl;
+    cerr << "The time file declared too many periods.\n";
     rv = ERROR_MAX_PERIODS;
     goto TERMINATE;
   }
@@ -344,7 +344,7 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
   for (int i = 0; i < nPeriods; ++i) {
 
 #ifdef DEBUG_TIME_FILE
-    cout << "Searching match for row: >" << begPeriodRowName[i] << "<" << endl;
+    cout << "Searching match for row: >" << begPeriodRowName[i] << "<\n";
 #endif
 
     // find row-period begin
@@ -376,7 +376,7 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
     }
 
 #ifdef DEBUG_TIME_FILE
-    cout << "Searching match for col: >" << begPeriodColName[i] << "<" << endl;
+    cout << "Searching match for col: >" << begPeriodColName[i] << "<\n";
 #endif
 
     // find col-period begin
@@ -512,7 +512,7 @@ int SmpsCore::matchPeriodName(const string& name) {
     if (periodNames[i] == name) {
 
 #ifdef DEBUG_TIME_FILE
-      cout << " found at index: " << i << endl;
+      cout << " found at index: " << i << "\n";
 #endif
 
       return i;
@@ -520,7 +520,7 @@ int SmpsCore::matchPeriodName(const string& name) {
   }
 
 #ifdef DEBUG_TIME_FILE
-  cout << " not found" << endl;
+  cout << " not found\n";
 #endif
 
   return -1;

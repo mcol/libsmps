@@ -46,7 +46,7 @@ int Options::parse() {
 
   // the program has been called with not enough arguments
   if (nArgs <= 2) {
-    cerr << "A problem must be specified with the -f option." << endl;
+    cerr << "A problem must be specified with the -f option.\n";
     showHelpMessage(programName);
     return 1;
   }
@@ -58,7 +58,7 @@ int Options::parse() {
     _smpsFile = string(vArgs[2]);
   }
   else {
-    cerr << "A problem must be specified with the -f option." << endl;
+    cerr << "A problem must be specified with the -f option.\n";
     showHelpMessage(programName);
     return 1;
   }
@@ -85,7 +85,7 @@ int Options::parse() {
 	}
 	else {
 	  cout << "The option '" << optionList[i].name
-	       << "' requires an argument." << endl;
+	       << "' requires an argument.\n";
 	  return 1;
 	}
       }
@@ -93,7 +93,7 @@ int Options::parse() {
 
     // the program has been called with an unrecognized option
     if (!found) {
-      cerr << "Option '" << vArgs[arg] << "' not recognised." << endl;
+      cerr << "Option '" << vArgs[arg] << "' not recognised.\n";
       showHelpMessage(programName);
       return 1;
     }

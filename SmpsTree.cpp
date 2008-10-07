@@ -100,7 +100,7 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
   // open the input file
   stoc.open(stocFile.c_str(), ifstream::in);
   if (stoc.fail()) {
-    cerr << "Could not open file '" << stocFile << "'." << endl;
+    cerr << "Could not open file '" << stocFile << "'.\n";
     return ERROR_FILE_NOT_FOUND;
   }
 
@@ -552,8 +552,7 @@ int SmpsStoc::scanScenariosType(ifstream &stoc) {
       // find out at what period this scenario branches
       branchPeriod = matchPeriodName(perName);
       if (branchPeriod < 0) {
-	cerr << "Period >" << perName << "< not declared in the time file."
-	     << endl;
+	cerr << "Period >" << perName << "< not declared in the time file.\n";
 	return ERROR_STOC_FORMAT;
       }
 
