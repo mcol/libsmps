@@ -66,9 +66,6 @@ class SmpsOops {
   /** The reduced event tree */
   SmpsTree rTree;
 
-  /** A primal-dual solution of the reduced problem, useful for warmstart */
-  PDPoint *pdPoint;
-
   /** A warmstart point for the complete problem */
   WSPoint *wsPoint;
 
@@ -90,11 +87,8 @@ class SmpsOops {
   /** Create a reduced tree in a recursive manner */
   void reduceScenarios(const Node *cNode, Node *rParent, const int nWanted);
 
-  /** Store the solution from the reduced problem */
-  int storeSolution(const PDProblem *pdProb, const SmpsReturn &Ret);
-
   /** Set up the warmstart point from a reduced-tree solution */
-  int setupWarmStart(const SmpsReturn &Pb);
+  int setupWarmStart(const PDProblem *pdProb, const SmpsReturn &Pb);
 
   /** Recompute the probabilities in the reduced tree */
   void adjustProbabilities(void);

@@ -26,7 +26,6 @@ dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode);
 SmpsOops::SmpsOops(string smpsFile, const int lev) :
   smps(smpsFile),
   rTree(),
-  pdPoint(NULL),
   wsPoint(NULL),
   cutoff(lev),
   nBlocks(0) {
@@ -35,7 +34,6 @@ SmpsOops::SmpsOops(string smpsFile, const int lev) :
 /** Destructor */
 SmpsOops::~SmpsOops() {
 
-  delete pdPoint;
   delete wsPoint;
 }
 
@@ -195,21 +193,8 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
     goto TERMINATE;
   }
 
-  // extract and store the solution
-  storeSolution(pdProb, prob);
-
   // generate a warmstart point for the complete problem
-  setupWarmStart(prob);
-
-  if (pdPoint) {
-    FreeVector(pdPoint->x);
-    FreeVector(pdPoint->y);
-    FreeVector(pdPoint->z);
-    if (smps.hasUpperBounds()) {
-      FreeVector(pdPoint->s);
-      FreeVector(pdPoint->w);
-    }
-  }
+  setupWarmStart(pdProb, prob);
 
  TERMINATE:
 
@@ -218,43 +203,6 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   FreePDProblem(pdProb);
 
   return rv;
-}
-
-/**
- *  Store the solution from the reduced problem.
- *
- *  @param pdProb:
- *         The reduced primal-dual problem.
- *  @param Ret:
- *         The SmpsReturn structure of the reduced problem.
- *  @return 1 If something goes wrong, 0 otherwise.
- */
-int SmpsOops::storeSolution(const PDProblem *pdProb, const SmpsReturn &Ret) {
-
-  // allocate space for the new vectors
-  Algebra *A = Ret.AlgA;
-  Vector *x = NewVector(A->Tcol, "vx");
-  Vector *y = NewVector(A->Trow, "vy");
-  Vector *z = NewVector(A->Tcol, "vz");
-  Vector *s = NULL, *w = NULL;
-  if (smps.hasUpperBounds()) {
-    s = NewVector(A->Tcol, "vs");
-    w = NewVector(A->Tcol, "vw");
-  }
-
-  // copy the solution vectors
-  CopyVector(pdProb->x, x);
-  CopyVector(pdProb->y, y);
-  CopyVector(pdProb->z, z);
-  if (smps.hasUpperBounds()) {
-    CopyVector(pdProb->s, s);
-    CopyVector(pdProb->w, w);
-  }
-
-  // store the solution
-  pdPoint = NewPDPoint(x, y, z, s, w, NULL);
-
-  return 0;
 }
 
 /**
@@ -558,11 +506,13 @@ void SmpsOops::adjustProbabilities() {
 /**
  *  Set up a warmstart point from a reduced-tree solution.
  *
+ *  @param pdProb:
+ *         The reduced primal-dual problem.
  *  @param Ret:
  *         The SmpsReturn structure of the reduced problem.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
-int SmpsOops::setupWarmStart(const SmpsReturn &Ret) {
+int SmpsOops::setupWarmStart(const PDProblem *pdProb, const SmpsReturn &Ret) {
 
   // dense vectors for the reduced solution
   DenseVector *xred, *zred, *yred, *sred = NULL, *wred = NULL;
@@ -571,11 +521,6 @@ int SmpsOops::setupWarmStart(const SmpsReturn &Ret) {
   DenseVector *xnew, *znew, *ynew, *snew = NULL, *wnew = NULL;
 
   printf(" --------------- setupWarmStart ------------\n");
-
-  if (!pdPoint) {
-    printf("Failed to set up a warmstart point.\n");
-    return 1;
-  }
 
   // dimensions of the complete and the reduced deterministic equivalents
   int nRows = smps.getTotRows(), rRows = rTree.getTotRows();
@@ -602,12 +547,12 @@ int SmpsOops::setupWarmStart(const SmpsReturn &Ret) {
   }
 
   // recover the initial ordering of the solution vectors
-  VectorToSmpsDense(pdPoint->x, xred, Ret, ORDER_COL);
-  VectorToSmpsDense(pdPoint->y, yred, Ret, ORDER_ROW);
-  VectorToSmpsDense(pdPoint->z, zred, Ret, ORDER_COL);
+  VectorToSmpsDense(pdProb->x, xred, Ret, ORDER_COL);
+  VectorToSmpsDense(pdProb->y, yred, Ret, ORDER_ROW);
+  VectorToSmpsDense(pdProb->z, zred, Ret, ORDER_COL);
   if (smps.hasUpperBounds()) {
-    VectorToSmpsDense(pdPoint->s, sred, Ret, ORDER_COL);
-    VectorToSmpsDense(pdPoint->w, wred, Ret, ORDER_COL);
+    VectorToSmpsDense(pdProb->s, sred, Ret, ORDER_COL);
+    VectorToSmpsDense(pdProb->w, wred, Ret, ORDER_COL);
   }
 
   // allocate space for the vectors in the complete iterate
