@@ -153,8 +153,7 @@ int Smps::countNonzeros(const SmpsTree &tree) {
     nzPeriod = countNzPeriodBlocks();
 
   // number of nodes in each period
-  int *nnPer = new int[nPeriod];
-  memset(nnPer, 0, nPeriod * sizeof(int));
+  int nnPer[MAX_PERIODS] = {0};
 
   // count the number of nodes in each period
   do {
@@ -177,9 +176,6 @@ int Smps::countNonzeros(const SmpsTree &tree) {
 	nzTotal += nzPeriod[per + nPeriod * j] * (nnPer[j] - 1);
     }
   }
-
-  // clean up
-  delete[] nnPer;
 
   return nzTotal;
 }

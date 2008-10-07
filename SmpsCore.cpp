@@ -468,8 +468,8 @@ int SmpsCore::convertNames(vector<string> &newNames, const char *mpsNames,
 char* SmpsCore::convertPeriodNames() {
 
   char *periods = new char[8 * nPeriods + 1];
-  char *tmp = new char[8 + 1];
   char *pos = periods;
+  char tmp[8 + 1];
 
   for (int i = 0; i < (int) periodNames.size(); ++i) {
 
@@ -483,9 +483,6 @@ char* SmpsCore::convertPeriodNames() {
 
   // add the final string delimiter
   periods[8 * nPeriods] = '\0';
-
-  // clean up
-  delete[] tmp;
 
   return periods;
 }

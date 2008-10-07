@@ -169,7 +169,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     is_col_diag = Ret.is_col_diag = new int[f_cldiag];
 
     // nonzeros in this column for each row-period
-    int *nzpdd0 = new int[nPeriods];
+    int nzpdd0[MAX_PERIODS];
 
     // total number of columns that have no entries in rows associated with
     // diagonal blocks and so can go into a new diagonal block
@@ -253,9 +253,6 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     printf("Moved %d border columns (%d nonzeros) into a diagonal block.\n",
 	   cldg0, nzdg0);
 #endif
-
-    // clean up
-    delete[] nzpdd0;
   }
 
   /* Predict sizes of components of big Matrix:
@@ -370,8 +367,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   //
 
   // nonzeros in RnkC, Diag parts for certain periods in core
-  int *rnkc_nz_pd = new int[nPeriods];
-  int *diag_nz_pd = new int[nPeriods];
+  int rnkc_nz_pd[MAX_PERIODS], diag_nz_pd[MAX_PERIODS];
 
   // count nonzeros in parts of big matrix
   for (i = 0; i < nPeriods; ++i) {
@@ -688,11 +684,9 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   delete[] rnkc_m_blk;
   delete[] rnkc_n_blk;
   delete[] rnkc_nz_blk;
-  delete[] rnkc_nz_pd;
   delete[] diag_m_blk;
   delete[] diag_n_blk;
   delete[] diag_nz_blk;
-  delete[] diag_nz_pd;
   delete[] f_rw_blk;
   delete[] f_cl_blk;
 
