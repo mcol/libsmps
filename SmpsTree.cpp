@@ -157,7 +157,6 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
   int *f_chd  = new int[maxNodes];
   int *n_chd  = new int[maxNodes];
   int *period = new int[maxNodes];
-  int *br_sce = new int[maxScens];
   int *iwork1 = new int[maxScenLength];
   int *iwork2 = new int[maxScenLength];
   int *iwork3 = new int[4 * maxScenLength];
@@ -194,7 +193,7 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
   char stocfile[100] = "";
   strcpy(stocfile, stocFile.c_str());
   RDSTCH(&rv, &maxScens, &nScens, &maxNodes, &nNodes, stocfile,
-	 br_sce, probnd, parent, n_chd, f_chd, scenario,
+	 probnd, parent, n_chd, f_chd, scenario,
 	 period, &maxPers, &maxPers, perNames,
 	 &scenLength, &maxScenLength, entryCol, entryRow,
 	 sc_first, sc_len, entryVal,
@@ -207,7 +206,6 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
   delete[] perNames;
   delete[] f_chd;
   delete[] period;
-  delete[] br_sce;
   delete[] iwork1;
   delete[] iwork2;
   delete[] iwork3;

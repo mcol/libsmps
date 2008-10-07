@@ -613,7 +613,7 @@ RDMPS1(int*, int*, int*, int*, int*, int*, int*, int*, int*, int*, int*, int*,
 /** Read a stochastic file */
 void
 RDSTCH(int*, int*, int*, int*, int*, const char*,
-       int*, double*, int*, int*, int*,
+       double*, int*, int*, int*,
        int*, int*, int*, int*, char*, int*, int*, int*, int*,
        int*, int*, double*, int*, int*, char*, char*, int*,
        int*, int*, int*, int*, int*, int*, int*,
