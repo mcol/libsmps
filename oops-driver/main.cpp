@@ -74,11 +74,11 @@ int main(const int argc, const char *argv[]) {
   reportTimes(stdout);
 #endif
 
+ TERMINATE:
+
   // close the output file
   if (opt.outputToFile())
     fclose(printout);
-
- TERMINATE:
 
 #ifdef WITH_MPI
   MPI_Finalize();
