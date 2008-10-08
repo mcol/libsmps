@@ -148,6 +148,13 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 
   int rv = 0;
 
+  // order the nodes and set the next links
+  orderNodes(rTree);
+
+#ifdef DEBUG_RTREE
+  rTree.print();
+#endif
+
   SmpsReturn prob;
 
   // generate a reduced problem
@@ -318,15 +325,8 @@ int SmpsOops::reduceTree(const int nScenarios) {
   if (rv)
     return 1;
 
-  // order the nodes and set the next links
-  orderNodes(rTree);
-
   // recompute the probabilities in the reduced tree
   adjustProbabilities();
-
-#ifdef DEBUG_RTREE
-  rTree.print();
-#endif
 
   return 0;
 }
@@ -403,13 +403,6 @@ int SmpsOops::aggregateStages(const int nAggr) {
 
   // set the root of the reduced tree
   rTree.setRootNode(rNode);
-
-  // order the nodes and set the next links
-  orderNodes(rTree);
-
-#ifdef DEBUG_RTREE
-  rTree.print();
-#endif
 
   return 0;
 }
