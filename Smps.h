@@ -548,7 +548,7 @@ class Smps : public SmpsStoc {
   }
 
   /** Count the number of nonzeros in the deterministic equivalent matrix */
-  int countNonzeros(const SmpsTree &tree);
+  int countNonzeros(const SmpsTree &tree) const;
 
   /** Return the number of nonzeros in the given period block */
   int getNzPeriod(const int rowBlock, const int colBlock) const {

@@ -60,6 +60,9 @@ int Smps::read(const bool addSlacks) {
   if (addSlacks)
     modifyCore();
 
+  // count the number of nonzeros in each period block
+  nzPeriod = countNzPeriodBlocks();
+
   rv = readStocFile(Tree);
   if (rv)
     return rv;
@@ -136,7 +139,7 @@ int Smps::readSmpsFile(string smpsFileName) {
  *
  *  @note The nonzeros in the objective row are not considered.
  */
-int Smps::countNonzeros(const SmpsTree &tree) {
+int Smps::countNonzeros(const SmpsTree &tree) const {
 
   int nzTotal = 0;
   int nPeriod = getPeriods();
@@ -147,10 +150,6 @@ int Smps::countNonzeros(const SmpsTree &tree) {
   // leave immediately if there is no root node
   if (!node)
     return 0;
-
-  // count the number of nonzeros in each period block, if not already there
-  if (!nzPeriod)
-    nzPeriod = countNzPeriodBlocks();
 
   // number of nodes in each period
   int nnPer[MAX_PERIODS] = {0};
