@@ -898,7 +898,7 @@ int OptionsOops::parse() {
 		     &_useReduction, true);
   Options::addOption("-a", "use a warmstart strategy with stage aggregation",
 		     &_useAggregation, true);
-  Options::addOption("-l", "cutoff level (for multistage programs)",
+  Options::addOption("-c", "cutoff level (for multistage programs)",
 		     &_cutoffLevel, true);
 
   // parse the common options
