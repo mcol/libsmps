@@ -369,6 +369,16 @@ class SmpsTree {
     return root;
   }
 
+  /** Set the number of diagonal blocks in the deterministic equivalent*/
+  void setBlocks(const int blocks) {
+    nBlocks = blocks;
+  }
+
+  /** Retrieve the number of diagonal blocks in the deterministic equivalent */
+  int getBlocks(void) const {
+    return nBlocks;
+  }
+
   /** Retrieve the number of rows in the deterministic equivalent */
   int getTotRows(void) const {
     return ttRows;
@@ -392,6 +402,9 @@ class SmpsTree {
 
   /** Root node of the event tree */
   Node *root;
+
+  /** Number of diagonal blocks in the deterministic equivalent */
+  int nBlocks;
 
   /** Number of rows in the deterministic equivalent */
   int ttRows;

@@ -582,6 +582,7 @@ int SmpsStoc::scanScenariosType(ifstream &stoc) {
 /** Constructor */
 SmpsTree::SmpsTree() :
   root(NULL),
+  nBlocks(0),
   ttRows(0),
   ttCols(0) {
 }

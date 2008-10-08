@@ -109,6 +109,9 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // number of periods
   const int nPeriods = smps.getPeriods();
 
+  // number of diagonal blocks
+  const int nBlocks = tree.getBlocks();
+
   // dimensions and nonzeros of rank corrector blocks
   int *rnkc_m_blk  = new int[nBlocks + 1];
   int *rnkc_n_blk  = new int[nBlocks + 1];
@@ -907,6 +910,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
   int row, col, pdr, pdc;
   int k, iblk, jblk;
   bool found;
+  const int nBlocks = tree.getBlocks();
   const int *entryRow = smps.getEntryRow();
   const int *entryCol = smps.getEntryCol();
   const double *entryVal = smps.getEntryVal();

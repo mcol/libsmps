@@ -21,14 +21,15 @@ double tt_start, tt_end;
 static void
 dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode);
 
+static void
+dfsNode(queue<Node*> &qOrder, Node *node, int &nBlocks, const int cutoff);
 
 /** Constructor */
 SmpsOops::SmpsOops(string smpsFile, const int lev) :
   smps(smpsFile),
   rTree(),
   wsPoint(NULL),
-  cutoff(lev),
-  nBlocks(0) {
+  cutoff(lev) {
 }
 
 /** Destructor */
@@ -62,11 +63,6 @@ int SmpsOops::read() {
 int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
   int rv = 0;
-
-  // XXX This call is needed because nBlocks is in SmpsOops and we need it to
-  // update it, since otherwise we may still use the one of the reduced tree
-  if (rTree.getRootNode())
-    orderNodes(smps.getSmpsTree());
 
   if (opt.writeMps()) {
     smps.setBuildNames();
@@ -717,7 +713,7 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
 
   // reset the number of blocks, because we may call orderNodes multiple
   // times and on different trees
-  nBlocks = 0;
+  int nBlocks = 0;
 
   // queue of nodes to be followed
   queue<Node*> qNodes;
@@ -758,8 +754,11 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
     qNodes.pop();
 
     // call a recursive function
-    dfsNode(qOrder, node);
+    dfsNode(qOrder, node, nBlocks, cutoff);
   }
+
+  // store the number of diagonal blocks
+  Tree.setBlocks(nBlocks);
 
   // update the next links
 
@@ -796,7 +795,8 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
 }
 
 /** Perform a recursive depth-first ordering of the node and its children */
-void SmpsOops::dfsNode(queue<Node*> &qOrder, Node *node) {
+void dfsNode(queue<Node*> &qOrder, Node *node,
+             int &nBlocks, const int cutoff) {
 
   // put the node in the reordered queue
   qOrder.push(node);
@@ -809,7 +809,7 @@ void SmpsOops::dfsNode(queue<Node*> &qOrder, Node *node) {
 
   // traverse the children in depth-first order
   for (int i = 0; i < node->nChildren(); i++) {
-    dfsNode(qOrder, node->getChild(i));
+    dfsNode(qOrder, node->getChild(i), nBlocks, cutoff);
   }
 }
 

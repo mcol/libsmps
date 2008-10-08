@@ -75,9 +75,6 @@ class SmpsOops {
   /** The cutoff level */
   int cutoff;
 
-  /** Number of diagonal blocks in the deterministic equivalent */
-  int nBlocks;
-
   /** Generate the deterministic equivalent for the smps instance */
   int generateSmps(const SmpsTree &tree, SmpsReturn &ret);
 
@@ -95,9 +92,6 @@ class SmpsOops {
 
   /** Order the nodes according to the cutoff level */
   int orderNodes(SmpsTree &Tree);
-
-  /** Perform a recursive depth-first ordering of the node and its children */
-  void dfsNode(queue<Node*> &qOrder, Node *node);
 
   /** Apply the scenario changes */
   int applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
