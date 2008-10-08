@@ -12,11 +12,8 @@
 #include <queue>
 #include <assert.h>
 #include "SmpsOops.h"
-#include "oops/oopstime.h"
 #include "oops/WriteMps.h"
 
-
-double tt_start, tt_end;
 
 static void
 dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode);
@@ -106,21 +103,12 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   if (wsPoint)
     hopdmOpts.use_start_point = 1;
 
-  // start the clock
-  tt_start = oopstime();
-
   // solve the problem
   ret = hopdm(printout, pdProb, &hopdmOpts, &Prt);
   if (ret->ifail) {
     rv = ret->ifail;
     goto TERMINATE;
   }
-
-  // stop the clock
-  tt_end = oopstime();
-
-  // report statistics
-  fprintf(printout, "Elapsed time: %.10g seconds.\n", tt_end - tt_start);
 
   if (opt.printSolution())
     getSolution(pdProb, prob);

@@ -11,7 +11,6 @@
 
 #include <iostream>
 #include "SmpsOops.h"
-#include "oops/oopstime.h"
 
 
 FILE *printout;
@@ -29,10 +28,6 @@ int main(const int argc, const char *argv[]) {
   int rv = opt.parse();
   if (rv)
     return 1;
-
-#ifdef WITH_TIME
-  initTimes();
-#endif
 
   // decide where the output is going to appear
   setupOutputFile(opt);
@@ -69,10 +64,6 @@ int main(const int argc, const char *argv[]) {
 
   // solve the problem
   rv = data.solve(opt, hopdmOpts);
-
-#ifdef WITH_TIME
-  reportTimes(stdout);
-#endif
 
  TERMINATE:
 
