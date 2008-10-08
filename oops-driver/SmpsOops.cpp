@@ -21,6 +21,7 @@ dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode);
 static void
 dfsNode(queue<Node*> &qOrder, Node *node, int &nBlocks, const int cutoff);
 
+
 /** Constructor */
 SmpsOops::SmpsOops(string smpsFile, const int lev) :
   smps(smpsFile),
@@ -459,7 +460,7 @@ PDProblem* SmpsOops::setupProblem(SmpsReturn &Pb) {
     Prob->s = vs;
     Prob->w = vw;
   }
-  Prob->l= vl;
+  Prob->l = vl;
 
   return Prob;
 }
