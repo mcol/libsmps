@@ -1149,13 +1149,11 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
   firstColDiag = node->firstCol();
 
   // copy objective and bounds into temporary arrays
-  for (int i = 0; i < ttn; ++i) {
-    objCopy[i] = obj->elts[i];
-    lobCopy[i] = lob->elts[i];
-    upbCopy[i] = upb->elts[i];
-    if (colnames)
-      clnCopy[i] = colnames[i];
-  }
+  memcpy(objCopy, obj->elts, ttn * sizeof(double));
+  memcpy(lobCopy, lob->elts, ttn * sizeof(double));
+  memcpy(upbCopy, upb->elts, ttn * sizeof(double));
+  if (colnames)
+    memcpy(clnCopy, colnames, ttn * sizeof(char*));
 
   // copy the diagonal elements from the first block (Diag-0)
   firstColNode = 0;
@@ -1296,11 +1294,8 @@ void backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
   // total number of columns in RankCor (D0|Rnk)
   const int ncol_ttrc = Ret.nColsRnkc + Ret.nColsDiag;
   const int ttn = Ret.c->dim;
-
   double *dtmp  = new double[ttn];
-
-  for (int i = 0; i < ttn; ++i)
-    dtmp[i] = x[i];
+  memcpy(dtmp, x, ttn * sizeof(double));
 
   // copy entries into the combined rankcor slot
 
@@ -1342,12 +1337,8 @@ void backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
   }
 
   // copy the remaining columns in order, beginning after rankcor
-  int offset = ncol_ttrc;
-
   // nx_col_d0 points to the next col that should be copied from main part
-  for (int col = 0; col < ttn - ncol_ttrc; ++col) {
-    x[col + offset] = dtmp[nx_col_d0++];
-  }
+  memcpy(&x[ncol_ttrc], &dtmp[nx_col_d0], (ttn - ncol_ttrc) * sizeof(double));
 
   // clean up
   delete[] dtmp;
@@ -1377,9 +1368,7 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
   const int ncol_ttrc = Ret.nColsRnkc + Ret.nColsDiag;
   const int ttn = Ret.c->dim;
   double *dtmp  = new double[ttn];
-
-  for (int i = 0; i < ttn; ++i)
-    dtmp[i] = x[i];
+  memcpy(dtmp, x, ttn * sizeof(double));
 
   // copy entries from the combined rankcor slot into OOPS RankCor and
   // first diagonal
@@ -1421,12 +1410,8 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
   }
 
   // copy the remaining columns in order, beginning after rankcor
-  int offset = ncol_ttrc;
-
   // nx_col_d0 points to the next entry that should be copied into
-  for (int col = 0; col < ttn - ncol_ttrc; ++col) {
-    x[nx_col_d0++] = dtmp[col + offset];
-  }
+  memcpy(&x[nx_col_d0], &dtmp[ncol_ttrc], (ttn - ncol_ttrc) * sizeof(double));
 
   // clean up
   delete[] dtmp;
@@ -1443,22 +1428,15 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
  */
 void backOrderRowVector(const SmpsReturn &Ret, double *x) {
 
-  int i;
   const int ttm = Ret.b->dim, nRowsRnkc = Ret.nRowsRnkc;
   double *dtmp = new double[ttm];
-
-  for (i = 0; i < ttm; ++i)
-    dtmp[i] = x[i];
+  memcpy(dtmp, x, ttm * sizeof(double));
 
   // first copy the rows from the rankcor part (at end of matrix)
-  for (i = 0; i < nRowsRnkc; ++i) {
-    x[i] = dtmp[ttm - nRowsRnkc + i];
-  }
+  memcpy(x, &dtmp[ttm - nRowsRnkc], nRowsRnkc * sizeof(double));
 
   // now copy the rest
-  for (i = nRowsRnkc; i < ttm; ++i) {
-    x[i] = dtmp[i - nRowsRnkc];
-  }
+  memcpy(&x[nRowsRnkc], dtmp, (ttm - nRowsRnkc) * sizeof(double));
 
   // clean up
   delete[] dtmp;
@@ -1480,23 +1458,16 @@ void backOrderRowVector(const SmpsReturn &Ret, double *x) {
  */
 void forwOrderRowVector(const SmpsReturn &Ret, double *x) {
 
-  int i;
   const int ttm = Ret.b->dim, nRowsRnkc = Ret.nRowsRnkc;
   double *dtmp = new double[ttm];
-
-  for (i = 0; i < ttm; ++i)
-    dtmp[i] = x[i];
+  memcpy(dtmp, x, ttm * sizeof(double));
 
   // the rankcor rows are at the beginning of the vector, they should
   // be re-ordered to the end
-  for (i = 0; i < nRowsRnkc; ++i) {
-    x[ttm - nRowsRnkc + i] = dtmp[i];
-  }
+  memcpy(&x[ttm - nRowsRnkc], dtmp, nRowsRnkc * sizeof(double));
 
   // now copy the rest
-  for (i = nRowsRnkc; i < ttm; ++i) {
-    x[i - nRowsRnkc] = dtmp[i];
-  }
+  memcpy(x, &dtmp[nRowsRnkc], (ttm - nRowsRnkc) * sizeof(double));
 
   // clean up
   delete[] dtmp;
