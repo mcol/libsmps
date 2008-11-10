@@ -76,13 +76,13 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   }
 
   // setup the primal-dual problem
-  PDProblem *pdProb = setupProblem(prob);
+  PDProblem pdProb = setupProblem(prob);
 
   // write the deterministic equivalent in mps format
   if (opt.writeMps()) {
     FILE *fout = fopen("smps.mps", "w");
-    Write_MpsFile(fout, pdProb->AlgAug, pdProb->b, pdProb->c,
-		  pdProb->u, pdProb->l, 0, prob.colnames, prob.rownames);
+    Write_MpsFile(fout, pdProb.AlgAug, pdProb.b, pdProb.c,
+		  pdProb.u, pdProb.l, 0, prob.colnames, prob.rownames);
     fclose(fout);
   }
 
@@ -105,7 +105,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
     hopdmOpts.use_start_point = 1;
 
   // solve the problem
-  ret = hopdm(printout, pdProb, &hopdmOpts, &Prt);
+  ret = hopdm(printout, &pdProb, &hopdmOpts, &Prt);
   if (ret->ifail) {
     rv = ret->ifail;
     goto TERMINATE;
@@ -118,7 +118,6 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
   // clean up
   delete ret;
-  FreePDProblem(pdProb);
 
   return rv;
 }
@@ -154,13 +153,13 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   }
 
   // setup the primal-dual problem
-  PDProblem *pdProb = setupProblem(prob);
+  PDProblem pdProb = setupProblem(prob);
 
   // write the deterministic equivalent in mps format
   if (opt.writeMps()) {
     FILE *fout = fopen("smps-red.mps", "w");
-    Write_MpsFile(fout, pdProb->AlgAug, pdProb->b, pdProb->c,
-		  pdProb->u, pdProb->l, 0, prob.colnames, prob.rownames);
+    Write_MpsFile(fout, pdProb.AlgAug, pdProb.b, pdProb.c,
+		  pdProb.u, pdProb.l, 0, prob.colnames, prob.rownames);
     fclose(fout);
   }
 
@@ -179,7 +178,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   hopdmOpts.glopt->conv_tol = 5.e-1;
 
   // solve the problem
-  ret = hopdm(printout, pdProb, &hopdmOpts, &Prt);
+  ret = hopdm(printout, &pdProb, &hopdmOpts, &Prt);
   if (ret->ifail) {
     rv = ret->ifail;
     goto TERMINATE;
@@ -192,7 +191,6 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 
   // clean up
   delete ret;
-  FreePDProblem(pdProb);
 
   return rv;
 }
@@ -417,7 +415,7 @@ void dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode) {
  *  InitAlgebrasNew assumes that a callback function is set up for all
  *  SparseMatrix leaves of A and Q.
  */
-PDProblem* SmpsOops::setupProblem(SmpsReturn &Pb) {
+PDProblem SmpsOops::setupProblem(SmpsReturn &Pb) {
 
   Algebra *A = Pb.AlgA;
   Algebra *Q = Pb.AlgQ;
@@ -455,12 +453,12 @@ PDProblem* SmpsOops::setupProblem(SmpsReturn &Pb) {
   CopyDenseToVector(Pb.l, vl);
 
   // create the primal dual problem
-  PDProblem *Prob = NewPDProblem(AlgAug, vb, vc, vu, vx, vy, vz);
+  PDProblem Prob(AlgAug, vb, vc, vu, vx, vy, vz);
   if (smps.hasUpperBounds()) {
-    Prob->s = vs;
-    Prob->w = vw;
+    Prob.s = vs;
+    Prob.w = vw;
   }
-  Prob->l = vl;
+  Prob.l = vl;
 
   return Prob;
 }
@@ -490,7 +488,7 @@ void SmpsOops::adjustProbabilities() {
  *         The SmpsReturn structure of the reduced problem.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
-int SmpsOops::setupWarmStart(const PDProblem *pdProb, const SmpsReturn &Ret) {
+int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
 
   // dense vectors for the reduced solution
   DenseVector *xred, *zred, *yred, *sred = NULL, *wred = NULL;
@@ -525,12 +523,12 @@ int SmpsOops::setupWarmStart(const PDProblem *pdProb, const SmpsReturn &Ret) {
   }
 
   // recover the initial ordering of the solution vectors
-  VectorToSmpsDense(pdProb->x, xred, Ret, ORDER_COL);
-  VectorToSmpsDense(pdProb->y, yred, Ret, ORDER_ROW);
-  VectorToSmpsDense(pdProb->z, zred, Ret, ORDER_COL);
+  VectorToSmpsDense(pdProb.x, xred, Ret, ORDER_COL);
+  VectorToSmpsDense(pdProb.y, yred, Ret, ORDER_ROW);
+  VectorToSmpsDense(pdProb.z, zred, Ret, ORDER_COL);
   if (smps.hasUpperBounds()) {
-    VectorToSmpsDense(pdProb->s, sred, Ret, ORDER_COL);
-    VectorToSmpsDense(pdProb->w, wred, Ret, ORDER_COL);
+    VectorToSmpsDense(pdProb.s, sred, Ret, ORDER_COL);
+    VectorToSmpsDense(pdProb.w, wred, Ret, ORDER_COL);
   }
 
   // allocate space for the vectors in the complete iterate
@@ -626,7 +624,7 @@ int SmpsOops::setupWarmStart(const PDProblem *pdProb, const SmpsReturn &Ret) {
  *  The value of the slacks is always zero, as the slacks would need to be
  *  computed here.
  */
-int SmpsOops::getSolution(PDProblem *Prob, SmpsReturn &Ret) {
+int SmpsOops::getSolution(PDProblem &Prob, SmpsReturn &Ret) {
 
   DenseVector *x, *y, *z, *r;
   Tree *Trow = Ret.AlgA->Trow;
@@ -643,9 +641,9 @@ int SmpsOops::getSolution(PDProblem *Prob, SmpsReturn &Ret) {
   r = NewDenseVector(nRows, "slacks");
 
   // recover initial order on solution vectors
-  VectorToSmpsDense(Prob->x, x, Ret, ORDER_COL);
-  VectorToSmpsDense(Prob->y, y, Ret, ORDER_ROW);
-  VectorToSmpsDense(Prob->z, z, Ret, ORDER_COL);
+  VectorToSmpsDense(Prob.x, x, Ret, ORDER_COL);
+  VectorToSmpsDense(Prob.y, y, Ret, ORDER_ROW);
+  VectorToSmpsDense(Prob.z, z, Ret, ORDER_COL);
 
   // print the solution
 #ifdef WITH_MPI

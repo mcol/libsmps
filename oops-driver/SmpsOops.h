@@ -56,7 +56,7 @@ class SmpsOops {
   int aggregateStages(const int nAggr);
 
   /** Retrieve the solution information */
-  int getSolution(PDProblem *Prob, SmpsReturn &Ret);
+  int getSolution(PDProblem &Prob, SmpsReturn &Ret);
 
  private:
 
@@ -79,13 +79,13 @@ class SmpsOops {
   int generateSmps(const SmpsTree &tree, SmpsReturn &ret);
 
   /** Set up the Oops algebras and vectors and build the primal-dual problem */
-  PDProblem* setupProblem(SmpsReturn &Pb);
+  PDProblem setupProblem(SmpsReturn &Pb);
 
   /** Create a reduced tree in a recursive manner */
   void reduceScenarios(const Node *cNode, Node *rParent, const int nWanted);
 
   /** Set up the warmstart point from a reduced-tree solution */
-  int setupWarmStart(const PDProblem *pdProb, const SmpsReturn &Pb);
+  int setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Pb);
 
   /** Recompute the probabilities in the reduced tree */
   void adjustProbabilities(void);
