@@ -97,9 +97,6 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
     goto TERMINATE;
   }
 
-  // options for the complete problem
-  hopdmOpts.glopt->conv_tol = 1.e-4;
-
   // use the warmstart point if available
   if (wsPoint)
     hopdmOpts.use_start_point = 1;
@@ -175,6 +172,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   }
 
   // options for the reduced problem
+  double complConvTol = hopdmOpts.glopt->conv_tol;
   hopdmOpts.glopt->conv_tol = 5.e-1;
 
   // solve the problem
@@ -188,6 +186,9 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   setupWarmStart(pdProb, prob);
 
  TERMINATE:
+
+  // restore the tolerance
+  hopdmOpts.glopt->conv_tol = complConvTol;
 
   // clean up
   delete ret;
