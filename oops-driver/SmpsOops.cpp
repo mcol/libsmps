@@ -692,6 +692,10 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
   if (cutoff > MAX_CUTOFF)
     cutoff = MAX_CUTOFF;
 
+  // shift the cutoff by the period of the root node, which may not be zero
+  // in the decomposition case
+  cutoff += node->level();
+
   // reset the number of blocks, because we may call orderNodes multiple
   // times and on different trees
   int nBlocks = 0;

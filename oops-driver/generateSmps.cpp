@@ -525,6 +525,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 
   node = rootNode;
   blkNode = 0;
+  perNode = node->level();
 
   // counter of columns added to Rnkc so far
   int ncol_rc = 0;
@@ -532,7 +533,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // first column in current block
   int fColBlk = 0;
 
-  int cIndex = 0, idxCol;
+  int idxCol, cIndex = data.clpnts[smps.getBegPeriodCol(perNode)];
   Algebra **Array;
 
   // for all columns in the deterministic equivalent
@@ -917,6 +918,9 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
   const Node *node = Ret->rootNode, *scNode;
   SparseSimpleMatrix *sparse;
 
+  // period of the root node, which may not be zero in the decomposition case
+  const int rootPeriod = node->level();
+
   // We start from the leaf nodes and traverse the tree up to the root,
   // applying the changes corresponding to the nodes in the scenario
   // only if the correction refers to the same period of the node.
@@ -931,7 +935,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
     period = node->level();
 
     // traverse all nodes from this leaf up to the root
-    while (period >= 0) {
+    while (period >= rootPeriod) {
 
       // last period covered by this node
       lastPd = period + scNode->nLevels();
