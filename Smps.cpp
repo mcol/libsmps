@@ -229,19 +229,21 @@ int Smps::setNodeStarts(SmpsTree &tree) {
 /**
  *  Build the row names for the deterministic equivalent.
  *
+ *  @param tree:
+ *         The tree for which the deterministic equivalent is being built.
  *  @return An array of pointers to the row names, which can be NULL
  *          if buildNames is unset.
  *
  *  @note
  *  The name of the objective row is left untouched.
  */
-char** Smps::getRowNames(void) const {
+char** Smps::getRowNames(const SmpsTree &tree) const {
 
   if (!buildNames)
     return NULL;
 
-  const Node *node = getRootNode();
-  char **rownames  = new char*[getTotRows()];
+  const Node *node = tree.getRootNode();
+  char **rownames  = new char*[tree.getTotRows()];
   char scname[9];
 
   // for all nodes in the tree in order
@@ -269,16 +271,18 @@ char** Smps::getRowNames(void) const {
 /**
  *  Build the column names for the deterministic equivalent.
  *
+ *  @param tree:
+ *         The tree for which the deterministic equivalent is being built.
  *  @return An array of pointers to the column names, which can be NULL
  *          if buildNames is unset.
  */
-char** Smps::getColNames(void) const {
+char** Smps::getColNames(const SmpsTree &tree) const {
 
   if (!buildNames)
     return NULL;
 
-  const Node *node = getRootNode();
-  char **colnames  = new char*[getTotCols()];
+  const Node *node = tree.getRootNode();
+  char **colnames  = new char*[tree.getTotCols()];
   char scname[9];
 
   // for all nodes in the tree in order

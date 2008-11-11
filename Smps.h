@@ -582,10 +582,10 @@ class Smps : public SmpsStoc {
   int setNodeStarts(SmpsTree &tree);
 
   /** Build the row names for the deterministic equivalent */
-  char** getRowNames(void) const;
+  char** getRowNames(const SmpsTree &tree) const;
 
   /** Build the column names for the deterministic equivalent */
-  char** getColNames(void) const;
+  char** getColNames(const SmpsTree &tree) const;
 
   /** Set the switch to build the names for the deterministic equivalent */
   void setBuildNames(void) {

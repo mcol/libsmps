@@ -16,10 +16,10 @@
 
 
 static void
-setupRhs(const Smps &smps, SmpsReturn *Ret);
+setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret);
 
 static void
-setupObjective(const Smps &smps, SmpsReturn *Ret);
+setupObj(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret);
 
 static void
 backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x);
@@ -664,10 +664,10 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   Ret.u = NewDenseVector(ttn, "UB");
 
   // setup the right-hand side
-  setupRhs(smps, &Ret);
+  setupRhs(smps, tree, &Ret);
 
   // setup objective and bounds
-  setupObjective(smps, &Ret);
+  setupObj(smps, tree, &Ret);
 
   // apply scenario corrections
   applyScenarios(tree, &Ret, Diagon, Border, f_rw_blk, f_cl_blk);
@@ -801,7 +801,7 @@ int copyLinkingBlocks(Smps &smps, Algebra **Array, const SparseData &data,
 }
 
 /** Set up the right-hand side */
-void setupRhs(const Smps &smps, SmpsReturn *Ret) {
+void setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
 
   int firstRowNode, begRowPeriod;
   DenseVector *rhs = Ret->b;
@@ -812,7 +812,7 @@ void setupRhs(const Smps &smps, SmpsReturn *Ret) {
     return;
 
   // generate the row names for the deterministic equivalent
-  Ret->rownames = smps.getRowNames();
+  Ret->rownames = smps.getRowNames(tree);
 
   // for all nodes in the tree in order
   do {
@@ -830,7 +830,7 @@ void setupRhs(const Smps &smps, SmpsReturn *Ret) {
 }
 
 /** Set up the objective and the bounds */
-void setupObjective(const Smps &smps, SmpsReturn *Ret) {
+void setupObj(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
 
   int firstColNode, begColPeriod;
   DenseVector *obj = Ret->c, *lob = Ret->l, *upb = Ret->u;
@@ -841,7 +841,7 @@ void setupObjective(const Smps &smps, SmpsReturn *Ret) {
     return;
 
   // generate the column names for the deterministic equivalent
-  Ret->colnames = smps.getColNames();
+  Ret->colnames = smps.getColNames(tree);
 
   // copy the objective row from the core matrix
   double *coreObj = smps.getObjRow();

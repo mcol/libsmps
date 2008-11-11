@@ -230,8 +230,8 @@ ProbData *setupMatrix(Smps &smps, const Node *node) {
   PROB->obj    = obj;
   PROB->blo    = blo;
   PROB->bup    = bup;
-  PROB->rwnames = smps.getRowNames();
-  PROB->clnames = smps.getColNames();
+  PROB->rwnames = smps.getRowNames(smps.getSmpsTree());
+  PROB->clnames = smps.getColNames(smps.getSmpsTree());
 
   return PROB;
 }
