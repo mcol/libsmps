@@ -544,6 +544,8 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
   do {
 
     rNode  = nMap[cNode];
+    assert(rNode != NULL);
+
     cIndex = cNode->firstCol();
     rIndex = rNode->firstCol();
     nElems = cNode->nCols();
