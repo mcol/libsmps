@@ -308,11 +308,6 @@ int SmpsOops::reduceTree(const int nScenarios) {
   // build up the reduced tree by selecting some scenarios
   reduceScenarios(cNode, rNode, nScenarios);
 
-  // set the start rows and columns for each node
-  int rv = smps.setNodeStarts(rTree);
-  if (rv)
-    return 1;
-
   // recompute the probabilities in the reduced tree
   adjustProbabilities();
 
