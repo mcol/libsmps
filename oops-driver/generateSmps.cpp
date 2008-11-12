@@ -731,11 +731,11 @@ int copyLinkingBlocks(Smps &smps, Algebra **Array, const SparseData &data,
   // store the number of remaining nonzeros in the column
   const int snzCol = nnzCol;
 
-  // the offset in row numbers between core and deterministic equivalent
-  int offset;
-
   // the period of the node
   const int period = node->level();
+
+  // the offset in row numbers between core and deterministic equivalent
+  int offset;
 
   SparseSimpleMatrix *sparse;
 
@@ -833,6 +833,7 @@ void setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
 void setupObj(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
 
   int firstColNode, begColPeriod;
+  double probNode;
   DenseVector *obj = Ret->c, *lob = Ret->l, *upb = Ret->u;
   const Node *node = Ret->rootNode;
 
@@ -851,7 +852,7 @@ void setupObj(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
 
     firstColNode = node->firstCol();
     begColPeriod = smps.getBegPeriodCol(node->level());
-    double probNode = node->probNode();
+    probNode = node->probNode();
 
     // copy the information for this node
     for (int i = 0; i < node->nCols(); ++i) {
@@ -910,7 +911,6 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
   int period, lastPd, firstEntry, lastEntry;
   int row, col, pdr, pdc;
   int k, iblk, jblk;
-  bool found;
   const int nBlocks = tree.getBlocks();
   const int *entryRow = smps.getEntryRow();
   const int *entryCol = smps.getEntryCol();
@@ -941,7 +941,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
       lastPd = period + scNode->nLevels();
 
       // scenario the current node belongs to
-      int scen = scNode->scenario();
+      const int scen = scNode->scenario();
 
       // index of the first change
       firstEntry = smps.getFirstEntryScen(scen) - 1;
@@ -1016,16 +1016,14 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 #endif
 
 	  // work out the row and column block of the correction
-	  int rowBlock = 0;
+	  int rowBlock = 0, colBlock = 0;
 	  while (row >= f_rw_blk[rowBlock + 1]) ++rowBlock;
-	  jblk = row - f_rw_blk[rowBlock];
-	  int colBlock = 0;
 	  while (col >= f_cl_blk[colBlock + 1]) ++colBlock;
+	  jblk = row - f_rw_blk[rowBlock];
 	  iblk = col - f_cl_blk[colBlock];
 
 	  assert(rowBlock <= nBlocks);
 	  assert(colBlock <= nBlocks);
-	  found = false;
 
 	  // if change is in the RankCor part of the deterministic equivalent
 	  if (colBlock == 0) {
@@ -1038,19 +1036,17 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 
 	    // node of the current column and corresponding period
 	    const Node *nd = Ret->rootNode;
-	    int ndPd = nd->level();
+            int perNode = nd->level();
 	    int bigCol, coreCol;
 
 	    // find the column in the core matrix that this belongs to
 	    for (bigCol = 0, coreCol = 0; bigCol < col; ++bigCol, ++coreCol) {
 
-	      int perNode = nd->level();
-
 	      // if this is past the last column in this node
 	      if (coreCol >= smps.getBegPeriodCol(perNode)) {
 		nd = nd->next();
-		ndPd = perNode;
-		coreCol = smps.getBegPeriodCol(ndPd);
+                coreCol = smps.getBegPeriodCol(perNode);
+                perNode = nd->level();
 	      }
 	      if (Ret->is_col_diag[coreCol])
 		++iblkd0;
@@ -1077,6 +1073,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	  }
 
 	  // apply the change
+          bool found = false;
 	  for (k = sparse->col_beg[iblk]; k < sparse->col_beg[iblk + 1]; ++k) {
 	    if (sparse->row_nbs[k] == jblk) {
 #ifdef DEBUG_SCEN
@@ -1141,9 +1138,7 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
   double *objCopy = new double[ttn];
   double *upbCopy = new double[ttn];
   double *lobCopy = new double[ttn];
-  char  **clnCopy = NULL;
-  if (colnames)
-    clnCopy = new char*[ttn];
+  char  **clnCopy = colnames ? new char*[ttn] : NULL;
 
   // find the first node that will go in a diagonal block
   while (node->level() < cutoff)
@@ -1327,17 +1322,13 @@ void backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
 
 #ifdef DEBUG_SMPS_ORDER
       printf("BACKORDCOL: node %3d (per %d): core cols %d--%d\n",
-      printf("BACKORDCOL: node %3d: pd=%2d f_cl_core=%d l_cl_core=%d\n",
 	     node->name(), currPer,
 	     coreCol, smps.getBegPeriodCol(currPer + 1) - 1);
 #endif
     }
 
     // copy the value depending on whether it is in D0 or Rnk
-    if (Ret.is_col_diag[coreCol])
-      x[col] = dtmp[nx_col_d0++];
-    else
-      x[col] = dtmp[nx_col_rc++];
+    x[col] = Ret.is_col_diag[coreCol] ? dtmp[nx_col_d0++] : dtmp[nx_col_rc++];
   }
 
   // copy the remaining columns in order, beginning after rankcor
