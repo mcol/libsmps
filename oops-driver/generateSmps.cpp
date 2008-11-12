@@ -1138,12 +1138,12 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
   int *is_col_diag = Ret->is_col_diag;
   char **colnames  = Ret->colnames;
 
-  double *objCopy = (double *) malloc(ttn * sizeof(double));
-  double *upbCopy = (double *) malloc(ttn * sizeof(double));
-  double *lobCopy = (double *) malloc(ttn * sizeof(double));
+  double *objCopy = new double[ttn];
+  double *upbCopy = new double[ttn];
+  double *lobCopy = new double[ttn];
   char  **clnCopy = NULL;
   if (colnames)
-    clnCopy = (char **) malloc(ttn * sizeof(char *));
+    clnCopy = new char*[ttn];
 
   // find the first node that will go in a diagonal block
   while (node->level() < cutoff)
@@ -1220,10 +1220,10 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
   assert(nb_el == ttn);
 
   // clean up
-  free(objCopy);
-  free(lobCopy);
-  free(upbCopy);
-  free(clnCopy);
+  delete[] objCopy;
+  delete[] lobCopy;
+  delete[] upbCopy;
+  delete[] clnCopy;
 }
 
 /**
