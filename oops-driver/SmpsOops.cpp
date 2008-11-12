@@ -165,6 +165,9 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   hopdm_ret *ret = NULL;
   PrintOptions Prt(hopdmOpts.glopt->prt);
 
+  // store the original convergence tolerance
+  double origTol = hopdmOpts.glopt->conv_tol;
+
   // exit early if we don't have to solve the problem
   if (opt.dontSolve()) {
     printf("Problem not solved by request.\n");
@@ -172,7 +175,6 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   }
 
   // options for the reduced problem
-  double complConvTol = hopdmOpts.glopt->conv_tol;
   hopdmOpts.glopt->conv_tol = 5.e-1;
 
   // solve the problem
@@ -188,7 +190,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
  TERMINATE:
 
   // restore the tolerance
-  hopdmOpts.glopt->conv_tol = complConvTol;
+  hopdmOpts.glopt->conv_tol = origTol;
 
   // clean up
   delete ret;
