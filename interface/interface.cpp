@@ -539,12 +539,15 @@ void printSolution(const Node *root,
 		   double *primal, double *dual,
 		   double *slacks, double *rcosts) {
 
-  int end;
+  int i, end;
   const Node *node = root;
 
   // return immediately if there is no root node
   if (!node)
     return;
+
+  // open the output file
+  FILE *out = fopen("smps.sol", "w");
 
   // print the solution in breadth-first order
   queue<const Node*> qNodes;
@@ -556,24 +559,28 @@ void printSolution(const Node *root,
     node = qNodes.front();
     qNodes.pop();
 
-    printf("\t---   Node %2d (%dx%d)  ---\n", node->name(),
-	   node->nRows(), node->nCols());
+    fprintf(out, "\t---   Node %2d (%dx%d)  ---\n", node->name(),
+            node->nRows(), node->nCols());
 
     end = node->firstRow() + node->nRows();
-    for (int i = node->firstRow(); i < end; ++i) {
-      printf("Row %d:  Slack = %10f  Dual = %10f\n", i, slacks[i], dual[i]);
+    for (i = node->firstRow(); i < end; ++i) {
+      fprintf(out, "Row %d:  Slack = %10f  Dual = %10f\n", i,
+              slacks[i], dual[i]);
     }
 
     end = node->firstCol() + node->nCols();
-    for (int j = node->firstCol(); j < end; ++j) {
-      printf("Column %d:  Value = %10f  Reduced cost = %10f\n",
-	     j, primal[j], rcosts[j]);
+    for (i = node->firstCol(); i < end; ++i) {
+      fprintf(out, "Column %d:  Value = %10f  Reduced cost = %10f\n", i,
+              primal[i], rcosts[i]);
     }
 
     // add the children to the queue of nodes to print
-    for (int i = 0; i < node->nChildren(); ++i)
+    for (i = 0; i < node->nChildren(); ++i)
       qNodes.push(node->getChild(i));
   }
+
+  // close the output file
+  fclose(out);
 }
 
 #ifdef OBSOLETE
