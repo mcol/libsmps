@@ -53,7 +53,7 @@ class Options {
     /** Pointer to the variable to set */
     int *variable;
 
-    /** Wheter the option requires an argument */
+    /** Whether the option requires an argument */
     bool argument;
 
   };

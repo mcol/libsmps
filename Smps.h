@@ -59,7 +59,7 @@ enum ErrorCodes {
 /** Essential sparse matrix representation */
 struct SparseData {
 
-  /** Nonzero elements of A */
+  /** Nonzero coefficients of A */
   const double *acoeff;
 
   /** Row numbers of A */

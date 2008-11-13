@@ -34,9 +34,10 @@ Smps::~Smps() {
 /**
  *  Read the Smps files.
  *
- *  @param addSlacks
+ *  @param addSlacks:
  *         Whether the inequality constraints should be converted into
  *         equalities by adding slacks.
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
  */
 int Smps::read(const bool addSlacks) {
 
@@ -70,7 +71,13 @@ int Smps::read(const bool addSlacks) {
   return rv;
 }
 
-/** Read the smps input file */
+/** Read the smps input file.
+ *
+ *  @param smpsFileName:
+ *         The name of the smps input file which lists, in order, the names
+ *         of the core file, the time file and the stochastic file.
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
+ */
 int Smps::readSmpsFile(string smpsFileName) {
 
   int rv = 0;
@@ -136,6 +143,10 @@ int Smps::readSmpsFile(string smpsFileName) {
 
 /**
  *  Count the number of nonzeros in the deterministic equivalent matrix.
+ *
+ *  @param tree:
+ *         The tree for the deterministic equivalent that is being built.
+ *  @return The number of nonzeros in the deterministic equivalent.
  *
  *  @note The nonzeros in the objective row are not considered.
  */
@@ -230,7 +241,7 @@ int Smps::setNodeStarts(SmpsTree &tree) {
  *  Build the row names for the deterministic equivalent.
  *
  *  @param tree:
- *         The tree for which the deterministic equivalent is being built.
+ *         The tree for the deterministic equivalent that is being built.
  *  @return An array of pointers to the row names, which can be NULL
  *          if buildNames is unset.
  *
@@ -272,7 +283,7 @@ char** Smps::getRowNames(const SmpsTree &tree) const {
  *  Build the column names for the deterministic equivalent.
  *
  *  @param tree:
- *         The tree for which the deterministic equivalent is being built.
+ *         The tree for the deterministic equivalent that is being built.
  *  @return An array of pointers to the column names, which can be NULL
  *          if buildNames is unset.
  */

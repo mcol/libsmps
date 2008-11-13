@@ -320,7 +320,7 @@ int SmpsOops::reduceTree(const int nScenarios) {
  *  Generate a reduced tree with aggregation.
  *
  *  @param nAggr:
- *         Number of stages to be aggregated (starting from the last)
+ *         Number of stages to be aggregated (starting from the last).
  *  @return 1 If something goes wrong, 0 otherwise.
  */
 int SmpsOops::aggregateStages(const int nAggr) {

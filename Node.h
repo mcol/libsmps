@@ -142,7 +142,7 @@ class Node {
     return _nCols;
   }
 
-  /** Print some of the information of the node */
+  /** Print some of the information about the node */
   void print(void) const;
 
  private:

@@ -12,6 +12,7 @@
 #ifndef _SMPS_HOPDM_H_
 #define _SMPS_HOPDM_H_
 
+/** Type of integers to be used */
 #define INTS long
 
 #include "Smps.h"
@@ -21,6 +22,7 @@ extern "C" {
 #include "mps.h"
 }
 
+/** Structure to contain the warmstart information */
 typedef Lp_save Ws;
 
 // Forward declaration

@@ -24,7 +24,7 @@ class OptionsOops;
 class WSPoint;
 class SmpsReturn;
 
-// the maximum cutoff level
+/** Maximum cutoff level */
 // note that the current implementation doesn't exploit a cutoff larger than 1
 static const int MAX_CUTOFF = 2;
 
@@ -239,7 +239,7 @@ class OptionsOops : public Options {
     return _useAggregation;
   }
 
-  /** Retrieve the value of the cutoffValue option */
+  /** Retrieve the value of the cutoffLevel option */
   int cutoffLevel(void) const {
     return _cutoffLevel;
   }

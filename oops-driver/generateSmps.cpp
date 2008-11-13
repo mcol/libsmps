@@ -712,21 +712,21 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
  *  column.
  *
  *  @param smps:
- *         The smps instance
+ *         The smps instance.
  *  @param Array:
- *         Pointer to an array of algebras
+ *         Pointer to an array of algebras.
  *  @param data:
- *         The sparse representation of the core matrix
+ *         The sparse representation of the core matrix.
  *  @param node:
- *         Node in the deterministic equivalent at which to start
+ *         Node in the deterministic equivalent at which to start.
  *  @param f_rw_blk:
- *         First row of each block in the deterministic equivalent
+ *         First row of each block in the deterministic equivalent.
  *  @param idxCol:
- *         Index of the current column in the deterministic equivalent
+ *         Index of the current column in the deterministic equivalent.
  *  @param cIndex:
- *         Index of the sparse core data
+ *         Index of the sparse core data.
  *  @param nnzCol:
- *         Remaining number of nonzeros in the current column
+ *         Remaining number of nonzeros in the current column.
  */
 int copyLinkingBlocks(Smps &smps, Algebra **Array, const SparseData &data,
                       const Node *node, int *f_rw_blk,
@@ -886,19 +886,19 @@ void setupObj(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
  *  changes that need to be applied. These changes can apply to any
  *  period of the tree (not just the leaf nodes).
  *
- *  @param tree
- *         The tree for which we are building the deterministic equivalent
- *  @param Ret
- *         The SmpsReturn structure of the problem
- *  @param Diagon
- *         Array of diagonal algebras
- *  @param Border
+ *  @param tree:
+ *         The tree for which we are building the deterministic equivalent.
+ *  @param Ret:
+ *         The SmpsReturn structure of the problem.
+ *  @param Diagon:
+ *         Array of diagonal algebras.
+ *  @param Border:
  *         Array of right column algebras already in final ordering: rows
- *         are ordered as [D1, ..., Dn, D0], columns as [RnkCor, D0]
- *  @param f_rw_blk
- *         First row of each block in the deterministic equivalent
- *  @param f_cl_blk
- *         First column of each block in the deterministic equivalent
+ *         are ordered as [D1, ..., Dn, D0], columns as [RnkCor, D0].
+ *  @param f_rw_blk:
+ *         First row of each block in the deterministic equivalent.
+ *  @param f_cl_blk:
+ *         First column of each block in the deterministic equivalent.
  *
  *  @note
  *  The entryCol[] and entryRow[] vectors are in FORTRAN numbering.
@@ -1424,9 +1424,9 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
  *
  *  @param Ret:
  *         Information about the problem with respect to which the
- *         reordering should be done
+ *         reordering should be done.
  *  @param x:
- *         The vector to be reordered
+ *         The vector to be reordered.
  */
 void backOrderRowVector(const SmpsReturn &Ret, double *x) {
 
@@ -1454,9 +1454,9 @@ void backOrderRowVector(const SmpsReturn &Ret, double *x) {
  *
  *  @param Ret:
  *         Information about the problem with respect to which the
- *         reordering should be done
+ *         reordering should be done.
  *  @param x:
- *         The vector to be reordered
+ *         The vector to be reordered.
  */
 void forwOrderRowVector(const SmpsReturn &Ret, double *x) {
 

@@ -31,13 +31,13 @@ struct ProbData {
   /** Index of the objective row */
   int irobj;
 
-  /** nonzero elements of A */
+  /** Nonzero coefficients of A */
   double *acoeff;
 
-  /** row numbers of A */
+  /** Row numbers of A */
   int *rwnmbs;
 
-  /** pointers to starts of columns of A */
+  /** Pointers to starts of columns of A */
   int *clpnts;
 
   /** Objective function */

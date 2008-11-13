@@ -17,7 +17,7 @@
 #include "Tokenizer.h"
 #include "Utils.h"
 
-/**
+/*
  *  A BLOCK is a set of entries that will change their values together.
  *  A REALISATION is a set of values for the entries of the BLOCK
  *  together with its probability.
@@ -68,16 +68,17 @@ SmpsStoc::~SmpsStoc() {
 }
 
 /**
- *   Read the stochastic file to retrieve the problem data.
+ *  Read the stochastic file to retrieve the problem data.
  *
- *   This routine does a quick scan of StocFile and works out the
- *   maximum number of scenarios in the problem, the maximum number
- *   of changes, and the maximum number of nodes in the reduced tree.
- *   After this, a full read of the file is performed, during which the
- *   elements of the SmpsTree structure are set up.
+ *  This routine does a quick scan of StocFile and works out the
+ *  maximum number of scenarios in the problem, the maximum number
+ *  of changes, and the maximum number of nodes in the reduced tree.
+ *  After this, a full read of the file is performed, during which the
+ *  elements of the SmpsTree structure are set up.
  *
- *   @return 0  Everything is fine.
- *           >0 Error.
+ *  @param Tree:
+ *         The SmpsTree to be generated with the data read from the file.
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
  */
 int SmpsStoc::readStocFile(SmpsTree &Tree) {
 
