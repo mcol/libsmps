@@ -749,6 +749,9 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
   // start from the root
   node = Tree.getRootNode();
 
+  // restore the original cutoff level
+  cutoff -= node->level();
+
   do {
 
     qOrder.pop();

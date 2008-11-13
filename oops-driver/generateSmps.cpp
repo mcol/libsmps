@@ -92,6 +92,10 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // store the root node
   Ret.rootNode = rootNode;
 
+  // shift the cutoff by the period of the root node, which may not be zero
+  // in the decomposition case
+  cutoff += rootNode->level();
+
   // indicates columns in first periods that should be in RankCor part
   // but are not used outside these periods, so they are taken out of the
   // RankCor and form an additional diagonal block D-0
@@ -683,6 +687,9 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 
   Ret.AlgA = NewDblBordDiagSimpleAlgebra(MA);
   Ret.AlgQ = NewBlockDiagSimpleAlgebra(MQ);
+
+  // restore the original cutoff level
+  cutoff -= rootNode->level();
 
   // clean up
   delete[] rnkc_m_blk;
