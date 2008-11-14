@@ -94,7 +94,7 @@ int Node::removeChild(Node *childNode) {
 Node* Node::getChild(const int childNumber) const {
 
   // check that the index provided is sensible
-  if (childNumber > (int) _children.size() ||
+  if (childNumber > (int) _children.size() - 1 ||
       childNumber < 0)
     return NULL;
 
