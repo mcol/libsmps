@@ -311,7 +311,15 @@ int SmpsOops::reduceTree(const int nScenarios) {
   reduceScenarios(cNode, rNode, nScenarios);
 
   // recompute the probabilities in the reduced tree
-  adjustProbabilities();
+  do {
+
+    // find the corresponding node in the reduced tree
+    rNode = nMap[cNode];
+
+    // update its probability
+    rNode->setProb(rNode->probNode() + cNode->probNode());
+
+  } while (cNode = cNode->next());
 
   return 0;
 }
@@ -459,22 +467,6 @@ PDProblem SmpsOops::setupProblem(SmpsReturn &Pb) {
   Prob.l = vl;
 
   return Prob;
-}
-
-/** Recompute the probabilities in the reduced tree */
-void SmpsOops::adjustProbabilities() {
-
-  const Node *cNode = smps.getRootNode();
-
-  do {
-
-    // find the corresponding node in the reduced tree
-    Node *rNode = nMap[cNode];
-
-    // update the probabilities
-    rNode->setProb(rNode->probNode() + cNode->probNode());
-
-  } while (cNode = cNode->next());
 }
 
 /**
