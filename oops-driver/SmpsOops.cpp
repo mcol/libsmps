@@ -584,12 +584,22 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
   }
 
   // allocate space for the vectors in the complete iterate
-  xnew = NewDenseVector(nCols, "xnew");
-  ynew = NewDenseVector(nRows, "ynew");
-  znew = NewDenseVector(nCols, "znew");
-  if (smps.hasUpperBounds()) {
-    snew = NewDenseVector(nCols, "snew");
-    wnew = NewDenseVector(nCols, "wnew");
+  if (!wsPoint) {
+    xnew = NewDenseVector(nCols, "xnew");
+    ynew = NewDenseVector(nRows, "ynew");
+    znew = NewDenseVector(nCols, "znew");
+    if (smps.hasUpperBounds()) {
+      snew = NewDenseVector(nCols, "snew");
+      wnew = NewDenseVector(nCols, "wnew");
+    }
+    wsPoint = new WSPoint(xnew, ynew, znew, snew, wnew);
+  }
+  else {
+    xnew = wsPoint->x;
+    ynew = wsPoint->y;
+    znew = wsPoint->z;
+    snew = wsPoint->s;
+    wnew = wsPoint->w;
   }
 
   const Node *cNode = smps.getRootNode(), *rNode;
@@ -650,9 +660,6 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
     }
 
   } while (cNode = cNode->next());
-
-  // set the warmstart point
-  wsPoint = new WSPoint(xnew, ynew, znew, snew, wnew);
 
   // clean up
   FreeDenseVector(xred);
