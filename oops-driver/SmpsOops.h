@@ -84,6 +84,9 @@ class SmpsOops {
   /** Create a reduced tree in a recursive manner */
   void reduceScenarios(const Node *cNode, Node *rParent, const int nWanted);
 
+  /** Generate a subtree rooted at the given node */
+  int createSubtree(Node *cNode, const int nodeName);
+
   /** Set up the warmstart point from a reduced-tree solution */
   int setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Pb);
 

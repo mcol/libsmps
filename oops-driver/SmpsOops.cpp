@@ -411,6 +411,68 @@ void dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode) {
 }
 
 /**
+ *  Generate a subtree rooted at the given node.
+ *
+ *  @param cNode:
+ *         The node to be used as root node of the subtree.
+ *  @param nodeName:
+ *         A number used to differentiate the names of the subtree nodes.
+ *  @return 1 If something goes wrong, 0 otherwise.
+ */
+int SmpsOops::createSubtree(Node *cNode, const int nodeName) {
+
+  Node *rNode;
+  const Node *orig = cNode;
+  const double rootProb = cNode->probNode();
+
+  // queue of nodes to be processed
+  queue<Node*> qNodes;
+  qNodes.push(cNode);
+
+  // copy the nodes in the subtree
+  while (!qNodes.empty()) {
+
+    // take the first element in the queue
+    cNode = qNodes.front();
+    qNodes.pop();
+    assert(cNode != NULL);
+
+    // create a node in the reduced tree
+    rNode = new Node(nodeName + cNode->name());
+    rNode->copy(cNode);
+    if (cNode != orig)
+      nMap[cNode->parent()]->addChild(rNode);
+
+    // scale the probability of the reduced node by the probability of
+    // the root node of the subtree, so that the sum of the probabilities
+    // of all nodes at the same stage is 1.0
+    rNode->setProb(cNode->probNode() / rootProb);
+    assert(rNode->probNode() <= 1.0);
+
+#ifdef DEBUG_RTREE
+    printf("Node %d: updating probability to %f\n",
+           rNode->name(), rNode->probNode());
+#endif
+
+    // map the complete node to the reduced node
+    nMap[cNode] = rNode;
+
+    // put the children in the queue
+    for (int i = 0; i < cNode->nChildren(); ++i)
+      qNodes.push(cNode->getChild(i));
+  }
+
+  // find the root of the reduced tree
+  while (rNode->parent())
+    rNode = rNode->parent();
+
+  // set the root of the reduced tree
+  rTree.setRootNode(rNode);
+
+  return 0;
+}
+
+/**
  *  Set up the Oops algebras and vectors and build the primal-dual problem.
  *
  *  @param Pb:
