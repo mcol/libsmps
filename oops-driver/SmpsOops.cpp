@@ -27,6 +27,7 @@ SmpsOops::SmpsOops(string smpsFile, const int lev) :
   smps(smpsFile),
   rTree(),
   wsPoint(NULL),
+  wsReady(false),
   cutoff(lev) {
 }
 
@@ -98,7 +99,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   }
 
   // use the warmstart point if available
-  if (wsPoint)
+  if (wsReady)
     hopdmOpts.use_start_point = 1;
 
   // solve the problem
@@ -186,6 +187,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 
   // generate a warmstart point for the complete problem
   setupWarmStart(pdProb, prob);
+  wsReady = true;
 
  TERMINATE:
 
@@ -505,7 +507,7 @@ PDProblem SmpsOops::setupProblem(SmpsReturn &Pb) {
   }
 
   // use the warmstart point if available
-  if (wsPoint) {
+  if (wsReady) {
     SmpsDenseToVector(wsPoint->x, vx, Pb, ORDER_COL);
     SmpsDenseToVector(wsPoint->y, vy, Pb, ORDER_ROW);
     SmpsDenseToVector(wsPoint->z, vz, Pb, ORDER_COL);

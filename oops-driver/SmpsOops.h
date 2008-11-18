@@ -69,6 +69,9 @@ class SmpsOops {
   /** A warmstart point for the complete problem */
   WSPoint *wsPoint;
 
+  /** Whether the warmstart point is ready for use */
+  bool wsReady;
+
   /** The mapping between the nodes in the complete and reduced trees */
   map<const Node*, Node*> nMap;
 
