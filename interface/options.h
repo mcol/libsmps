@@ -29,9 +29,6 @@ class Options {
   /** Whether the problem should not be solved */
   int _dontSolve;
 
-  /** Whether the output has to be redirected to file */
-  int _outputToFile;
-
   /** Whether an mps file has to be produced  */
   int _writeMps;
 
@@ -89,11 +86,6 @@ class Options {
   /** Retrieve the value of the dontSolve option */
   int dontSolve(void) const {
     return _dontSolve;
-  }
-
-  /** Retrieve the value of the outputToFile option */
-  int outputToFile(void) const {
-    return _outputToFile;
   }
 
   /** Retrieve the value of the writeMps option */

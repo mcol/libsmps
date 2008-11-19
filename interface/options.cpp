@@ -21,7 +21,6 @@ Options::Options(const int argc, const char *argv[]) :
   nArgs(argc),
   vArgs(argv),
   _dontSolve(0),
-  _outputToFile(0),
   _writeMps(0),
   _printSolution(0),
   _smpsFile("") {

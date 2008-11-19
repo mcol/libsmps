@@ -13,8 +13,7 @@
 #include "SmpsOops.h"
 
 
-FILE *printout;
-static void setupOutputFile(OptionsOops &opt);
+FILE *printout = stdout;
 
 
 /** Driver routine for the SMPS interface to OOPS */
@@ -28,9 +27,6 @@ int main(const int argc, const char *argv[]) {
   int rv = opt.parse();
   if (rv)
     return 1;
-
-  // decide where the output is going to appear
-  setupOutputFile(opt);
 
   // create an object for the problem
   SmpsOops data(opt.smpsFile(), opt.cutoffLevel());
@@ -67,48 +63,9 @@ int main(const int argc, const char *argv[]) {
 
  TERMINATE:
 
-  // close the output file
-  if (opt.outputToFile())
-    fclose(printout);
-
 #ifdef WITH_MPI
   MPI_Finalize();
 #endif
 
   return rv;
-}
-
-/**
- *  Decide where the output is going to appear.
- *
- *  Sets the global variable @c printout to decide where the output from
- *  OOPS is going to appear.
- *
- *  @param opt:
- *         Command line options.
- */
-void setupOutputFile(OptionsOops &opt) {
-
-  char filename[20];
-
-  // redirect the output to a file
-  if (opt.outputToFile()) {
-
-#ifdef WITH_MPI
-    sprintf(filename, "output%d.dat", MYID_PAR);
-#else
-    sprintf(filename, "output.dat");
-#endif
-
-    // open the file for writing
-    printout = fopen(filename, "w");
-
-#ifdef WITH_MPI
-    fprintf(printout, "Output from processor %d.\n\n", MYID_PAR);
-#endif
-  }
-
-  // print the output on the screen
-  else
-    printout = stdout;
 }
