@@ -611,8 +611,9 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
   // go through the nodes in the complete tree
   do {
 
-    rNode  = nMap[cNode];
-    assert(rNode != NULL);
+    rNode = nMap[cNode];
+    if (!rNode)
+      continue;
 
     cIndex = cNode->firstCol();
     rIndex = rNode->firstCol();
