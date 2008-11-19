@@ -301,6 +301,11 @@ int SmpsOops::reduceTree(const int nScenarios) {
 
   const Node *cNode = smps.getRootNode();
 
+  // do not request more scenarios than there are in the complete tree
+  int nWanted = nScenarios;
+  if (nWanted > smps.getMaxScens())
+    nWanted = smps.getMaxScens();
+
   // allocate the root node for the reduced tree
   rTree.setRootNode(new Node(100 + cNode->name()));
   Node *rNode = rTree.getRootNode();
@@ -309,8 +314,11 @@ int SmpsOops::reduceTree(const int nScenarios) {
   rNode->copy(cNode);
   nMap[cNode] = rNode;
 
+  // print the number of scenarios in the reduced tree
+  printf("Choosing %d scenarios.\n", nWanted);
+
   // build up the reduced tree by selecting some scenarios
-  reduceScenarios(cNode, rNode, nScenarios);
+  reduceScenarios(cNode, rNode, nWanted);
 
   // recompute the probabilities in the reduced tree
   do {
