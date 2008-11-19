@@ -944,6 +944,7 @@ OptionsOops::OptionsOops(const int argc, const char *argv[]) :
   Options(argc, argv),
   _useReduction(0),
   _useAggregation(0),
+  _useDecomposition(0),
   _cutoffLevel(1) {
 }
 
@@ -955,6 +956,8 @@ int OptionsOops::parse() {
 		     &_useReduction, true);
   Options::addOption("-a", "use a warmstart strategy with stage aggregation",
 		     &_useAggregation, true);
+  Options::addOption("-k", "use a warmstart strategy with decomposition",
+                     &_useDecomposition);
   Options::addOption("-c", "cutoff level (for multistage programs)",
 		     &_cutoffLevel, true);
 

@@ -216,6 +216,9 @@ class OptionsOops : public Options {
   /** Whether stage aggregation should be performed */
   int _useAggregation;
 
+  /** Whether tree decomposition should be performed */
+  int _useDecomposition;
+
   /** The value of the cutoff level (for multistage problems) */
   int _cutoffLevel;
 
@@ -240,6 +243,11 @@ class OptionsOops : public Options {
   /** Retrieve the value of the useAggregation option */
   int useAggregation(void) const {
     return _useAggregation;
+  }
+
+  /** Retrieve the value of the useDecomposition option */
+  int useDecomposition(void) const {
+    return _useDecomposition;
   }
 
   /** Retrieve the value of the cutoffLevel option */
