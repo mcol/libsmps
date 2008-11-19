@@ -364,6 +364,7 @@ int SmpsOops::aggregateStages(const int nAggr) {
     // take the first element in the queue
     cNode = cNodes.front();
     cNodes.pop();
+    assert(cNode != NULL);
 
     // these nodes have to be copied
     if (cNode->level() < last) {
