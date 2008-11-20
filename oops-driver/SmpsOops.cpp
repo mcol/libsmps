@@ -216,7 +216,7 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
   int i, nChildren = cNode->nChildren();
   int chdIdx = 0, nAdded = 0;
   int each = 0, rest = 0, step = 1;
-  Node *child;
+  Node *child = NULL;
 
   // for each stage cache the reduced tree node from which the
   // complete tree nodes should be initialised
@@ -357,7 +357,7 @@ int SmpsOops::aggregateStages(const int nAggr) {
 
   int nodeName = 100;
   const Node *cNode = smps.getRootNode();
-  Node *rNode;
+  Node *rNode = NULL;
 
   // queue of nodes to be processed
   queue<const Node*> cNodes;
@@ -429,7 +429,7 @@ void dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode) {
  */
 int SmpsOops::createSubtree(Node *cNode, const int nodeName) {
 
-  Node *rNode;
+  Node *rNode = NULL;
   const Node *orig = cNode;
   const double rootProb = cNode->probNode();
 

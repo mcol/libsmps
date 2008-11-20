@@ -154,7 +154,7 @@ int SmpsLpsolve::solve(const OptionsLpsolve &opt) {
 /** Fill the data of the LP problem */
 int createLP(lprec *lp, ProbData *prob) {
 
-  int status;
+  int status = 0;
 
   int nRows = prob->ttm;
   int nCols = prob->ttn;
