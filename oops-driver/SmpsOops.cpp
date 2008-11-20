@@ -343,19 +343,16 @@ int SmpsOops::reduceTree(const int nScenarios) {
  */
 int SmpsOops::aggregateStages(const int nAggr) {
 
-  // check that the number of stages to aggregate is sensible
-  if (nAggr < 1)
-    return 1;
-
   printf(" --------------- aggregateStages -----------\n");
 
-  // aggregate the last stages
+  // check that the number of stages to aggregate is sensible
   const int last = smps.getPeriods() - nAggr + 1;
-  if (last < 2) {
+  if (nAggr < 2 || last < 2) {
     printf("No aggregation possible.\n");
     return 1;
   }
 
+  // aggregate the last stages
   printf("Aggregating stages %d to %d.\n", last, smps.getPeriods());
 
   int nodeName = 100;
