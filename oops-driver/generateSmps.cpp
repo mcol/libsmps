@@ -145,8 +145,6 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 
   const SparseData data = smps.getSparseData();
 
-  printf(" --------------- generateSmps --------------\n");
-
   /*
      Columns within periods <= cutoff are designated to go into the border
      part of the matrix. However some of them have no entries in rows
