@@ -235,7 +235,16 @@ int SmpsCore::readCoreFile(string coreFileName) {
   return rv;
 }
 
-/** Read the time file */
+/**
+ *  Read the time file.
+ *
+ *  Extracts the period declarations from the time file. Note that
+ *  it reads the file in free format.
+ *
+ *  @param timeFileName:
+ *         The name of the time file.
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
+ */
 int SmpsCore::readTimeFile(string timeFileName) {
 
   ifstream time;
@@ -331,7 +340,18 @@ int SmpsCore::readTimeFile(string timeFileName) {
   return rv;
 }
 
-/** Match the names from the time file to those of the core file */
+/**
+ *  Match the names from the time file to those of the core file.
+ *
+ *  Stores the index of the first row and column of each period in the
+ *  begPeriodRow and begPeriodCol arrays.
+ *
+ *  @param begPeriodRowName:
+ *         The row names of the periods declared in the time file.
+ *  @param begPeriodColName:
+ *         The column names of the periods declared in the time file.
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
+ */
 int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
 				  const vector<string> &begPeriodColName)  {
 
