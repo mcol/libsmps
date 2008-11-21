@@ -441,6 +441,12 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
     }
   }
 
+  // don't allow leaving rows or columns not assigned to any period
+  if (begPeriodRow[0] > 1 || begPeriodCol[0] > 0) {
+    printf("The first period should start from the first row and column.\n");
+    goto TERMINATE;
+  }
+
   // set the last elements
   begPeriodRow[nPeriods] = nRows;
   begPeriodCol[nPeriods] = nCols;
