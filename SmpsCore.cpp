@@ -335,7 +335,6 @@ int SmpsCore::readTimeFile(string timeFileName) {
 int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
 				  const vector<string> &begPeriodColName)  {
 
-  int rv = 0;
   bool found;
   begPeriodRow = new int[nPeriods + 1];
   begPeriodCol = new int[nPeriods + 1];
@@ -371,7 +370,6 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
     if (!found) {
       printf("Row \"%s\" corresponding to start of period %d not found.\n",
              begPeriodRowName[i].c_str(), i + 1);
-      rv = 1;
       goto TERMINATE;
     }
 
@@ -399,7 +397,6 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
     if (!found) {
       printf("Column \"%s\" corresponding to start of period %d not found.\n",
              begPeriodColName[i].c_str(), i + 1);
-      rv = 1;
       goto TERMINATE;
     }
   }
@@ -411,9 +408,13 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
   // report the number of periods
   printf("Found %d periods.\n", nPeriods);
 
+  // everything went well
+  return 0;
+
  TERMINATE:
 
-  return rv;
+  // something went wrong
+  return 1;
 }
 
 /**
