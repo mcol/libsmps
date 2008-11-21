@@ -354,13 +354,23 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
       cout << "   Comparing with >" << rowNames[j] << "<\n";
 #endif
 
+      // found first row for period i
       if (rowNames[j] == begPeriodRowName[i]) {
 
 	// allow the objective row to be a period start in the time file
 	if (j == objRow)
 	  ++j;
 
-	// found first row of period i
+#ifdef DEBUG_TIME_FILE
+        printf("   Period %d starts at row %d.\n", i + 1, j);
+#endif
+
+        // check that the rows are defined in order
+        if (i > 0 && j < begPeriodRow[i - 1]) {
+          printf("The rows are not assigned to periods in order.\n");
+          goto TERMINATE;
+        }
+
 	begPeriodRow[i] = j;
 	found = true;
 	break;
@@ -385,9 +395,19 @@ int SmpsCore::findTimeCoreMatches(const vector<string> &begPeriodRowName,
       cout << "   Comparing with >" << colNames[j] << "<\n";
 #endif
 
+      // found first column for period i
       if (colNames[j] == begPeriodColName[i]) {
 
-	// found first col of period i
+#ifdef DEBUG_TIME_FILE
+        printf("   Period %d starts at col %d.\n", i + 1, j);
+#endif
+
+        // check that the columns are defined in order
+        if (i > 0 && j < begPeriodCol[i - 1]) {
+          printf("The columns are not assigned to periods in order.\n");
+          goto TERMINATE;
+        }
+
 	begPeriodCol[i] = j;
 	found = true;
 	break;
