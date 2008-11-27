@@ -57,65 +57,22 @@ int SmpsOops::read() {
  *         Command line options.
  *  @param hopdmOpts:
  *         Options for the solver.
- *  @return 1 If something goes wrong; 0 otherwise.
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
  */
 int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
-  int rv = 0;
-
   if (opt.writeMps()) {
     smps.setBuildNames();
-  }
-
-  SmpsReturn prob;
-
-  // generate the problem
-  rv = generateSmps(smps.getSmpsTree(), prob);
-  if (rv) {
-    printf("Failed to generate the deterministic equivalent.\n");
-    return 1;
-  }
-
-  // setup the primal-dual problem
-  PDProblem pdProb = setupProblem(prob);
-
-  // write the deterministic equivalent in mps format
-  if (opt.writeMps()) {
-    FILE *fout = fopen("smps.mps", "w");
-    Write_MpsFile(fout, pdProb.AlgAug, pdProb.b, pdProb.c,
-		  pdProb.u, pdProb.l, 0, prob.colnames, prob.rownames);
-    fclose(fout);
-  }
-
-  printf(" --------------- solve ---------------------\n");
-
-  hopdm_ret *ret = NULL;
-  PrintOptions Prt(hopdmOpts.glopt->prt);
-
-  // exit early if we don't have to solve the problem
-  if (opt.dontSolve()) {
-    printf("Problem not solved by request.\n");
-    goto TERMINATE;
   }
 
   // use the warmstart point if available
   if (wsReady)
     hopdmOpts.use_start_point = 1;
 
-  // solve the problem
-  ret = hopdm(printout, &pdProb, &hopdmOpts, &Prt);
-  if (ret->ifail) {
-    rv = ret->ifail;
-    goto TERMINATE;
-  }
+  printf(" --------------- solve ---------------------\n");
 
-  if (opt.printSolution())
-    getSolution(pdProb, prob);
-
- TERMINATE:
-
-  // clean up
-  delete ret;
+  // pass the problem to the solver
+  int rv = solver(smps.getSmpsTree(), opt, hopdmOpts);
 
   return rv;
 }
@@ -127,77 +84,31 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
  *         Command line options.
  *  @param hopdmOpts:
  *         Options for the solver.
- *  @return 1 If something goes wrong; 0 otherwise.
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
  */
 int SmpsOops::solveReduced(const OptionsOops &opt,
 			   HopdmOptions &hopdmOpts) {
 
-  int rv = 0;
-
-  // order the nodes and set the next links
-  orderNodes(rTree);
-
-#ifdef DEBUG_RTREE
-  rTree.print();
-#endif
-
-  SmpsReturn prob;
-
-  // generate a reduced problem
-  rv = generateSmps(rTree, prob);
-  if (rv) {
-    printf("Failed to generate the deterministic equivalent.\n");
-    return 1;
-  }
-
-  // setup the primal-dual problem
-  PDProblem pdProb = setupProblem(prob);
-
-  // write the deterministic equivalent in mps format
-  if (opt.writeMps()) {
-    FILE *fout = fopen("smps-red.mps", "w");
-    Write_MpsFile(fout, pdProb.AlgAug, pdProb.b, pdProb.c,
-		  pdProb.u, pdProb.l, 0, prob.colnames, prob.rownames);
-    fclose(fout);
-  }
-
-  printf(" --------------- solveReduced --------------\n");
-
-  hopdm_ret *ret = NULL;
-  PrintOptions Prt(hopdmOpts.glopt->prt);
-
   // store the original convergence tolerance
   double origTol = hopdmOpts.glopt->conv_tol;
-
-  // exit early if we don't have to solve the problem
-  if (opt.dontSolve()) {
-    printf("Problem not solved by request.\n");
-    goto TERMINATE;
-  }
 
   // options for the reduced problem
   hopdmOpts.glopt->conv_tol = 5.e-1;
 
-  // solve the problem
-  ret = hopdm(printout, &pdProb, &hopdmOpts, &Prt);
-  if (ret->ifail) {
-    rv = ret->ifail;
-    goto TERMINATE;
-  }
+  printf(" --------------- solveReduced --------------\n");
 
-  // generate a warmstart point for the complete problem
-  setupWarmStart(pdProb, prob);
+  // pass the problem to the solver
+  int rv = solver(rTree, opt, hopdmOpts);
+  if (rv)
+    return rv;
+
+  // the warmstart point is ready
   wsReady = true;
-
- TERMINATE:
 
   // restore the tolerance
   hopdmOpts.glopt->conv_tol = origTol;
 
-  // clean up
-  delete ret;
-
-  return rv;
+  return 0;
 }
 
 /**
@@ -207,12 +118,10 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
  *         Command line options.
  *  @param hopdmOpts:
  *         Options for the solver.
- *  @return 1 If something goes wrong; 0 otherwise.
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
  */
 int SmpsOops::solveDecomposed(const OptionsOops &opt,
                               HopdmOptions &hopdmOpts) {
-
-  int rv = 0;
 
   printf(" --------------- solveDecomposed -----------\n");
 
@@ -239,69 +148,85 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
     // generate the subtree corresponding to the current child
     createSubtree(root->getChild(chd), 1000 * (chd + 1));
 
-    // order the nodes and set the next links
-    orderNodes(rTree);
-
-#ifdef DEBUG_RTREE
-    rTree.print();
-#endif
-
-    SmpsReturn prob;
-
-    // generate a reduced problem
-    rv = generateSmps(rTree, prob);
-    if (rv) {
-      printf("Failed to generate the deterministic equivalent.\n");
-      return 1;
-    }
-
-    // setup the primal-dual problem
-    PDProblem pdProb = setupProblem(prob);
-
-    // write the deterministic equivalent in mps format
-    if (opt.writeMps()) {
-      FILE *fout = fopen("smps-red.mps", "w");
-      Write_MpsFile(fout, pdProb.AlgAug, pdProb.b, pdProb.c,
-                    pdProb.u, pdProb.l, 0, prob.colnames, prob.rownames);
-      fclose(fout);
-    }
-
-    PrintOptions Prt(PRINT_NONE);
-    hopdm_ret *ret = NULL;
-
-    // exit early if we don't have to solve the problem
-    if (opt.dontSolve()) {
-      printf("Problem not solved by request.\n");
-      goto TERMINATE;
-    }
-
-    // solve the problem
-    ret = hopdm(printout, &pdProb, &hopdmOpts, &Prt);
-    if (ret->ifail) {
-      rv = ret->ifail;
-      goto TERMINATE;
-    }
-
-    // generate a warmstart point for the complete problem
-    setupWarmStart(pdProb, prob);
+    // pass the problem to the solver
+    int rv = solver(rTree, opt, hopdmOpts);
+    if (rv)
+      return rv;
 
     // clean up
-    delete ret;
     delete rTree.getRootNode();
+    rTree.setRootNode(NULL);
   }
-
-  // reset the reduced tree to avoid freeing it again in the destructor
-  rTree.setRootNode(NULL);
 
   // the warmstart point is now completely defined
   wsReady = true;
 
- TERMINATE:
-
   // restore the tolerance
   hopdmOpts.glopt->conv_tol = origTol;
 
-  return rv;
+  return 0;
+}
+
+/**
+ *  Generate and solve the deterministic equivalent.
+ *
+ *  @param tree:
+ *         The tree for the deterministic equivalent that is being built.
+ *  @param opt:
+ *         Command line options.
+ *  @param hopdmOpts:
+ *         Options for the solver.
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
+ */
+int SmpsOops::solver(SmpsTree &tree,
+                     const OptionsOops &opt, HopdmOptions &hopdmOpts) {
+
+  SmpsReturn prob;
+  bool reduced = &tree != &smps.getSmpsTree();
+
+  if (reduced) {
+    // order the nodes and set the next links
+    orderNodes(tree);
+
+#ifdef DEBUG_RTREE
+    tree.print();
+#endif
+  }
+
+  // generate a reduced problem
+  int rv = generateSmps(tree, prob);
+  if (rv) {
+    printf("Failed to generate the deterministic equivalent.\n");
+    return rv;
+  }
+
+  // setup the primal-dual problem
+  PDProblem pdProb = setupProblem(prob);
+
+  // exit early if we don't have to solve the problem
+  if (opt.dontSolve()) {
+    printf("Problem not solved by request.\n");
+    return 0;
+  }
+
+  PrintOptions Prt(reduced ? PRINT_NONE : PRINT_ITER);
+
+  // solve the problem
+  hopdm_ret *ret = hopdm(printout, &pdProb, &hopdmOpts, &Prt);
+  rv = ret->ifail;
+  delete ret;
+  if (rv)
+    return rv;
+
+  // generate a warmstart point for the complete problem
+  if (reduced)
+    setupWarmStart(pdProb, prob);
+
+  // print the solution only for the complete problem
+  if (opt.printSolution() && !reduced)
+    getSolution(pdProb, prob);
+
+  return 0;
 }
 
 /**
