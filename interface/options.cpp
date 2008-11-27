@@ -83,7 +83,7 @@ int Options::parse() {
 	  break;
 	}
 	else {
-	  cout << "The option '" << optionList[i].name
+          cerr << "Option '" << optionList[i].name
 	       << "' requires an argument.\n";
 	  return 1;
 	}
