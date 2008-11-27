@@ -44,26 +44,16 @@ int Options::parse() {
   const char *programName = vArgs[0];
 
   // the program has been called with not enough arguments
-  if (nArgs <= 2) {
-    cerr << "A problem must be specified with the -f option.\n";
+  if (nArgs < 2) {
     showHelpMessage(programName);
     return 1;
   }
 
-  // extract the filename from the arguments
-  if (strcmp(vArgs[1], "-f") == 0) {
-
-    // store the filename
-    _smpsFile = string(vArgs[2]);
-  }
-  else {
-    cerr << "A problem must be specified with the -f option.\n";
-    showHelpMessage(programName);
-    return 1;
-  }
+  // store the filename
+  _smpsFile = string(vArgs[1]);
 
   // go through the command line arguments
-  for (int arg = 3; arg < nArgs && vArgs[arg] != NULL; ++arg) {
+  for (int arg = 2; arg < nArgs && vArgs[arg] != NULL; ++arg) {
 
     bool found = false;
     for (int i = 0; i < (int) optionList.size(); ++i) {
@@ -111,7 +101,7 @@ void Options::addOption(const char name[], const char usage[],
 /** Print a usage message */
 void Options::showHelpMessage(const char* programName) {
 
-  printf("Usage: %s -f <problem.smps> [options]\n"
+  printf("Usage: %s <problem.smps> [options]\n"
 	 "   where <problem.smps> is the input SMPS file.\n"
 	 "Available options:\n", programName);
   for (int i = 0; i < (int) optionList.size(); ++i) {
