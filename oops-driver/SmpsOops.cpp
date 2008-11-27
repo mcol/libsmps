@@ -201,6 +201,110 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 }
 
 /**
+ *  Solve a series of problems by decomposition.
+ *
+ *  @param opt:
+ *         Command line options.
+ *  @param hopdmOpts:
+ *         Options for the solver.
+ *  @return 1 If something goes wrong; 0 otherwise.
+ */
+int SmpsOops::solveDecomposed(const OptionsOops &opt,
+                              HopdmOptions &hopdmOpts) {
+
+  int rv = 0;
+
+  printf(" --------------- solveDecomposed -----------\n");
+
+  // check that it's a multistage problem
+  if (smps.getPeriods() < 3) {
+    printf("No decomposition possible.\n");
+    return 1;
+  }
+
+  // store the original convergence tolerance
+  double origTol = hopdmOpts.glopt->conv_tol;
+
+  // options for the reduced problem
+  hopdmOpts.glopt->conv_tol = 5.e-2;
+
+  const Node *root = smps.getRootNode();
+
+  // solve a subproblem rooted at each of the children
+  for (int chd = 0; chd < root->nChildren(); ++chd) {
+
+    printf(" --------------- subproblem %2d of %2d -------\n",
+           chd + 1, root->nChildren());
+
+    // generate the subtree corresponding to the current child
+    createSubtree(root->getChild(chd), 1000 * (chd + 1));
+
+    // order the nodes and set the next links
+    orderNodes(rTree);
+
+#ifdef DEBUG_RTREE
+    rTree.print();
+#endif
+
+    SmpsReturn prob;
+
+    // generate a reduced problem
+    rv = generateSmps(rTree, prob);
+    if (rv) {
+      printf("Failed to generate the deterministic equivalent.\n");
+      return 1;
+    }
+
+    // setup the primal-dual problem
+    PDProblem pdProb = setupProblem(prob);
+
+    // write the deterministic equivalent in mps format
+    if (opt.writeMps()) {
+      FILE *fout = fopen("smps-red.mps", "w");
+      Write_MpsFile(fout, pdProb.AlgAug, pdProb.b, pdProb.c,
+                    pdProb.u, pdProb.l, 0, prob.colnames, prob.rownames);
+      fclose(fout);
+    }
+
+    PrintOptions Prt(PRINT_NONE);
+    hopdm_ret *ret = NULL;
+
+    // exit early if we don't have to solve the problem
+    if (opt.dontSolve()) {
+      printf("Problem not solved by request.\n");
+      goto TERMINATE;
+    }
+
+    // solve the problem
+    ret = hopdm(printout, &pdProb, &hopdmOpts, &Prt);
+    if (ret->ifail) {
+      rv = ret->ifail;
+      goto TERMINATE;
+    }
+
+    // generate a warmstart point for the complete problem
+    setupWarmStart(pdProb, prob);
+
+    // clean up
+    delete ret;
+    delete rTree.getRootNode();
+  }
+
+  // reset the reduced tree to avoid freeing it again in the destructor
+  rTree.setRootNode(NULL);
+
+  // the warmstart point is now completely defined
+  wsReady = true;
+
+ TERMINATE:
+
+  // restore the tolerance
+  hopdmOpts.glopt->conv_tol = origTol;
+
+  return rv;
+}
+
+/**
  *  Create the reduced tree in a recursive manner.
  *
  *  @param cNode:

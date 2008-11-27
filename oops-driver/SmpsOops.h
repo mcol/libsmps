@@ -49,6 +49,9 @@ class SmpsOops {
   /** Solve a reduced problem */
   int solveReduced(const OptionsOops &opt, HopdmOptions &hopdmOpts);
 
+  /** Solve a series of problems by decomposition */
+  int solveDecomposed(const OptionsOops &opt, HopdmOptions &hopdmOpts);
+
   /** Generate a reduced tree by choosing a subset of scenarios */
   int reduceTree(const int nScenarios);
 
