@@ -105,8 +105,7 @@ int Options::parse() {
 void Options::addOption(const char name[], const char usage[],
 			int *variable, const bool arg) {
 
-  OptionAtom newopt = {name, usage, variable, arg};
-  optionList.push_back(newopt);
+  optionList.push_back((OptionAtom) {name, usage, variable, arg});
 }
 
 /** Print a usage message */
