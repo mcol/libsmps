@@ -1231,9 +1231,26 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
  *
  *  Copies a Vector as used by OOPS into a DenseVector corresponding to a
  *  breadth-first ordering of the scenario tree.
+ *
+ *  @param x:
+ *         The Vector to be copied.
+ *  @param dx:
+ *         The DenseVector that will contain the reordered elements.
+ *  @param Ret:
+ *         The SmpsReturn structure of the problem.
+ *  @param rowcol:
+ *         The orientation of a vector (either ORDER_ROW or ORDER_COL).
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
  */
-void SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
-                                 const SmpsReturn &Ret, const int rowcol) {
+int SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
+                                const SmpsReturn &Ret, const int rowcol) {
+
+  // ensure that the dimensions match
+  if (dx->dim != x->node->end - x->node->begin) {
+    printf("Mismatched dimensions: vector is %d, dense is %d\n",
+           x->node->end - x->node->begin, dx->dim);
+    return 1;
+  }
 
   SetExactVector(x);
   CopyToDenseVector(x, dx);
@@ -1243,6 +1260,8 @@ void SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
     backOrderColVector(smps, Ret, dx->elts);
   else
     backOrderRowVector(Ret, dx->elts);
+
+  return 0;
 }
 
 /**
@@ -1255,9 +1274,26 @@ void SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
  *  first period entries are placed at the end rather than at the beginning,
  *  those columns that are not linking periods are placed in separate
  *  diagonal block, rather than in the RankCor block.
+ *
+ *  @param dx:
+ *         The DenseVector to be copied.
+ *  @param x:
+ *         The Vector that will contain the reordered elements.
+ *  @param Ret:
+ *         The SmpsReturn structure of the problem.
+ *  @param rowcol:
+ *         The orientation of a vector (either ORDER_ROW or ORDER_COL).
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
  */
-void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
-                                 const SmpsReturn &Ret, const int rowcol) {
+int SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
+                                const SmpsReturn &Ret, const int rowcol) {
+
+  // ensure that the dimensions match
+  if (dx->dim != x->node->end - x->node->begin) {
+    printf("Mismatched dimensions: dense is %d, vector is %d\n",
+           dx->dim, x->node->end - x->node->begin);
+    return 1;
+  }
 
   // should attempt to leave the original element order intact
 
@@ -1274,6 +1310,8 @@ void SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
     backOrderColVector(smps, Ret, dx->elts);
   else
     backOrderRowVector(Ret, dx->elts);
+
+  return 0;
 }
 
 /**

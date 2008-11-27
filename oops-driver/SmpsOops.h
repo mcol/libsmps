@@ -105,12 +105,12 @@ class SmpsOops {
   void reorderObjective(const SmpsTree &tree, SmpsReturn *Ret, const int rnkn);
 
   /** Copy a Vector into a breadth-first ordered DenseVector */
-  void VectorToSmpsDense(Vector *v, DenseVector *dv,
-                         const SmpsReturn &Ret, const int ordering);
+  int VectorToSmpsDense(Vector *v, DenseVector *dv,
+                        const SmpsReturn &Ret, const int ordering);
 
   /** Copy a breadth-first ordered DenseVector into a Vector */
-  void SmpsDenseToVector(DenseVector *dv, Vector *v,
-                         const SmpsReturn &Ret, const int ordering);
+  int SmpsDenseToVector(DenseVector *dv, Vector *v,
+                        const SmpsReturn &Ret, const int ordering);
 
 };
 
