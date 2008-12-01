@@ -760,15 +760,18 @@ int SmpsOops::getSolution(PDProblem &Prob, SmpsReturn &Ret) {
 }
 
 /**
- *  Order nodes according to the level.
+ *  Order the nodes of the tree according to the cutoff level.
  *
  *  The nodes of the event tree are reordered according to the cutoff level:
- *  - breadth-first until given level (so that these nodes come first)
- *  - depth-first afterwards          (to give diagonal structure in rest)
+ *  - breadth-first until the given level (so that these nodes come first);
+ *  - depth-first afterwards (to give diagonal structure in rest).
  *
- *  @param node:
- *         Root node of the tree to be reordered.
- *  @return 1 If something goes wrong; 0 otherwise.
+ *  The cutoff level has to be positive and smaller than the number of
+ *  stages in the problem. Also, it is capped to MAX_CUTOFF.
+ *
+ *  @param Tree:
+ *         The tree to be reordered.
+ *  @return A nonzero value if something goes wrong; 0 otherwise.
  */
 int SmpsOops::orderNodes(SmpsTree &Tree) {
 

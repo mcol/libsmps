@@ -99,7 +99,7 @@ class SmpsOops {
   /** Set up the warmstart point from a reduced-tree solution */
   int setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Pb);
 
-  /** Order the nodes according to the cutoff level */
+  /** Order the nodes of the tree according to the cutoff level */
   int orderNodes(SmpsTree &Tree);
 
   /** Apply the scenario changes */
