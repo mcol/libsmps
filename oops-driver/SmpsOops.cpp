@@ -203,6 +203,14 @@ int SmpsOops::solver(SmpsTree &tree,
   // setup the primal-dual problem
   PDProblem pdProb = setupProblem(prob);
 
+  // write the deterministic equivalent in mps format
+  if (opt.writeMps()) {
+    FILE *fout = fopen(reduced ? "smps-red.mps" : "smps.mps", "w");
+    Write_MpsFile(fout, pdProb.AlgAug, pdProb.b, pdProb.c,
+		  pdProb.u, pdProb.l, 0, prob.colnames, prob.rownames);
+    fclose(fout);
+  }
+
   // exit early if we don't have to solve the problem
   if (opt.dontSolve()) {
     printf("Problem not solved by request.\n");
