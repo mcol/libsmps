@@ -1344,12 +1344,12 @@ void backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
   // set the start of the D0 and Rnk blocks
   int nx_col_d0 = 0;                      // next column to take from D0
   int nx_col_rc = ttn - Ret.nColsRnkc;    // next column to take from Rnk
-  int currPer   = 0;                      // period of the current column
+  int currPer   = node->level();          // period of the current column
 
 #ifdef DEBUG_SMPS_ORDER
   printf("BACKORDCOL: node %3d (per %d): core cols %d--%d\n",
 	 node->name(), currPer,
-	 0, smps.getBegPeriodCol(currPer + 1) - 1);
+	 currPer, smps.getBegPeriodCol(currPer + 1) - 1);
 #endif
 
   // start writing the (D0Rnk) part
@@ -1414,12 +1414,12 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
   // set the start of the D0 and Rnk blocks
   int nx_col_d0 = 0;                      // next column in D0
   int nx_col_rc = ttn - Ret.nColsRnkc;    // next column in Rnk
-  int currPer   = 0;                      // period of the current column
+  int currPer   = node->level();          // period of the current column
 
 #ifdef DEBUG_SMPS_ORDER
   printf("FORWORDCOL: node %3d (per %d): core cols %d--%d\n",
 	 node->name(), currPer,
-	 0, smps.getBegPeriodCol(currPer + 1) - 1);
+	 currPer, smps.getBegPeriodCol(currPer + 1) - 1);
 #endif
 
   // loop through all columns in the D0Rnk block of original vector
