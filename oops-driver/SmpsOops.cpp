@@ -137,6 +137,7 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
   // options for the reduced problem
   hopdmOpts.glopt->conv_tol = 5.e-2;
 
+  int rv = 0;
   const Node *root = smps.getRootNode();
 
   // solve a subproblem rooted at each of the children
@@ -149,22 +150,25 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
     createSubtree(root->getChild(chd), 1000 * (chd + 1));
 
     // pass the problem to the solver
-    int rv = solver(rTree, opt, hopdmOpts);
-    if (rv)
-      return rv;
+    rv = solver(rTree, opt, hopdmOpts);
 
     // clean up
     delete rTree.getRootNode();
     rTree.setRootNode(NULL);
+
+    if (rv)
+      goto TERMINATE;
   }
 
   // the warmstart point is now completely defined
   wsReady = true;
 
+ TERMINATE:
+
   // restore the tolerance
   hopdmOpts.glopt->conv_tol = origTol;
 
-  return 0;
+  return rv;
 }
 
 /**
