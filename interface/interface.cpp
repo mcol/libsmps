@@ -1,5 +1,5 @@
 /*
- *  interface.c
+ *  interface.cpp
  *
  *  Generate the deterministic equivalent from the SMPS data structures.
  *
