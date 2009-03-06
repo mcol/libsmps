@@ -532,8 +532,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // counter of columns added to Rnkc so far
   int ncol_rc = 0;
 
-  // first column in current block
-  int fColBlk = 0;
+  // first column and number of columns in current block
+  int fColBlk = 0, nColBlk;
 
   int idxCol, cIndex = data.clpnts[smps.getBegPeriodCol(perNode)];
   Algebra **Array;
@@ -541,13 +541,12 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // for all columns in the deterministic equivalent
   for (int col = 0; col < ttn; ++col) {
 
-    int lastCol = 0;
     perNode = node->level();
 
-    for (j = 0; j < node->nLevels(); ++j)
-      lastCol += smps.getNColsPeriod(perNode + j);
+    for (j = 0, nColBlk = 0; j < node->nLevels(); ++j)
+      nColBlk += smps.getNColsPeriod(perNode + j);
 
-    if (col - fColBlk >= lastCol) {
+    if (col >= fColBlk + nColBlk) {
 
       // first col of current node in big matrix
       fColBlk = col;
