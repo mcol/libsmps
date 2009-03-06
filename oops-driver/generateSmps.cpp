@@ -1130,7 +1130,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
 				const int rnkn) {
 
-  int col, coreCol, firstColDiag, firstColNode;
+  int col, coreCol, firstColNode;
   int nb_el = 0;
   int ttn = tree.getTotCols();
 
@@ -1152,7 +1152,7 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
     node = node->next();
 
   // set the first column in diagonal block
-  firstColDiag = node->firstCol();
+  const int firstColDiag = node->firstCol();
 
   // copy objective and bounds into temporary arrays
   memcpy(objCopy, obj->elts, ttn * sizeof(double));
