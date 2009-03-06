@@ -140,6 +140,9 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   const int f_rwdiag = smps.getBegPeriodRow(cutoff);
   const int f_cldiag = smps.getBegPeriodCol(cutoff);
 
+  // size of the [Rnk D0] block
+  const int rnkD0 = f_cldiag - smps.getBegPeriodCol(rootNode->level());
+
   // index of the objective row
   const int objRow = smps.getObjRowIndex();
 
@@ -171,7 +174,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
                                  distiguish by both row/col period
   */
   {
-    is_col_diag = Ret.is_col_diag = new int[f_cldiag];
+    is_col_diag = Ret.is_col_diag = new int[rnkD0];
 
     // nonzeros in this column for each row-period
     int nzpdd0[MAX_PERIODS];
@@ -193,7 +196,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       nzpddg[j] = clpddg[j] = 0;
 
     // for all columns in border block
-    for (i = 0; i < f_cldiag; ++i) {
+    for (i = 0; i < rnkD0; ++i) {
 
       found = false;
       is_col_diag[i] = 0;
@@ -579,7 +582,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     //
 
     // border column
-    if (blkNode == 0 && is_col_diag[coreCol] == 0) {
+    if (blkNode == 0 && is_col_diag[coreCol - smps.getBegPeriodCol(Ret.rootNode->level())] == 0) {
 
       for (j = 0; j <= nBlocks; ++j) {
         sparse = (SparseSimpleMatrix *) Border[j]->Matrix;
@@ -1169,8 +1172,10 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
     }
 
     // find the corresponding column in the core matrix
-    coreCol = col - firstColNode + smps.getBegPeriodCol(node->level());
-    assert(coreCol <= smps.getCols());
+    coreCol = col - firstColNode + smps.getBegPeriodCol(node->level())
+      - smps.getBegPeriodCol(Ret->rootNode->level());
+    assert(coreCol < Ret->nColsRnkc + Ret->nColsDiag);
+    assert(coreCol >= 0);
     if (is_col_diag[coreCol] == 1) {
       obj->elts[nb_el] = objCopy[col];
       lob->elts[nb_el] = lobCopy[col];
@@ -1204,8 +1209,10 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
     }
 
     // find the corresponding column in the core matrix
-    coreCol = col - firstColNode + smps.getBegPeriodCol(node->level());
-    assert(coreCol <= smps.getCols());
+    coreCol = col - firstColNode + smps.getBegPeriodCol(node->level())
+      - smps.getBegPeriodCol(Ret->rootNode->level());
+    assert(coreCol < Ret->nColsRnkc + Ret->nColsDiag);
+    assert(coreCol >= 0);
     if (is_col_diag[coreCol] == 0) {
       obj->elts[nb_el] = objCopy[col];
       lob->elts[nb_el] = lobCopy[col];
