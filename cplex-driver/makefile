@@ -4,11 +4,11 @@ LIBDIR	:= $(DEPTH)/libs
 
 include $(OOPS)/mkincl
 
-CPLEX   = /usr/local/ilog/cplex10
+CPLEX   = /usr/local/ilog/cplex
 
 LIBS	+= \
 	-L $(LIBDIR) \
-	-L $(CPLEX)/lib/static_pic \
+	-L $(CPLEX)/lib/x86_debian4.0_4.1/static_pic \
 	-linterface -lsmps -lstoc \
 	-lilocplex -lcplex -lpthread \
 	$(NULL)
