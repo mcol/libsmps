@@ -37,7 +37,7 @@ int main(const int argc, const char *argv[]) {
   if (rv)
     return 1;
 
-  HopdmOptions hopdmOpts = HopdmOptions();
+  HopdmOptions hopdmOpts = *NewHopdmOptions();
 
   // warmstart case
   if (opt.useWarmstart()) {

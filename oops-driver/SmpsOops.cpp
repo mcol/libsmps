@@ -12,7 +12,6 @@
 #include <queue>
 #include <assert.h>
 #include "SmpsOops.h"
-#include "oops/WriteMps.h"
 
 
 static void
@@ -221,12 +220,12 @@ int SmpsOops::solver(SmpsTree &tree,
     return 0;
   }
 
-  PrintOptions Prt(reduced ? PRINT_NONE : PRINT_ITER);
+  PrintOptions Prt = *NewHopdmPrt(reduced ? PRINT_NONE : PRINT_ITER);
 
   // solve the problem
   hopdm_ret *ret = hopdm(printout, &pdProb, &hopdmOpts, &Prt);
   rv = ret->ifail;
-  delete ret;
+  free(ret);
   if (rv)
     return rv;
 
@@ -570,7 +569,7 @@ PDProblem SmpsOops::setupProblem(SmpsReturn &Pb) {
   CopyDenseToVector(Pb.l, vl);
 
   // create the primal dual problem
-  PDProblem Prob(AlgAug, vb, vc, vu, vx, vy, vz);
+  PDProblem Prob = *NewPDProblem(AlgAug, vb, vc, vu, vx, vy, vz);
   if (smps.hasUpperBounds()) {
     Prob.s = vs;
     Prob.w = vw;
