@@ -23,6 +23,7 @@ dfsNode(queue<Node*> &qOrder, Node *node, int &nBlocks, const int cutoff);
 
 /** Constructor */
 SmpsOops::SmpsOops(string smpsFile, const int lev) :
+  fsContr(NULL),
   smps(smpsFile),
   rTree(),
   wsPoint(NULL),
@@ -130,14 +131,37 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
     return 1;
   }
 
+  // generate a reduced problem containing as many scenarios as there are
+  // branches in the first stage
+  int rv = reduceTree(smps.getRootNode()->nChildren());
+  if (rv)
+    return rv;
+
+  rv = solveReduced(opt, hopdmOpts);
+  if (rv)
+    return rv;
+
+  // reset the reduced tree to be empty
+  delete rTree.getRootNode();
+  rTree.setRootNode(NULL);
+
+  printf(" ---- Calling firstStageBlock ----\n");
+  wsReady = false;
+
   // store the original convergence tolerance
   double origTol = hopdmOpts.glopt->conv_tol;
 
-  // options for the reduced problem
+  // options for the decomposed problem
   hopdmOpts.glopt->conv_tol = 5.e-2;
 
-  int rv = 0;
   const Node *root = smps.getRootNode();
+
+  // compute the correction for the first stage variables
+  fsContr = firstStageContribution();
+  if (!fsContr) {
+    rv = 1;
+    goto TERMINATE;
+  }
 
   // solve a subproblem rooted at each of the children
   for (int chd = 0; chd < root->nChildren(); ++chd) {
@@ -166,6 +190,9 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
 
   // restore the tolerance
   hopdmOpts.glopt->conv_tol = origTol;
+
+  delete[] fsContr;
+  fsContr = NULL;
 
   return rv;
 }
@@ -719,6 +746,9 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
     FreeDenseVector(wred);
   }
 
+  // erase the mapping
+  nMap.clear();
+
   return 0;
 }
 
@@ -1011,4 +1041,105 @@ int OptionsOops::parse() {
   int rv = Options::parse();
 
   return rv;
+}
+
+/**
+ *  Create the first stage block from the core file.
+ *
+ *  This builds a sparsematrix containing the linking block between 1st and 2nd
+ *  stage. It contains the 1st stage variables that appear in 2nd stage
+ *  constraints.
+ */
+double* SmpsOops::firstStageContribution() {
+
+  const SparseData data = smps.getSparseData();
+
+  int nRows = smps.getBegPeriodRow(2) - smps.getBegPeriodRow(1);
+  int nCols = smps.getBegPeriodCol(1) - smps.getBegPeriodCol(0);
+  int nNonz = data.clpnts[nCols];
+  int firstRow = smps.getBegPeriodRow(1);
+
+  if (!wsPoint) {
+    printf("No wsPoint available to obtain the first stage correction!\n");
+    return NULL;
+  }
+
+  printf("block is (%dx%d), %d nonzeros\n", nRows, nCols, nNonz);
+  SparseSimpleMatrix *sparse = NewSparseMatrix(nRows, nCols, nNonz,
+                                               "1stageblock");
+  sparse->nb_el = 0;
+
+  {
+    const Node *node = smps.getRootNode()->getChild(0);
+    printf("root node is node %d: rows %d, cols %d\n", node->name(),
+           node->nRows(), node->nCols());
+  }
+
+  // copy the elements in the block
+  for (int col = 0; col < nCols; ++col) {
+
+    sparse->col_beg[col] = sparse->nb_el;
+
+    // copy the nonzeros in the current column
+    for (int el = data.clpnts[col]; el < data.clpnts[col + 1]; ++el) {
+
+      // this element belongs to a first stage constraint
+      if (data.rwnmbs[el] < firstRow) {
+        /*
+        printf("Skipping element %d: coeff %f (row %d)\n",
+               el, data.acoeff[el], data.rwnmbs[el]);
+        */
+        continue;
+      }
+
+      assert(sparse->nb_el < sparse->max_nb_el);
+      sparse->element[sparse->nb_el] = data.acoeff[el];
+      sparse->row_nbs[sparse->nb_el] = data.rwnmbs[el] - firstRow;
+
+#ifdef DEBUG_GENERATE_SMPS
+      printf("Col %d:: el: %d (max: %d) row: %d  coeff: %f\n", col,
+             sparse->nb_el, sparse->max_nb_el, sparse->row_nbs[sparse->nb_el],
+             sparse->element[sparse->nb_el]);
+#endif
+
+      assert(sparse->row_nbs[sparse->nb_el] >= 0);
+      assert(sparse->row_nbs[sparse->nb_el] < sparse->nb_row);
+
+      sparse->nb_el++;
+      sparse->col_len[col]++;
+    }
+  }
+
+  sparse->col_beg[nCols] = sparse->nb_el;
+
+  Algebra *sp = NewSparseSimpleAlgebra(sparse);
+  Tree *tRow = NewTree(0, nRows, 0);
+  Tree *tCol = NewTree(0, nCols, 0);
+  LeavesAreLocalTree(tRow, NULL);
+  LeavesAreLocalTree(tCol, NULL);
+  SetIndexTree(tRow);
+  SetIndexTree(tCol);
+
+  // get the first stage vector
+  Vector *v = NewVectorFromArray(tCol, wsPoint->x->elts); // XXX does the ordering here matter?
+  Vector *vsol = NewVector(tRow, "sol");
+
+  //  PrintVector(v);
+  //  sp->Print(stdout, sp->Matrix, "%f");
+
+  // vsol = sp * v
+  sp->MatrixTimesVect(sp, v, vsol, 0, 1.0);
+
+  DenseVector *ddense = GetDenseVectorFromVector(vsol);
+  double *array = new double[nRows];
+  memcpy(array, &ddense->elts[0], nRows * sizeof(double));
+
+  // clean up
+  FreeAlgebraAlg(sp);
+  FreeVector(v);
+  FreeVector(vsol);
+  FreeTree(tCol);
+  FreeTree(tRow);
+
+  return array;
 }

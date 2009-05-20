@@ -63,6 +63,9 @@ class SmpsOops {
   /** Retrieve the solution information */
   int getSolution(PDProblem &Prob, SmpsReturn &Ret);
 
+  /** Correction to remove first stage variables */
+  double *fsContr;
+
  private:
 
   /** The smps instance to solve */
@@ -119,6 +122,9 @@ class SmpsOops {
   /** Copy a breadth-first ordered DenseVector into a Vector */
   int SmpsDenseToVector(DenseVector *dv, Vector *v,
                         const SmpsReturn &Ret, const int ordering);
+
+  /** Compute the first-stage contribution to the subproblem right-hand side */
+  double* firstStageContribution();
 
 };
 

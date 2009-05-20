@@ -57,6 +57,15 @@ int main(const int argc, const char *argv[]) {
       goto TERMINATE;
   }
 
+  // decomposition case
+  else if (opt.useDecomposition()) {
+
+    // solve the decomposed problems
+    rv = data.solveDecomposed(opt, hopdmOpts);
+    if (rv)
+      goto LEAVE_WARMSTART;
+  }
+
  LEAVE_WARMSTART:
 
   // solve the problem

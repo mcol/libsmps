@@ -16,7 +16,8 @@
 
 
 static void
-setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret);
+setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret,
+         double *fsContr);
 
 static void
 setupObj(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret);
@@ -208,7 +209,9 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 	nzpdd0[j] = 0;
 
       // for all elements in this column
-      for (j = data.clpnts[i]; j < data.clpnts[i + 1]; ++j) {
+      for (j = data.clpnts[smps.getBegPeriodCol(rootNode->level()) + i];
+           j < data.clpnts[smps.getBegPeriodCol(rootNode->level()) + i + 1];
+           ++j) {
 
 	row = data.rwnmbs[j];
 
@@ -229,7 +232,13 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 
 	// the column can go in the diagonal part
 	is_col_diag[i] = 1;
-	clpddg[smps.getColPeriod(i)]++;
+        int ppd = smps.getColPeriod(smps.getBegPeriodCol(rootNode->level()) + i);
+        assert(ppd < cutoff);
+        clpddg[ppd]++;
+
+#ifdef DEBUG_GENERATE_SMPS
+        printf("Column %d (period %d) goes into Diagon[0]\n", i, ppd);
+#endif
 
 	for (j = 0; j < cutoff; ++j)
 	  nzpddg[j] += nzpdd0[j];
@@ -668,7 +677,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   Ret.u = NewDenseVector(ttn, "UB");
 
   // setup the right-hand side
-  setupRhs(smps, tree, &Ret);
+  setupRhs(smps, tree, &Ret, fsContr);
 
   // setup objective and bounds
   setupObj(smps, tree, &Ret);
@@ -808,7 +817,8 @@ int copyLinkingBlocks(Smps &smps, Algebra **Array, const SparseData &data,
 }
 
 /** Set up the right-hand side */
-void setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
+void setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret,
+              double *fsContr) {
 
   int firstRowNode, begRowPeriod;
   DenseVector *rhs = Ret->b;
@@ -834,6 +844,15 @@ void setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
     }
 
   } while (node = node->next());
+
+  // change the right-hand side if this is a subproblem in decomposition
+  if (fsContr) {
+    node = Ret->rootNode;
+    firstRowNode = node->firstRow();
+    for (int i = 0; i < node->nRows(); ++i) {
+      rhs->elts[firstRowNode + i] -= fsContr[i];
+    }
+  }
 }
 
 /** Set up the objective and the bounds */
