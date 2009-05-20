@@ -14,6 +14,7 @@
 
 
 FILE *printout = stdout;
+FILE *globlog;
 
 
 /** Driver routine for the SMPS interface to OOPS */
