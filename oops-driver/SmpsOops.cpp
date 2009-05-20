@@ -934,14 +934,10 @@ SmpsReturn::SmpsReturn() :
 SmpsReturn::~SmpsReturn() {
 
   if (AlgA) {
-    FreeTree(AlgA->Trow);
-    FreeTree(AlgA->Tcol);
     FreeAlgebraAlg(AlgA);
   }
 
   if (AlgQ) {
-    FreeTree(AlgQ->Trow);
-    FreeTree(AlgQ->Tcol);
     FreeAlgebraAlg(AlgQ);
   }
 
