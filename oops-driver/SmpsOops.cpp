@@ -283,7 +283,7 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
   int i, nChildren = cNode->nChildren();
   int chdIdx = 0, nAdded = 0;
   int each = 0, rest = 0, step = 1;
-  Node *child = NULL;
+  Node *cChild = NULL, *rChild = NULL;
 
   // for each stage cache the reduced tree node from which the
   // complete tree nodes should be initialised
@@ -308,27 +308,27 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
   // we copy only the nodes that are at position chdIdx
   for (i = 0; i < nChildren; ++i) {
 
-    Node *ttt = cNode->getChild(i);
+    cChild = cNode->getChild(i);
 
     // this node is not going in the reduced tree
     if (i != chdIdx || nWanted == 0) {
-      assert(redChd[ttt->level()] != NULL);
+      assert(redChd[cChild->level()] != NULL);
 
       // just map the node and its children
-      nMap[ttt] = redChd[ttt->level()];
-      reduceScenarios(ttt, child, each);
+      nMap[cChild] = redChd[cChild->level()];
+      reduceScenarios(cChild, rChild, each);
       continue;
     }
 
     // copy the node in the reduced tree
-    child = new Node(ttt->name());
-    child->copy(ttt);
-    rParent->addChild(child);
-    nMap[ttt] = child;
+    rChild = new Node(cChild->name());
+    rChild->copy(cChild);
+    rParent->addChild(rChild);
+    nMap[cChild] = rChild;
 
     // store the child from which to initialise the nodes that
     // will not be put in the reduced tree
-    redChd[ttt->level()] = child;
+    redChd[cChild->level()] = rChild;
 
     // index of the next child to be put in the reduced tree
     chdIdx += step;
@@ -338,16 +338,16 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
       chdIdx = -1;
 
 #ifdef DEBUG_RTREE
-    printf("Node %d: chosen for the reduced tree.\n", ttt->name());
+    printf("Node %d: chosen for the reduced tree.\n", cChild->name());
 #endif
 
     // enter the recursion
     if (rest > 0) {
-      reduceScenarios(ttt, child, each + 1);
+      reduceScenarios(cChild, rChild, each + 1);
       --rest;
     }
     else
-      reduceScenarios(ttt, child, each);
+      reduceScenarios(cChild, rChild, each);
   }
 }
 
