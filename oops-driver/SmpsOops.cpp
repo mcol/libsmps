@@ -303,6 +303,8 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
 
   if (nWanted > 0)
     step = nChildren / nWanted;
+  if (step == 0)
+    step = 1;
 
   // copy the needed number of children of the complete node
   // we copy only the nodes that are at position chdIdx
