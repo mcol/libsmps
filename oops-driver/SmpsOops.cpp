@@ -791,7 +791,7 @@ int SmpsOops::getSolution(PDProblem &Prob, SmpsReturn &Ret) {
 #ifdef WITH_MPI
   if (IS_ROOT_PAR)
 #endif
-    printSolution(smps.getRootNode(), x->elts, y->elts, r->elts, z->elts);
+    printSolution(Ret.rootNode, x->elts, y->elts, r->elts, z->elts);
 
   // clean up
   FreeDenseVector(x);
