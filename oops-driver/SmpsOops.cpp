@@ -694,10 +694,13 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
     if (!rNode)
       continue;
 
+    // probability ratio between the nodes in the two trees used to
+    // scale correctly the variables of the dual constraints (z, w, y)
+    crProb = cNode->probNode() / rNode->probNode();
+
     cIndex = cNode->firstCol();
     rIndex = rNode->firstCol();
     nElems = cNode->nCols();
-    crProb = cNode->probNode() / rNode->probNode();
 
     // adjust rIndex taking into account aggregation
     if (cNode->level() != rNode->level()) {
