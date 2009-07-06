@@ -114,6 +114,10 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 /**
  *  Solve a series of problems by decomposition.
  *
+ *  It first generates and solves a problem based on a reduced tree in order
+ *  to obtain an approximation to the first-stage decisions, which is then
+ *  substituted out in the decomposed subproblems.
+ *
  *  @param opt:
  *         Command line options.
  *  @param hopdmOpts:
@@ -1051,6 +1055,13 @@ int OptionsOops::parse() {
  *  This builds a sparsematrix containing the linking block between 1st and 2nd
  *  stage. It contains the 1st stage variables that appear in 2nd stage
  *  constraints.
+ *
+ *  @return The product Tx to be subtracted from the right-hand side in the
+ *          subproblems.
+ *
+ *  @note
+ *  This assumes that the linking blocks are identical for all second-stage
+ *  nodes, so that the contribution is computed just once.
  */
 double* SmpsOops::firstStageContribution() {
 
