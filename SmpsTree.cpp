@@ -559,8 +559,10 @@ int SmpsStoc::scanScenariosType(ifstream &stoc) {
     }
 
     // realisation line
-    else if (nTokens == 3) {
-
+    else if ((nTokens == 3) ||
+             (nTokens == 4 && (strncmp(buffer, " UP", 3) == 0 ||
+                               strncmp(buffer, " LO", 3) == 0 ||
+                               strncmp(buffer, " FX", 3) == 0))) {
       ++maxReals;
     }
 
