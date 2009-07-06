@@ -432,6 +432,11 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   Ret.nColsRnkc = rnkc_n_blk[0];
   Ret.nColsDiag = diag_n_blk[0];
 
+  // rnkD0 refers to the core matrix, so if the cutoff level is > 1, it counts
+  // the second-stage blocks only once, but Ret.nColsRnkc and Ret.nColsDiag
+  // refer to the deterministic equivalent, so their sum can't be smaller
+  assert(Ret.nColsRnkc + Ret.nColsDiag >= rnkD0);
+
   //
   // set the first row/col of each block (in big matrix before reordering)
   //
@@ -585,6 +590,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     // corresponding column in the core matrix
     int coreCol = col - fColBlk + smps.getBegPeriodCol(perNode);
     assert(coreCol <= smps.getCols());
+    assert(coreCol >= 0);
 
     //
     // initialise the column in the current block
@@ -593,6 +599,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     // border column
     if (blkNode == 0 && is_col_diag[coreCol - smps.getBegPeriodCol(Ret.rootNode->level())] == 0) {
 
+      assert(coreCol - smps.getBegPeriodCol(Ret.rootNode->level()) < rnkD0);
+      assert(coreCol - smps.getBegPeriodCol(Ret.rootNode->level()) >= 0);
       for (j = 0; j <= nBlocks; ++j) {
         sparse = (SparseSimpleMatrix *) Border[j]->Matrix;
         sparse->col_beg[ncol_rc] = sparse->nb_el;
@@ -632,6 +640,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       }
 
       else {
+        assert(idxCol < sparse->nb_col);
         assert(sparse->nb_el < sparse->max_nb_el);
         sparse->element[sparse->nb_el] = data.acoeff[cIndex];
         sparse->row_nbs[sparse->nb_el] = row + offset;
@@ -1071,9 +1080,11 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	      // if this is past the last column in this node
 	      if (coreCol >= smps.getBegPeriodCol(perNode)) {
 		nd = nd->next();
+                assert(nd);
                 coreCol = smps.getBegPeriodCol(perNode);
                 perNode = nd->level();
 	      }
+
 	      if (Ret->is_col_diag[coreCol])
 		++iblkd0;
 	      else
