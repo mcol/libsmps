@@ -459,6 +459,11 @@ class SmpsStoc : public SmpsCore {
     return sc_len[scen];
   }
 
+  /** Return the name of the stochastic file */
+  const string getStochFileName(void) const {
+    return stocFile;
+  }
+
   /** Retrieve the pointer to the row indices of the scenario changes */
   const int* getEntryRow(void) const {
     return entryRow;
