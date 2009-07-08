@@ -28,12 +28,6 @@ backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x);
 static void
 forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x);
 
-static void
-backOrderRowVector(const SmpsReturn &Ret, double *x);
-
-static void
-forwOrderRowVector(const SmpsReturn &Ret, double *x);
-
 static int
 copyLinkingBlocks(Smps &smps, Algebra **Array, const SparseData &data,
                   const Node *node, int *f_rw_blk,
@@ -1268,6 +1262,10 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
  *  Copies a Vector as used by OOPS into a DenseVector corresponding to a
  *  breadth-first ordering of the scenario tree.
  *
+ *  @note
+ *  The reordering happens only for the columns, as in the generation phase
+ *  the rows have not been reordered.
+ *
  *  @param x:
  *         The Vector to be copied.
  *  @param dx:
@@ -1294,8 +1292,6 @@ int SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
   // reorder according to the SMPS breadth-first order
   if (rowcol == ORDER_COL)
     backOrderColVector(smps, Ret, dx->elts);
-  else
-    backOrderRowVector(Ret, dx->elts);
 
   return 0;
 }
@@ -1310,6 +1306,10 @@ int SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
  *  first period entries are placed at the end rather than at the beginning,
  *  those columns that are not linking periods are placed in separate
  *  diagonal block, rather than in the RankCor block.
+ *
+ *  @note
+ *  The reordering happens only for the columns, as in the generation phase
+ *  the rows have not been reordered.
  *
  *  @param dx:
  *         The DenseVector to be copied.
@@ -1336,16 +1336,12 @@ int SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
   // go for memory saving option
   if (rowcol == ORDER_COL)
     forwOrderColVector(smps, Ret, dx->elts);
-  else
-    forwOrderRowVector(Ret, dx->elts);
 
   CopyDenseToVector(dx, x);
 
   // and reverse the order, to leave the dense vector intact
   if (rowcol == ORDER_COL)
     backOrderColVector(smps, Ret, dx->elts);
-  else
-    backOrderRowVector(Ret, dx->elts);
 
   return 0;
 }
@@ -1486,62 +1482,6 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
   // copy the remaining columns in order, beginning after rankcor
   // nx_col_d0 points to the next entry that should be copied into
   memcpy(&x[nx_col_d0], &dtmp[ncol_ttrc], (ttn - ncol_ttrc) * sizeof(double));
-
-  // clean up
-  delete[] dtmp;
-}
-
-/**
- *  Reorder the rows into SMPS breadth-first order.
- *
- *  @param Ret:
- *         Information about the problem with respect to which the
- *         reordering should be done.
- *  @param x:
- *         The vector to be reordered.
- */
-void backOrderRowVector(const SmpsReturn &Ret, double *x) {
-
-  const int ttm = Ret.b->dim, nRowsRnkc = Ret.nRowsRnkc;
-  double *dtmp = new double[ttm];
-  memcpy(dtmp, x, ttm * sizeof(double));
-
-  // first copy the rows from the rankcor part (at end of matrix)
-  memcpy(x, &dtmp[ttm - nRowsRnkc], nRowsRnkc * sizeof(double));
-
-  // now copy the rest
-  memcpy(&x[nRowsRnkc], dtmp, (ttm - nRowsRnkc) * sizeof(double));
-
-  // clean up
-  delete[] dtmp;
-}
-
-/**
- *  Reorder the rows into the order used by OOPS.
- *
- *  Order the rows from the SMPS breadth-first order into the order used
- *  internally by OOPS (the only difference is that OOPS has the rows
- *  correspoding to the first 'cutoff' periods at the end, whereas the SMPS
- *  breadth-first order has them at the beginning).
- *
- *  @param Ret:
- *         Information about the problem with respect to which the
- *         reordering should be done.
- *  @param x:
- *         The vector to be reordered.
- */
-void forwOrderRowVector(const SmpsReturn &Ret, double *x) {
-
-  const int ttm = Ret.b->dim, nRowsRnkc = Ret.nRowsRnkc;
-  double *dtmp = new double[ttm];
-  memcpy(dtmp, x, ttm * sizeof(double));
-
-  // the rankcor rows are at the beginning of the vector, they should
-  // be re-ordered to the end
-  memcpy(&x[ttm - nRowsRnkc], dtmp, nRowsRnkc * sizeof(double));
-
-  // now copy the rest
-  memcpy(x, &dtmp[nRowsRnkc], (ttm - nRowsRnkc) * sizeof(double));
 
   // clean up
   delete[] dtmp;
