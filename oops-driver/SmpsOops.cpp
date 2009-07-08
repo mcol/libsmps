@@ -1137,7 +1137,7 @@ double* SmpsOops::firstStageContribution() {
   SetIndexTree(tCol);
 
   // get the first stage vector
-  Vector *v = NewVectorFromArray(tCol, wsPoint->x->elts); // XXX does the ordering here matter?
+  Vector *v = NewVectorFromArray(tCol, "v", wsPoint->x->elts); // XXX does the ordering here matter?
   Vector *vsol = NewVector(tRow, "sol");
 
   //  PrintVector(v);
