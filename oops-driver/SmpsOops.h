@@ -80,6 +80,9 @@ class SmpsOops {
   /** Whether the warmstart point is ready for use */
   bool wsReady;
 
+  /** The name of the clustering file */
+  char *clusteringFileName;
+
   /** The mapping between the nodes in the complete and reduced trees */
   map<const Node*, Node*> nMap;
 
@@ -97,6 +100,13 @@ class SmpsOops {
 
   /** Create a reduced tree in a recursive manner */
   void reduceScenarios(const Node *cNode, Node *rParent, const int nWanted);
+
+  /** Check if a clustering information file is present */
+  bool clusteringFilePresent(const int nWanted);
+
+  /** Create a reduced tree from a clustering information file */
+  void reduceScenariosCluster(const Node *cNode, Node *rParent,
+                              const int nWanted);
 
   /** Generate a subtree rooted at the given node */
   int createSubtree(Node *cNode, const int nodeName);

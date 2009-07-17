@@ -28,12 +28,14 @@ SmpsOops::SmpsOops(string smpsFile, const int lev) :
   rTree(),
   wsPoint(NULL),
   wsReady(false),
+  clusteringFileName(NULL),
   cutoff(lev) {
 }
 
 /** Destructor */
 SmpsOops::~SmpsOops() {
 
+  delete clusteringFileName;
   delete wsPoint;
 }
 
@@ -354,6 +356,119 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
     }
     else
       reduceScenarios(cChild, rChild, each);
+  }
+}
+
+/**
+ *  Check if a clustering information file is present.
+ *
+ *  Checks whether the clustering information file for the given problem and
+ *  the required number of reduced tree scenarios is present.
+ *
+ *  @param nWanted:
+ *         Number of desired scenarios in the reduced tree.
+ */
+bool SmpsOops::clusteringFilePresent(const int nWanted) {
+
+  char buffer[100], *p;
+
+  strcpy(buffer, smps.getStochFileName().c_str());
+  p = strstr(buffer, ".sto");
+  if (!p) {
+    printf("Name of stochastic file '%s' does not end in '.sto'\n", buffer);
+    return false;
+  }
+
+  // remove the .sto extension, append the number of scenarios wanted and
+  // the .cst extension
+  sprintf(p, "_%d.cst", nWanted);
+
+  if (access(buffer, R_OK)) {
+    printf("Cannot find clustering information file '%s'\n", buffer);
+    return false;
+  }
+
+  // store the filename
+  clusteringFileName = new char[100];
+  strcpy(clusteringFileName, buffer);
+
+  return true;
+}
+
+/**
+ *  Create a reduced tree from a clustering information file.
+ *
+ *  Creates the reduced tree by using a clustering algorithm. The cluster
+ *  information will be read in from an external file.
+ *
+ *  @param cNode:
+ *         Node in the complete tree.
+ *  @param rParent:
+ *         Node in the reduced tree to which add children.
+ *  @param nWanted:
+ *         Number of desired scenarios in the reduced tree.
+ */
+void SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
+                                      const int nWanted) {
+
+  int nChildren = cNode->nChildren();
+  Node *child = NULL;
+
+#ifdef DEBUG_RTREE
+  printf("ReduceScenariosCluster: node %d (%d)\n", cNode->name(), nWanted);
+#endif
+
+  char buffer[200], *p;
+  map<int, Node *> keepnodes;
+  int *src_nd;
+
+  FILE *fin = fopen(clusteringFileName, "r");
+  if (!fin) {
+    printf("Cannot find the clustering information file '%s'\n",
+           clusteringFileName);
+    exit(1);
+  }
+
+  // count the number of lines in the file
+  int nlines = 0;
+  p = fgets(buffer, 100, fin);
+  p = fgets(buffer, 100, fin);
+  while(!feof(fin)){
+    fgets(buffer, 100, fin);
+    nlines++;
+  }
+  printf("Found %d lines\n",nlines);
+  fclose(fin);
+
+  assert(nChildren == nlines);
+
+  src_nd = new int[nlines];
+  fin = fopen(clusteringFileName, "r");
+  p = fgets(buffer, 100, fin);
+
+  // copy the needed number of children of the complete node
+  for (int i = 0; i < nChildren; ++i) {
+    Node *ttt = cNode->getChild(i);
+    int nd, src;
+
+    p = fgets(buffer, 100, fin);
+    sscanf(p, "%d %d", &nd, &src);
+    src_nd[i] = src;
+    if (nd == src) {
+      // this node should be kept
+      child = new Node(ttt->name());
+      child->copy(ttt);
+      rParent->addChild(child);
+      keepnodes[i] = child;
+    }
+  }
+
+  fclose(fin);
+
+  // store the mapping of nodes
+  for (int i = 0; i < nChildren; ++i) {
+    Node *ttt = cNode->getChild(i);
+    nMap[ttt] = keepnodes[src_nd[i]];
   }
 }
 
