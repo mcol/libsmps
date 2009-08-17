@@ -1187,6 +1187,9 @@ double* SmpsOops::firstStageContribution() {
 
   int nRows = smps.getBegPeriodRow(2) - smps.getBegPeriodRow(1);
   int nCols = smps.getBegPeriodCol(1) - smps.getBegPeriodCol(0);
+
+  // the number of nonzeros is an upper approximation here, since it contains
+  // the nonzeros appearing above this block and in the objective
   int nNonz = data.clpnts[nCols];
   int firstRow = smps.getBegPeriodRow(1);
 
@@ -1195,16 +1198,18 @@ double* SmpsOops::firstStageContribution() {
     return NULL;
   }
 
-  printf("block is (%dx%d), %d nonzeros\n", nRows, nCols, nNonz);
   SparseSimpleMatrix *sparse = NewSparseMatrix(nRows, nCols, nNonz,
                                                "1stageblock");
   sparse->nb_el = 0;
 
+#ifdef DEBUG_DECOMPOSITION
   {
     const Node *node = smps.getRootNode()->getChild(0);
+    printf("First-stage block is (%dx%d)\n", nRows, nCols);
     printf("root node is node %d: rows %d, cols %d\n", node->name(),
            node->nRows(), node->nCols());
   }
+#endif
 
   // copy the elements in the block
   for (int col = 0; col < nCols; ++col) {
@@ -1227,7 +1232,7 @@ double* SmpsOops::firstStageContribution() {
       sparse->element[sparse->nb_el] = data.acoeff[el];
       sparse->row_nbs[sparse->nb_el] = data.rwnmbs[el] - firstRow;
 
-#ifdef DEBUG_GENERATE_SMPS
+#ifdef DEBUG_DECOMPOSITION
       printf("Col %d:: el: %d (max: %d) row: %d  coeff: %f\n", col,
              sparse->nb_el, sparse->max_nb_el, sparse->row_nbs[sparse->nb_el],
              sparse->element[sparse->nb_el]);
