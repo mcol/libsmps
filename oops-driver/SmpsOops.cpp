@@ -10,6 +10,7 @@
  */
 
 #include <queue>
+#include <cstring>
 #include <assert.h>
 #include "SmpsOops.h"
 
