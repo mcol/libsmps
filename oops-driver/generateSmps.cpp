@@ -216,7 +216,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 	  nzpdd0[smps.getRowPeriod(row)]++;
 	}
 
-	// this entry is associated with a diagonal block
+        // this entry is associated to a diagonal block, so it will have
+        // to stay in the border
 	if (row >= f_rwdiag)
 	  found = true;
       }
@@ -291,8 +292,8 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
      where [D0 C0] is the first periods matrix reordered to take into
      account columns that can be treated separately.
 
-     For setting up the matrix the ordering does not make any difference at
-     all, however when setting up RHS, Obj, UB vectors the ordering
+     In setting up the matrix the ordering does not make any difference at
+     all; however, when setting up RHS, Obj, UB vectors the ordering
      must be taken into account.
 
      Column vectors are set up in the order [ D0 D1 D2 ... Dn-1 Cn-1 ]
@@ -925,7 +926,7 @@ void setupObj(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
  *  @note
  *  The entryCol[] and entryRow[] vectors are in FORTRAN numbering.
  *
- *  Need: for each node, start of row/col within its DetEquivMatrix blck
+ *  Need: for each node, start of row/col within its DetEquivMatrix block
  *   -   for diagonal blocks can take row/col from f_cl_nd, f_rw_nd and
  *       substract starting row/col for seed node of this block
  *   -   for nondiag node need to do breadth first count
@@ -939,7 +940,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 
   int period, lastPd, firstEntry, lastEntry;
   int row, col, pdr, pdc;
-  int k, iblk, jblk;
+  int k;
   const int nBlocks = tree.getBlocks();
   const int *entryRow = smps.getEntryRow();
   const int *entryCol = smps.getEntryCol();
@@ -985,7 +986,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
       // for all changes affecting this scenario
       for (int corr = firstEntry; corr < lastEntry; ++corr) {
 
-	// row and column of core affected by the change
+	// row and column block of core affected by the change
 	pdr = smps.getRowPeriod(entryRow[corr] - 1);
 	pdc = smps.getColPeriod(entryCol[corr] - 1);
 
@@ -1032,7 +1033,8 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	    - smps.getBegPeriodCol(pdc);
 
 	  // adjust the column index if the change is in a column that belongs
-	  // to the previous period
+          // to the previous period, that is if the change is in one of
+          // the linking blocks rather than in a diagonal block
 	  if (pdr != pdc)
 	    col += scNode->parent()->firstCol() - scNode->firstCol();
 
@@ -1044,12 +1046,15 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 		 entryRow[corr], entryCol[corr], row, col);
 #endif
 
-	  // work out the row and column block of the correction
+          // work out the row and column block of the correction in the
+          // deterministic equivalent
 	  int rowBlock = 0, colBlock = 0;
 	  while (row >= f_rw_blk[rowBlock + 1]) ++rowBlock;
 	  while (col >= f_cl_blk[colBlock + 1]) ++colBlock;
-	  jblk = row - f_rw_blk[rowBlock];
-	  iblk = col - f_cl_blk[colBlock];
+
+          // row and column indices within the sparse matrix
+          int iblk = row - f_rw_blk[rowBlock];
+          int jblk = col - f_cl_blk[colBlock];
 
 	  assert(rowBlock <= nBlocks);
 	  assert(colBlock <= nBlocks);
@@ -1061,7 +1066,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	    // looping through all RankCor columns and counting
 
 	    // columns in rnk and in d0 so far
-	    int iblkrnc = 0, iblkd0 = 0;
+	    int jblkrnc = 0, jblkd0 = 0;
 
 	    // node of the current column and corresponding period
 	    const Node *nd = Ret->rootNode;
@@ -1080,17 +1085,17 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	      }
 
 	      if (Ret->is_col_diag[coreCol])
-		++iblkd0;
+		++jblkd0;
 	      else
-		++iblkrnc;
+		++jblkrnc;
 	    }
 
 	    if (Ret->is_col_diag[coreCol]) {
 	      sparse = (SparseSimpleMatrix *) Diagon[0]->Matrix;
-	      iblk = iblkd0;
+	      jblk = jblkd0;
 	    } else {
 	      sparse = (SparseSimpleMatrix *) Border[rowBlock]->Matrix;
-	      iblk = iblkrnc;
+	      jblk = jblkrnc;
 	    }
 	  }
 
@@ -1105,8 +1110,8 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 
 	  // apply the change
           bool found = false;
-	  for (k = sparse->col_beg[iblk]; k < sparse->col_beg[iblk + 1]; ++k) {
-	    if (sparse->row_nbs[k] == jblk) {
+          for (k = sparse->col_beg[jblk]; k < sparse->col_beg[jblk + 1]; ++k) {
+            if (sparse->row_nbs[k] == iblk) {
 #ifdef DEBUG_SCEN
 	      printf(" (%g -> %g)\n", sparse->element[k], entryVal[corr]);
 #endif
