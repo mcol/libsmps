@@ -158,6 +158,9 @@ int Smps::countNonzeros(const SmpsTree &tree) const {
   // get the root node
   const Node *node = tree.getRootNode();
 
+  // period from which we should start counting the nonzeros
+  const int begPeriod = node->level();
+
   // leave immediately if there is no root node
   if (!node)
     return 0;
@@ -173,10 +176,10 @@ int Smps::countNonzeros(const SmpsTree &tree) const {
   } while (node = node->next());
 
   // count the number of nonzero elements
-  for (int per = 0; per < nPeriod; ++per) {
+  for (int per = begPeriod; per < nPeriod; ++per) {
 
     // number of nonzeros in the period
-    for (int j = 0; j < nPeriod; ++j) {
+    for (int j = begPeriod; j < nPeriod; ++j) {
 
       nzTotal += nzPeriod[per + nPeriod * j] * nnPer[per];
 
