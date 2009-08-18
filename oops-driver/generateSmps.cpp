@@ -1021,7 +1021,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	}
 
 	// if the change affects the matrix
-	else if (pdc >= 0 && pdr >= 0 && pdr == period) {
+	else if (pdc >= 0 && pdr >= 0 && pdr == period && pdc >= rootPeriod) {
 
 	  // we cannot deal with above-diagonal entries
 	  assert((pdr == pdc) || (pdr == pdc + 1));
