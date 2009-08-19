@@ -55,7 +55,7 @@ class SmpsOops {
   int solveDecomposed(const OptionsOops &opt, HopdmOptions &hopdmOpts);
 
   /** Generate a reduced tree by choosing a subset of scenarios */
-  int reduceTree(const int nScenarios);
+  int reduceTree(const int nScenarios, const char *clusteringFile = NULL);
 
   /** Generate a reduced tree with aggregation */
   int aggregateStages(const int nAggr);
@@ -80,9 +80,6 @@ class SmpsOops {
   /** Whether the warmstart point is ready for use */
   bool wsReady;
 
-  /** The name of the clustering file */
-  char *clusteringFileName;
-
   /** The mapping between the nodes in the complete and reduced trees */
   map<const Node*, Node*> nMap;
 
@@ -101,12 +98,9 @@ class SmpsOops {
   /** Create a reduced tree in a recursive manner */
   void reduceScenarios(const Node *cNode, Node *rParent, const int nWanted);
 
-  /** Check if a clustering information file is present */
-  bool clusteringFilePresent(const int nWanted);
-
   /** Create a reduced tree from a clustering information file */
-  void reduceScenariosCluster(const Node *cNode, Node *rParent,
-                              const int nWanted);
+  int reduceScenariosCluster(const Node *cNode, Node *rParent,
+                             const char *clusteringFile);
 
   /** Generate a subtree rooted at the given node */
   int createSubtree(Node *cNode, const int nodeName);
@@ -246,6 +240,9 @@ class OptionsOops : public Options {
   /** The value of the cutoff level (for multistage problems) */
   int _cutoffLevel;
 
+  /** The name of the clustering file for scenario reduction */
+  char *_clusteringFileName;
+
  public:
 
   /** Constructor */
@@ -277,6 +274,11 @@ class OptionsOops : public Options {
   /** Retrieve the value of the cutoffLevel option */
   int cutoffLevel(void) const {
     return _cutoffLevel;
+  }
+
+  /** Retrieve the value of the useReduction option */
+  char* useClustering(void) const {
+    return _clusteringFileName;
   }
 
 };

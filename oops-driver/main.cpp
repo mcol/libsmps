@@ -44,7 +44,7 @@ int main(const int argc, const char *argv[]) {
 
     // select the warmstart strategy
     if (opt.useReduction())
-      rv = data.reduceTree(opt.useReduction());
+      rv = data.reduceTree(opt.useReduction(), opt.useClustering());
     else if (opt.useAggregation())
       rv = data.aggregateStages(opt.useAggregation());
 

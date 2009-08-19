@@ -29,14 +29,12 @@ SmpsOops::SmpsOops(string smpsFile, const int lev) :
   rTree(),
   wsPoint(NULL),
   wsReady(false),
-  clusteringFileName(NULL),
   cutoff(lev) {
 }
 
 /** Destructor */
 SmpsOops::~SmpsOops() {
 
-  delete clusteringFileName;
   delete wsPoint;
 }
 
@@ -361,42 +359,6 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
 }
 
 /**
- *  Check if a clustering information file is present.
- *
- *  Checks whether the clustering information file for the given problem and
- *  the required number of reduced tree scenarios is present.
- *
- *  @param nWanted:
- *         Number of desired scenarios in the reduced tree.
- */
-bool SmpsOops::clusteringFilePresent(const int nWanted) {
-
-  char buffer[100], *p;
-
-  strcpy(buffer, smps.getStochFileName().c_str());
-  p = strstr(buffer, ".sto");
-  if (!p) {
-    printf("Name of stochastic file '%s' does not end in '.sto'\n", buffer);
-    return false;
-  }
-
-  // remove the .sto extension, append the number of scenarios wanted and
-  // the .cst extension
-  sprintf(p, "_%d.cst", nWanted);
-
-  if (access(buffer, R_OK)) {
-    printf("Cannot find clustering information file '%s'\n", buffer);
-    return false;
-  }
-
-  // store the filename
-  clusteringFileName = new char[100];
-  strcpy(clusteringFileName, buffer);
-
-  return true;
-}
-
-/**
  *  Create a reduced tree from a clustering information file.
  *
  *  Creates the reduced tree by using a clustering algorithm. The cluster
@@ -406,11 +368,12 @@ bool SmpsOops::clusteringFilePresent(const int nWanted) {
  *         Node in the complete tree.
  *  @param rParent:
  *         Node in the reduced tree to which add children.
- *  @param nWanted:
- *         Number of desired scenarios in the reduced tree.
+ *  @param clusteringFile:
+ *         Name of the clustering file for scenario reduction.
+ *  @return 1 If something goes wrong; 0 otherwise.
  */
-void SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
-                                      const int nWanted) {
+int SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
+                                     const char *clusteringFile) {
 
   int nChildren = cNode->nChildren();
   Node *child = NULL;
@@ -423,11 +386,11 @@ void SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
   map<int, Node *> keepnodes;
   int *src_nd;
 
-  FILE *fin = fopen(clusteringFileName, "r");
+  FILE *fin = fopen(clusteringFile, "r");
   if (!fin) {
     printf("Cannot find the clustering information file '%s'\n",
-           clusteringFileName);
-    exit(1);
+           clusteringFile);
+    return 1;
   }
 
   // count the number of lines in the file
@@ -444,7 +407,7 @@ void SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
   assert(nChildren == nlines);
 
   src_nd = new int[nlines];
-  fin = fopen(clusteringFileName, "r");
+  fin = fopen(clusteringFile, "r");
   p = fgets(buffer, 100, fin);
 
   // copy the needed number of children of the complete node
@@ -471,6 +434,8 @@ void SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
     Node *ttt = cNode->getChild(i);
     nMap[ttt] = keepnodes[src_nd[i]];
   }
+
+  return 0;
 }
 
 /**
@@ -478,9 +443,11 @@ void SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
  *
  *  @param nScenarios:
  *         Number of scenarios to appear in the reduced tree.
+ *  @param clusteringFile:
+ *         Name of the clustering file for scenario reduction.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
-int SmpsOops::reduceTree(const int nScenarios) {
+int SmpsOops::reduceTree(const int nScenarios, const char *clusteringFile) {
 
   printf(" --------------- reduceTree ----------------\n");
 
@@ -506,8 +473,16 @@ int SmpsOops::reduceTree(const int nScenarios) {
   // print the number of scenarios in the reduced tree
   printf("Choosing %d scenarios.\n", nWanted);
 
+  int rv = 0;
+
   // build up the reduced tree by selecting some scenarios
-  reduceScenarios(cNode, rNode, nWanted);
+  if (clusteringFile)
+    rv = reduceScenariosCluster(cNode, rNode, clusteringFile);
+  else
+    reduceScenarios(cNode, rNode, nWanted);
+
+  if (rv)
+    return rv;
 
   // recompute the probabilities in the reduced tree
   do {
@@ -1146,7 +1121,8 @@ OptionsOops::OptionsOops(const int argc, const char *argv[]) :
   _useReduction(0),
   _useAggregation(0),
   _useDecomposition(0),
-  _cutoffLevel(1) {
+  _cutoffLevel(1),
+  _clusteringFileName(NULL) {
 }
 
 /** Parse the command line options */
@@ -1155,6 +1131,8 @@ int OptionsOops::parse() {
   // add the specialised options
   Options::addOption("-w", "use a warmstart strategy with scenario reduction",
 		     &_useReduction, true);
+  Options::addOption("-c", "use a clustering file for scenario reduction",
+		     &_clusteringFileName);
   Options::addOption("-a", "use a warmstart strategy with stage aggregation",
 		     &_useAggregation, true);
   Options::addOption("-k", "use a warmstart strategy with decomposition",
