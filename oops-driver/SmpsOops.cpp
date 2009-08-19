@@ -1159,7 +1159,7 @@ int OptionsOops::parse() {
 		     &_useAggregation, true);
   Options::addOption("-k", "use a warmstart strategy with decomposition",
                      &_useDecomposition);
-  Options::addOption("-c", "cutoff level (for multistage programs)",
+  Options::addOption("-l", "cutoff level (for multistage programs)",
 		     &_cutoffLevel, true);
 
   // parse the common options
