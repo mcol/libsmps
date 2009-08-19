@@ -456,24 +456,31 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   diag_nz_blk[0] += nzdg0;
 
   //
-  // allocate the sparse matrices for rank corrector and diagonal components
+  // allocate the sparse matrices that compose the deterministic equivalent
   //
 
-  SparseSimpleMatrix *sparse;
-
-  // diagonal algebras
-  Algebra **Diagon = (Algebra**) malloc((nBlocks + 2) * sizeof(Algebra *));
-
-  // rankcor part
-  Algebra **Border = (Algebra**) malloc((nBlocks + 1) * sizeof(Algebra *));
-
-  // bottom algebras (set to zero)
-  Algebra **Bottom = (Algebra**) malloc((nBlocks + 1) * sizeof(Algebra *));
-
-  // diagonal elements of Q
-  Algebra **QDiag = (Algebra**) malloc((nBlocks + 2) * sizeof(Algebra *));
-
+  SparseSimpleMatrix *sparse = NULL, *mSparse = NULL, *qSparse = NULL;
+  Algebra **Diagon = NULL, **Border = NULL, **Bottom = NULL, **QDiag = NULL;
   char name[15];
+
+  // if we have a proper tree, we set up a DblBordDiagAlgebra; however, if
+  // the tree contains only one node (as it is the case for the decomposition
+  // of a two stage problem) we set up a SparseSimpleAlgebra
+
+  // normal case
+  if (nBlocks > 0) {
+
+    // diagonal algebras
+    Diagon = (Algebra**) malloc((nBlocks + 2) * sizeof(Algebra *));
+
+    // rankcor part
+    Border = (Algebra**) malloc((nBlocks + 1) * sizeof(Algebra *));
+
+    // bottom algebras (set to zero)
+    Bottom = (Algebra**) malloc((nBlocks + 1) * sizeof(Algebra *));
+
+    // diagonal elements of Q
+    QDiag = (Algebra**) malloc((nBlocks + 2) * sizeof(Algebra *));
 
 #ifdef DEBUG_GENERATE_SMPS
 #ifdef WITH_MPI
@@ -534,6 +541,27 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   sparse = NewSparseMatrix(rnkc_n_blk[0], rnkc_n_blk[0], 0, "QDiagPart");
   sparse->cbf = (CallBackFunction) CallBackVoid;
   QDiag[nBlocks + 1] = NewSparseSimpleAlgebra(sparse);
+
+  }
+
+  // special case
+  else {
+
+    // nBlocks is zero only if the current root node doesn't have children,
+    // which can happen in the case of decomposition of a two-stage problem
+    assert(rootNode->nChildren() == 0);
+
+    sprintf(name, "Matrix");
+    const int ttnz = smps.countNonzeros(tree);
+    mSparse = NewSparseMatrix(ttm, ttn, ttnz, name);
+
+    sprintf(name, "qMatrix");
+    qSparse = NewSparseMatrix(ttn, ttn, ttnz, name);
+    mSparse->nb_el = 0;
+    mSparse->nb_col = 0;
+    mSparse->cbf = (CallBackFunction) CallBackVoid;
+    qSparse->cbf = (CallBackFunction) CallBackVoid;
+  }
 
   //
   // build the deterministic equivalent column by column
@@ -609,12 +637,21 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     }
 
     // diagonal column
-    else {
+    else if (nBlocks > 0) {
       sparse = (SparseSimpleMatrix *) Diagon[blkNode]->Matrix;
       sparse->col_beg[sparse->nb_col] = sparse->nb_el;
       idxCol = sparse->nb_col;
       sparse->nb_col++;
       Array = Diagon;
+    }
+
+    // again the case of decomposition of a two-stage problem
+    else {
+      sparse = mSparse;
+      sparse->col_beg[sparse->nb_col] = sparse->nb_el;
+      idxCol = sparse->nb_col;
+      sparse->nb_col++;
+      Array = NULL;
     }
 
     int offset = node->firstRow() - smps.getBegPeriodRow(perNode)
@@ -670,11 +707,16 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   assert(Ret.nColsRnkc == ncol_rc);
 
   // write the final pointer for the last+1 column
-  for (j = 0; j <= nBlocks; ++j) {
-    sparse = (SparseSimpleMatrix *) Border[j]->Matrix;
-    sparse->col_beg[Ret.nColsRnkc] = sparse->nb_el;
-    sparse = (SparseSimpleMatrix *) Diagon[j]->Matrix;
-    sparse->col_beg[sparse->nb_col] = sparse->nb_el;
+  if (nBlocks == 0) {
+    mSparse->col_beg[mSparse->nb_col] = mSparse->nb_el;
+  }
+  else {
+    for (j = 0; j <= nBlocks; ++j) {
+      sparse = (SparseSimpleMatrix *) Border[j]->Matrix;
+      sparse->col_beg[Ret.nColsRnkc] = sparse->nb_el;
+      sparse = (SparseSimpleMatrix *) Diagon[j]->Matrix;
+      sparse->col_beg[sparse->nb_col] = sparse->nb_el;
+    }
   }
 
   Ret.b = NewDenseVector(ttm, "RHS");
@@ -697,14 +739,24 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   // reorder objective, bounds and column names
   reorderObjective(tree, &Ret, rnkc_n_blk[0]);
 
-  // set up the deterministic equivalent as a DblBordDiagAlgebra
-  DblBordDiagSimpleMatrix *MA =
-    NewDblBordDiagSimpleMatrix(nBlocks + 1, Bottom, Border, Diagon, "SmpsA");
-  BlockDiagSimpleMatrix *MQ =
-    NewBlockDiagSimpleMatrix(nBlocks + 2, QDiag, "Q_main");
+  if (nBlocks == 0) {
 
-  Ret.AlgA = NewDblBordDiagSimpleAlgebra(MA);
-  Ret.AlgQ = NewBlockDiagSimpleAlgebra(MQ);
+    // set up the deterministic equivalent as a SparseSimpleAlgebra
+    Ret.AlgA = NewSparseSimpleAlgebra(mSparse);
+    Ret.AlgQ = NewSparseSimpleAlgebra(qSparse);
+  }
+
+  else {
+
+    // set up the deterministic equivalent as a DblBordDiagAlgebra
+    DblBordDiagSimpleMatrix *MA =
+      NewDblBordDiagSimpleMatrix(nBlocks + 1, Bottom, Border, Diagon, "SmpsA");
+    BlockDiagSimpleMatrix *MQ =
+      NewBlockDiagSimpleMatrix(nBlocks + 2, QDiag, "Q_main");
+
+    Ret.AlgA = NewDblBordDiagSimpleAlgebra(MA);
+    Ret.AlgQ = NewBlockDiagSimpleAlgebra(MQ);
+  }
 
   // restore the original cutoff level
   cutoff -= rootNode->level();
@@ -1194,6 +1246,10 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
  *  Here columns are changed to match the ordering in the deterministic
  *  equivalent:
  *     [Diag-0 Diag-1 ... Diag-n RnkC]
+ *
+ *  @note
+ *  There is no need of reordering if we are in decomposition of a two-stage
+ *  problem.
  */
 void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
 				const int rnkn) {
@@ -1204,6 +1260,11 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
 
   const Node *node = Ret->rootNode;
   if (!node)
+    return;
+
+  // early return if the node has no children, which may happen in the case
+  // of decomposition of a two-stage problem
+  if (node->nChildren() == 0)
     return;
 
   DenseVector *obj = Ret->c, *lob = Ret->l, *upb = Ret->u;

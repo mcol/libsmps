@@ -130,8 +130,8 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
 
   printf(" --------------- solveDecomposed -----------\n");
 
-  // check that it's a multistage problem
-  if (smps.getPeriods() < 3) {
+  // check that the problem has at least two stages
+  if (smps.getPeriods() < 2) {
     printf("No decomposition possible.\n");
     return 1;
   }
@@ -934,10 +934,6 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
   if (cutoff > MAX_CUTOFF)
     cutoff = MAX_CUTOFF;
 
-  // shift the cutoff by the period of the root node, which may not be zero
-  // in the decomposition case
-  cutoff += node->level();
-
   // reset the number of blocks, because we may call orderNodes multiple
   // times and on different trees
   int nBlocks = 0;
@@ -947,6 +943,15 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
 
   // queue of nodes in the new order
   queue<Node*> qOrder;
+
+  // there's nothing to order if the node doesn't have children, which is
+  // the case when running the decomposition on a two-stage problem
+  if (node->nChildren() == 0)
+    goto common;
+
+  // shift the cutoff by the period of the root node, which may not be zero
+  // in the decomposition case
+  cutoff += node->level();
 
   // start from the root
   qNodes.push(node);
@@ -984,9 +989,6 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
     dfsNode(qOrder, node, nBlocks, cutoff);
   }
 
-  // store the number of diagonal blocks
-  Tree.setBlocks(nBlocks);
-
   // update the next links
 
   // start from the root
@@ -1013,6 +1015,11 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
 	   node->name(), node->level() + 1, node->block());
   } while (node = node->next());
 #endif
+
+ common:
+
+  // store the number of diagonal blocks
+  Tree.setBlocks(nBlocks);
 
   // reset the period starts
   smps.setNodeStarts(Tree);
