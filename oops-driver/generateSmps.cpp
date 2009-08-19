@@ -16,8 +16,10 @@
 
 
 static void
-setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret,
-         double *fsContr);
+setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret);
+
+static void
+adjustRhs(SmpsReturn *Ret, const double *fsContr);
 
 static void
 setupObj(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret);
@@ -681,13 +683,16 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
   Ret.u = NewDenseVector(ttn, "UB");
 
   // setup the right-hand side
-  setupRhs(smps, tree, &Ret, fsContr);
+  setupRhs(smps, tree, &Ret);
 
   // setup objective and bounds
   setupObj(smps, tree, &Ret);
 
   // apply scenario corrections
   applyScenarios(tree, &Ret, Diagon, Border, f_rw_blk, f_cl_blk);
+
+  // apply the first stage contribution (only for decomposition)
+  adjustRhs(&Ret, fsContr);
 
   // reorder objective, bounds and column names
   reorderObjective(tree, &Ret, rnkc_n_blk[0]);
@@ -820,9 +825,14 @@ int copyLinkingBlocks(Smps &smps, Algebra **Array, const SparseData &data,
   return 0;
 }
 
-/** Set up the right-hand side */
-void setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret,
-              double *fsContr) {
+/**
+ *  Set up the right-hand side.
+ *
+ *  This function copies the right-hand side values of the core problem
+ *  into the corresponding right-hand side values of the deterministic
+ *  equivalent. The stochastic corrections will be made by applyScenarios().
+ */
+void setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
 
   int firstRowNode, begRowPeriod;
   DenseVector *rhs = Ret->b;
@@ -848,14 +858,43 @@ void setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret,
     }
 
   } while (node = node->next());
+}
 
-  // change the right-hand side if this is a subproblem in decomposition
-  if (fsContr) {
-    node = Ret->rootNode;
-    firstRowNode = node->firstRow();
-    for (int i = 0; i < node->nRows(); ++i) {
-      rhs->elts[firstRowNode + i] -= fsContr[i];
-    }
+/**
+ *  Apply the first stage contribution to the right-hand side.
+ *
+ *  This corrects the right-hand side values of the root node of a decomposed
+ *  subproblem (a second-stage node in the original problem) by the amounts
+ *  computed with firstStageContribution().
+ *
+ *  This routine is needed only for the decomposition warmstart.
+ *
+ *  @note
+ *  This needs to be called after applyScenarios() so that we apply the
+ *  contribution to the correct values and the changes applied here are
+ *  not overwritten.
+ */
+void adjustRhs(SmpsReturn *Ret, const double *fsContr) {
+
+  if (!fsContr)
+    return;
+
+  const Node *node = Ret->rootNode;
+  double *rhs = &Ret->b->elts[node->firstRow()];
+
+#ifdef DEBUG_DECOMPOSITON
+  printf("Applying first stage contributions on node %d\n", node->name());
+  double oldrhs = rhs[0];
+#endif
+
+  for (int i = 0; i < node->nRows(); ++i) {
+
+    rhs[i] -= fsContr[i];
+
+#ifdef DEBUG_DECOMPOSITON
+    printf("rhs[%d]: %f -> %f\n", i, oldrhs, rhs[i]);
+    if (i + 1 < node->nRows()) oldrhs = rhs[i + 1];
+#endif
   }
 }
 
