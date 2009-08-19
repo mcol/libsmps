@@ -49,7 +49,7 @@ int main(const int argc, const char *argv[]) {
       rv = data.aggregateStages(opt.useAggregation());
 
     if (rv)
-      goto LEAVE_WARMSTART;
+      goto TERMINATE;
 
     // solve the reduced problem
     rv = data.solveReduced(opt, hopdmOpts);
@@ -63,10 +63,8 @@ int main(const int argc, const char *argv[]) {
     // solve the decomposed problems
     rv = data.solveDecomposed(opt, hopdmOpts);
     if (rv)
-      goto LEAVE_WARMSTART;
+      goto TERMINATE;
   }
-
- LEAVE_WARMSTART:
 
   // solve the problem
   rv = data.solve(opt, hopdmOpts);
