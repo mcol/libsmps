@@ -63,13 +63,16 @@ int Options::parse() {
 
 	// simple option
 	if (!optionList[i].argument) {
-	  *optionList[i].variable = 1;
+          *optionList[i].intOpt = 1;
 	  break;
 	}
 
 	// the option requires an argument
 	if (arg + 1 < nArgs) {
-	  *optionList[i].variable = atoi(vArgs[++arg]);
+          if (optionList[i].charOpt)
+            *optionList[i].charOpt = const_cast<char*>(vArgs[++arg]);
+          else
+            *optionList[i].intOpt = atoi(vArgs[++arg]);
 	  break;
 	}
 	else {
@@ -95,7 +98,13 @@ int Options::parse() {
 void Options::addOption(const char name[], const char usage[],
 			int *variable, const bool arg) {
 
-  optionList.push_back((OptionAtom) {name, usage, variable, arg});
+  optionList.push_back(OptionAtom(name, usage, variable, arg));
+}
+
+void Options::addOption(const char name[], const char usage[],
+                        char **variable) {
+
+  optionList.push_back(OptionAtom(name, usage, variable, true));
 }
 
 /** Print a usage message */

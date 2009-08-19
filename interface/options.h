@@ -47,11 +47,24 @@ class Options {
     /** Description of the option for the usage string */
     const char *usage;
 
-    /** Pointer to the variable to set */
-    int *variable;
+    /** Pointer to the integer variable to set */
+    int *intOpt;
+
+    /** Pointer to the character array variable to set */
+    char **charOpt;
 
     /** Whether the option requires an argument */
     bool argument;
+
+    /** Constructor for an integer option */
+    OptionAtom(const char *_name, const char *_usage, int *opt,
+               const bool arg = false) :
+      name(_name), usage(_usage), intOpt(opt), charOpt(NULL), argument(arg) {};
+
+    /** Constructor for a character array option */
+    OptionAtom(const char *_name, const char *_usage, char **opt,
+               const bool arg = false) :
+      name(_name), usage(_usage), intOpt(NULL), charOpt(opt), argument(arg) {};
 
   };
 
@@ -66,6 +79,9 @@ class Options {
   /** Add a command line option */
   void addOption(const char name[], const char description[],
 		 int *variable, const bool arg = false);
+
+  void addOption(const char name[], const char description[],
+                 char **variable);
 
  public:
 
