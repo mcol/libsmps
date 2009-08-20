@@ -9,13 +9,13 @@ LIBS	+= \
 	-lsmps -lstoc \
 	$(NULL)
 
-TESTOBJS := \
-	test-Smps.o \
-	test-SmpsCore.o \
-	test-SmpsTree.o \
-	test-Tokenizer.o \
-	test-Utils.o \
-	unit-tests.o \
+SOURCES := \
+	test-Smps.cpp \
+	test-SmpsCore.cpp \
+	test-SmpsTree.cpp \
+	test-Tokenizer.cpp \
+	test-Utils.cpp \
+	unit-tests.cpp \
 	$(NULL)
 
 HEADERS := \
@@ -31,7 +31,6 @@ DEPENDS := \
 TESTEXE	:= xtests
 
 # Allow the normal rules to run (so 'make' alone will compile the tests)
-OBJECTS	:= $(TESTOBJS)
 OUTPUT	:= $(TESTEXE)
 
 include $(OOPS)/mkfhost/rules.mk
