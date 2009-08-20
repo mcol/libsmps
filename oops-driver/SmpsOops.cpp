@@ -252,12 +252,13 @@ int SmpsOops::solver(SmpsTree &tree,
     return 0;
   }
 
-  PrintOptions Prt = *NewHopdmPrt(reduced ? PRINT_NONE : PRINT_ITER);
+  PrintOptions *Prt = NewHopdmPrt(reduced ? PRINT_NONE : PRINT_ITER);
 
   // solve the problem
-  hopdm_ret *ret = hopdm(printout, &pdProb, &hopdmOpts, &Prt);
+  hopdm_ret *ret = hopdm(printout, &pdProb, &hopdmOpts, Prt);
   rv = ret->ifail;
   free(ret);
+  free(Prt);
   if (rv)
     return rv;
 
