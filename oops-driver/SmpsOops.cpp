@@ -159,7 +159,9 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
   // options for the decomposed problem
   hopdmOpts.glopt->conv_tol = 5.e-2;
 
+  // solve a subproblem rooted for each second-stage node
   const Node *root = smps.getRootNode();
+  const int nSubProblems = root->nChildren();
 
   // compute the correction for the first stage variables
   fsContr = firstStageContribution();
@@ -168,11 +170,11 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
     goto TERMINATE;
   }
 
-  // solve a subproblem rooted at each of the children
-  for (int chd = 0; chd < root->nChildren(); ++chd) {
+  // set up and solve the subproblems
+  for (int chd = 0; chd < nSubProblems; ++chd) {
 
     printf(" --------------- subproblem %2d of %2d -------\n",
-           chd + 1, root->nChildren());
+           chd + 1, nSubProblems);
 
     // generate the subtree corresponding to the current child
     createSubtree(root->getChild(chd), 1000 * (chd + 1));
