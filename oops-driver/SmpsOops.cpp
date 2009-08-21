@@ -1147,8 +1147,8 @@ int OptionsOops::parse() {
   // add the specialised options
   Options::addOption("-w", "use a warmstart strategy with scenario reduction",
 		     &_useReduction, true);
-  Options::addOption("-c", "use a clustering file for scenario reduction",
-		     &_clusteringFileName);
+  Options::addOption("-c", "specify a clustering file for scenario reduction",
+                     &_clusteringFileName);
   Options::addOption("-a", "use a warmstart strategy with stage aggregation",
 		     &_useAggregation, true);
   Options::addOption("-k", "use a warmstart strategy with decomposition",
