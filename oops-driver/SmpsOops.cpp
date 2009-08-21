@@ -461,8 +461,10 @@ int SmpsOops::reduceTree(const int nScenarios, const char *clusteringFile) {
   printf(" --------------- reduceTree ----------------\n");
 
   // check that the number of scenarios is sensible
-  if (nScenarios < 1)
+  if (nScenarios < 1) {
+    printf("The number of scenarios must be positive.\n");
     return 1;
+  }
 
   const Node *cNode = smps.getRootNode();
 
