@@ -28,7 +28,8 @@ static void
 backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x);
 
 static void
-forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x);
+forwOrderColVector(const Smps &smps, const SmpsReturn &Ret,
+                   const DenseVector *x, DenseVector *xord);
 
 static int
 copyLinkingBlocks(Smps &smps, Algebra **Array, const SparseData &data,
@@ -1436,17 +1437,16 @@ int SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
     return 1;
   }
 
-  // should attempt to leave the original element order intact
+  DenseVector *dxord = dx;
+  if (rowcol == ORDER_COL) {
+    dxord = NewDenseVector(x->node->end - x->node->begin, "dxord");
+    forwOrderColVector(smps, Ret, dx, dxord);
+  }
 
-  // go for memory saving option
+  CopyDenseToVector(dxord, x);
+
   if (rowcol == ORDER_COL)
-    forwOrderColVector(smps, Ret, dx->elts);
-
-  CopyDenseToVector(dx, x);
-
-  // and reverse the order, to leave the dense vector intact
-  if (rowcol == ORDER_COL)
-    backOrderColVector(smps, Ret, dx->elts);
+    FreeDenseVector(dxord);
 
   return 0;
 }
@@ -1535,15 +1535,14 @@ void backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
  *  - nColsRnkc: number of columns in actual rankcor (Rnk) part
  *  - nColsDiag: number of columns in diag rankcor (D0) part
  */
-void forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
+void forwOrderColVector(const Smps &smps, const SmpsReturn &Ret,
+                        const DenseVector *x, DenseVector *xord) {
 
   const Node *node = Ret.rootNode;
 
   // total number of columns in RankCor (D0|Rnk)
   const int ncol_ttrc = Ret.nColsRnkc + Ret.nColsDiag;
   const int ttn = Ret.c->dim;
-  double *dtmp  = new double[ttn];
-  memcpy(dtmp, x, ttn * sizeof(double));
 
   // copy entries from the combined rankcor slot into OOPS RankCor and
   // first diagonal
@@ -1579,15 +1578,13 @@ void forwOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
 
     // copy the value depending on whether it is in D0 or Rnk
     if (Ret.is_col_diag[coreCol])
-      x[nx_col_d0++] = dtmp[col];
+      xord->elts[nx_col_d0++] = x->elts[col];
     else
-      x[nx_col_rc++] = dtmp[col];
+      xord->elts[nx_col_rc++] = x->elts[col];
   }
 
   // copy the remaining columns in order, beginning after rankcor
   // nx_col_d0 points to the next entry that should be copied into
-  memcpy(&x[nx_col_d0], &dtmp[ncol_ttrc], (ttn - ncol_ttrc) * sizeof(double));
-
-  // clean up
-  delete[] dtmp;
+  memcpy(&xord->elts[nx_col_d0], &x->elts[ncol_ttrc],
+         (ttn - ncol_ttrc) * sizeof(double));
 }
