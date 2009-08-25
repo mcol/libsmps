@@ -39,8 +39,17 @@ int main(const int argc, const char *argv[]) {
 
   HopdmOptions hopdmOpts = *NewHopdmOptions();
 
+  // decomposition case
+  if (opt.useDecomposition()) {
+
+    // solve the decomposed problems
+    rv = data.solveDecomposed(opt, hopdmOpts);
+    if (rv)
+      goto TERMINATE;
+  }
+
   // warmstart case
-  if (opt.useWarmstart()) {
+  else if (opt.useWarmstart()) {
 
     // select the warmstart strategy
     if (opt.useReduction())
@@ -53,15 +62,6 @@ int main(const int argc, const char *argv[]) {
 
     // solve the reduced problem
     rv = data.solveReduced(opt, hopdmOpts);
-    if (rv)
-      goto TERMINATE;
-  }
-
-  // decomposition case
-  else if (opt.useDecomposition()) {
-
-    // solve the decomposed problems
-    rv = data.solveDecomposed(opt, hopdmOpts);
     if (rv)
       goto TERMINATE;
   }

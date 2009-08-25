@@ -137,8 +137,10 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
   }
 
   // generate a reduced problem containing as many scenarios as there are
-  // branches in the first stage
-  int rv = reduceTree(smps.getRootNode()->nChildren());
+  // branches in the first stage unless a different value has been specified
+  // from the command line
+  int rv = reduceTree(opt.useReduction() ?
+                      opt.useReduction() : smps.getRootNode()->nChildren());
   if (rv)
     return rv;
 
@@ -1153,7 +1155,7 @@ int OptionsOops::parse() {
                      &_clusteringFileName);
   Options::addOption("-a", "use a warmstart strategy with stage aggregation",
 		     &_useAggregation, true);
-  Options::addOption("-k", "use a warmstart strategy with decomposition",
+  Options::addOption("-k", "use a warmstart strategy with tree decomposition",
                      &_useDecomposition);
   Options::addOption("-l", "cutoff level (for multistage programs)",
 		     &_cutoffLevel, true);
