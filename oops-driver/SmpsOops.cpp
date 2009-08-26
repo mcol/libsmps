@@ -1259,11 +1259,14 @@ double* SmpsOops::firstStageContribution() {
   Vector *v = NewVectorFromArray(tCol, "v", wsPoint->x->elts); // XXX does the ordering here matter?
   Vector *vsol = NewVector(tRow, "sol");
 
-  //  PrintVector(v);
-  //  sp->Print(stdout, sp->Matrix, "%f");
-
   // vsol = sp * v
   sp->MatrixTimesVect(sp, v, vsol, 0, 1.0);
+
+#ifdef DEBUG_DECOMPOSITION
+  PrintVector(v);
+  sp->Print(stdout, sp->Matrix, "%f");
+  PrintVector(vsol);
+#endif
 
   DenseVector *ddense = GetDenseVectorFromVector(vsol);
   double *array = new double[nRows];
