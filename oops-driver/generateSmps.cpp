@@ -1078,37 +1078,44 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
       // for all changes affecting this scenario
       for (int corr = firstEntry; corr < lastEntry; ++corr) {
 
+        // row and column of core for this correction (in fortran numbering)
+        int cRow = entryRow[corr], cCol = entryCol[corr];
+
 	// row and column block of core affected by the change
-	pdr = smps.getRowPeriod(entryRow[corr] - 1);
-	pdc = smps.getColPeriod(entryCol[corr] - 1);
+        pdr = smps.getRowPeriod(cRow - 1);
+        pdc = smps.getColPeriod(cCol - 1);
+
+#ifdef DEBUG_SCEN
+        printf("# (%s, %s): %f  pdr: %d  pdc: %d\n",
+               cCol > 0 ? smps.getColName(cCol - 1).c_str() : "RIGHT",
+               smps.getRowName(cRow - 1).c_str(), entryVal[corr], pdr, pdc);
+#endif
 
 	// if the change affects the objective
 	if (pdr < 0 && pdc >= period && pdc < lastPd) {
 
-	  col = scNode->firstCol() + entryCol[corr] - 1
-	    - smps.getBegPeriodCol(period);
+          col = scNode->firstCol() + cCol - 1 - smps.getBegPeriodCol(period);
 	  assert(col <= tree.getTotCols());
 
 	  Ret->c->elts[col] = entryVal[corr] * scNode->probNode();
 
 #ifdef DEBUG_SCEN
 	  printf("   Obj entry: core col %d, det.eq. col %d, (%f)\n",
-		 entryCol[corr], col, entryVal[corr]);
+                 cCol, col, entryVal[corr]);
 #endif
 	}
 
 	// if the change affects the rhs
 	else if (pdc < 0 && pdr >= period && pdr < lastPd) {
 
-	  row = scNode->firstRow() + entryRow[corr] - 1
-	    - smps.getBegPeriodRow(period);
+          row = scNode->firstRow() + cRow - 1 - smps.getBegPeriodRow(period);
 	  assert(row <= tree.getTotRows());
 
 	  Ret->b->elts[row] = entryVal[corr];
 
 #ifdef DEBUG_SCEN
 	  printf("   Rhs entry: core row %d, det.eq. row %d, (%f)\n",
-		 entryRow[corr], row, entryVal[corr]);
+                 cRow, row, entryVal[corr]);
 #endif
 	}
 
@@ -1119,10 +1126,8 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 	  assert((pdr == pdc) || (pdr == pdc + 1));
 
 	  // indices in the deterministic equivalent
-	  row = scNode->firstRow() + entryRow[corr] - 1
-	    - smps.getBegPeriodRow(pdr);
-	  col = scNode->firstCol() + entryCol[corr] - 1
-	    - smps.getBegPeriodCol(pdc);
+          row = scNode->firstRow() + cRow - 1 - smps.getBegPeriodRow(pdr);
+          col = scNode->firstCol() + cCol - 1 - smps.getBegPeriodCol(pdc);
 
 	  // adjust the column index if the change is in a column that belongs
           // to the previous period, that is if the change is in one of
@@ -1135,7 +1140,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
 
 #ifdef DEBUG_SCEN
 	  printf("   Mtx entry: core row %3d col %3d, det.eq. row %3d col %3d",
-		 entryRow[corr], entryCol[corr], row, col);
+                 cRow, cCol, row, col);
 #endif
 
           // work out the row and column block of the correction in the
