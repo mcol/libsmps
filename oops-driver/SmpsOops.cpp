@@ -386,6 +386,11 @@ int SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
   const int nChildren = cNode->nChildren();
   char buffer[200], *p;
 
+  if (smps.getPeriods() > 2) {
+    printf("Scenario clustering can be used only for two-stage problems.\n");
+    return 1;
+  }
+
   FILE *fin = fopen(clusteringFile, "r");
   if (!fin) {
     printf("Cannot find the clustering information file '%s'\n",
