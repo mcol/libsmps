@@ -16,10 +16,8 @@
 #include <queue>
 #include "Smps.h"
 #include "interface.h"
-extern "C" {
 #include "oops/oops.h"
 #include "oops/WriteMps.h"
-}
 
 // forward declarations
 class OptionsOops;

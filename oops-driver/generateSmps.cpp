@@ -1397,8 +1397,8 @@ int SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
     return 1;
   }
 
-  SetExactVector(x);
-  CopyToDenseVector(x, dx);
+  x->setExact();
+  x->copyToDense(dx);
 
   // reorder according to the SMPS breadth-first order
   if (rowcol == ORDER_COL)
@@ -1448,7 +1448,7 @@ int SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
     forwOrderColVector(smps, Ret, dx, dxord);
   }
 
-  CopyDenseToVector(dxord, x);
+  x->copyFromDense(dxord);
 
   if (rowcol == ORDER_COL)
     FreeDenseVector(dxord);

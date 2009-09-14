@@ -256,13 +256,12 @@ int SmpsOops::solver(SmpsTree &tree,
     return 0;
   }
 
-  PrintOptions *Prt = NewHopdmPrt(reduced ? PRINT_NONE : PRINT_ITER);
+  PrintOptions Prt(reduced ? PRINT_NONE : PRINT_ITER);
 
   // solve the problem
-  hopdm_ret *ret = hopdm(printout, &pdProb, &hopdmOpts, Prt);
+  hopdm_ret *ret = hopdm(printout, &pdProb, &hopdmOpts, &Prt);
   rv = ret->ifail;
   free(ret);
-  free(Prt);
   if (rv)
     return rv;
 
@@ -680,18 +679,18 @@ PDProblem SmpsOops::setupProblem(SmpsReturn &Pb) {
 
   Algebra *AlgAug = InitAlgebrasNew(A, Q);
 
-  Vector *vb = NewVector(A->Trow, "vb");
-  Vector *vc = NewVector(A->Tcol, "vc");
-  Vector *vu = NewVector(A->Tcol, "vu");
-  Vector *vl = NewVector(A->Tcol, "vl");
+  Vector *vb = new Vector(A->Trow, "vb");
+  Vector *vc = new Vector(A->Tcol, "vc");
+  Vector *vu = new Vector(A->Tcol, "vu");
+  Vector *vl = new Vector(A->Tcol, "vl");
 
-  Vector *vx = NewVector(A->Tcol, "vx");
-  Vector *vy = NewVector(A->Trow, "vy");
-  Vector *vz = NewVector(A->Tcol, "vz");
+  Vector *vx = new Vector(A->Tcol, "vx");
+  Vector *vy = new Vector(A->Trow, "vy");
+  Vector *vz = new Vector(A->Tcol, "vz");
   Vector *vs = NULL, *vw = NULL;
   if (smps.hasUpperBounds()) {
-    vs = NewVector(A->Tcol, "vs");
-    vw = NewVector(A->Tcol, "vw");
+    vs = new Vector(A->Tcol, "vs");
+    vw = new Vector(A->Tcol, "vw");
   }
 
   // use the warmstart point if available
@@ -705,13 +704,13 @@ PDProblem SmpsOops::setupProblem(SmpsReturn &Pb) {
     }
   }
 
-  CopyDenseToVector(Pb.b, vb);
-  CopyDenseToVector(Pb.c, vc);
-  CopyDenseToVector(Pb.u, vu);
-  CopyDenseToVector(Pb.l, vl);
+  vb->copyFromDense(Pb.b);
+  vc->copyFromDense(Pb.c);
+  vu->copyFromDense(Pb.u);
+  vl->copyFromDense(Pb.l);
 
   // create the primal dual problem
-  PDProblem Prob = *NewPDProblem(AlgAug, vb, vc, vu, vx, vy, vz);
+  PDProblem Prob(AlgAug, vb, vc, vu, vx, vy, vz);
   if (smps.hasUpperBounds()) {
     Prob.s = vs;
     Prob.w = vw;
@@ -1253,16 +1252,16 @@ double* SmpsOops::firstStageContribution() {
   sparse->col_beg[nCols] = sparse->nb_el;
 
   Algebra *sp = NewSparseSimpleAlgebra(sparse);
-  Tree *tRow = NewTree(0, nRows, 0);
-  Tree *tCol = NewTree(0, nCols, 0);
-  LeavesAreLocalTree(tRow, NULL);
-  LeavesAreLocalTree(tCol, NULL);
-  SetIndexTree(tRow);
-  SetIndexTree(tCol);
+  Tree *tRow = new Tree(0, nRows, 0);
+  Tree *tCol = new Tree(0, nCols, 0);
+  tRow->setLeavesLocal(NULL);
+  tCol->setLeavesLocal(NULL);
+  tRow->setIndex();
+  tCol->setIndex();
 
   // get the first stage vector
-  Vector *v = NewVectorFromArray(tCol, "v", wsPoint->x->elts); // XXX does the ordering here matter?
-  Vector *vsol = NewVector(tRow, "sol");
+  Vector *v = new Vector(tCol, "v", wsPoint->x->elts); // XXX does the ordering here matter?
+  Vector *vsol = new Vector(tRow, "sol");
 
   // vsol = sp * v
   sp->MatrixTimesVect(sp, v, vsol, 0, 1.0);
@@ -1279,10 +1278,10 @@ double* SmpsOops::firstStageContribution() {
 
   // clean up
   FreeAlgebraAlg(sp);
-  FreeVector(v);
-  FreeVector(vsol);
-  FreeTree(tCol);
-  FreeTree(tRow);
+  delete v;
+  delete vsol;
+  delete tCol;
+  delete tRow;
 
   return array;
 }
