@@ -209,7 +209,7 @@ ProbData *setupMatrix(Smps &smps, const Node *node) {
 
     } // end while
 
-  } while (node = node->next());
+  } while ((node = node->next()));
 
   assert(col == ttn);
 
@@ -335,7 +335,7 @@ int setupRhs(ProbData *PROB, const Smps &smps, const Node *node) {
       rws[index] = smps.getRowType(smps.getBegPeriodRow(period) + i);
     }
 
-  }  while (node = node->next());
+  }  while ((node = node->next()));
 
   PROB->rhs = rhs;
   PROB->rws = rws;
@@ -500,7 +500,7 @@ int applyScenarios(ProbData *PROB, const Smps &smps, const Node *node) {
       scNode = scNode->parent();
       --period;
     }
-  } while (node = node->next());
+  } while ((node = node->next()));
 
   return 0;
 }

@@ -511,7 +511,7 @@ int SmpsOops::reduceTree(const int nScenarios, const char *clusteringFile) {
     // update its probability
     rNode->setProb(rNode->probNode() + cNode->probNode());
 
-  } while (cNode = cNode->next());
+  } while ((cNode = cNode->next()));
 
   return 0;
 }
@@ -853,7 +853,7 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
       ynew->elts[cIndex + i] = yred->elts[rIndex + i] * crProb;
     }
 
-  } while (cNode = cNode->next());
+  } while ((cNode = cNode->next()));
 
   // clean up
   FreeDenseVector(xred);
@@ -1020,7 +1020,7 @@ int SmpsOops::orderNodes(SmpsTree &Tree) {
     qOrder.pop();
     node->setNext(qOrder.empty() ? NULL : qOrder.front());
 
-  } while (node = node->next());
+  } while ((node = node->next()));
 
 #ifdef DEBUG_ORDER
   // report order of nodes

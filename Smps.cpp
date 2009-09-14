@@ -173,7 +173,7 @@ int Smps::countNonzeros(const SmpsTree &tree) const {
 
     ++nnPer[node->level()];
 
-  } while (node = node->next());
+  } while ((node = node->next()));
 
   // count the number of nonzero elements
   for (int per = begPeriod; per < nPeriod; ++per) {
@@ -232,7 +232,7 @@ int Smps::setNodeStarts(SmpsTree &tree) {
     ttm += rows;
     ttn += cols;
 
-  } while(node = node->next());
+  } while ((node = node->next()));
 
   // total number of rows and columns in the deterministic equivalent
   tree.setDimensions(ttm, ttn);
@@ -277,7 +277,7 @@ char** Smps::getRowNames(const SmpsTree &tree) const {
       strcpy(rownames[firstRowNode + i], rwName.c_str());
     }
 
-  } while (node = node->next());
+  } while ((node = node->next()));
 
   return rownames;
 }
@@ -316,7 +316,7 @@ char** Smps::getColNames(const SmpsTree &tree) const {
       strcpy(colnames[firstColNode + i], clName.c_str());
     }
 
-  } while (node = node->next());
+  } while ((node = node->next()));
 
   return colnames;
 }

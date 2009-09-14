@@ -262,7 +262,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
       nzdg0 += nzpddg[perNode];
       cldg0 += clpddg[perNode];
 
-    } while (node = node->next());
+    } while ((node = node->next()));
 
 #ifdef DEBUG
     printf("Moved %d border columns (%d nonzeros) into a diagonal block.\n",
@@ -419,7 +419,7 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
 	   rnkc_nz_blk[blkNode], diag_nz_blk[blkNode],
 	   diag_m_blk[blkNode],  diag_n_blk[blkNode]);
     */
-  } while (node = node->next());
+  } while ((node = node->next()));
 
   rnkc_m_blk[0] = diag_m_blk[0];
   rnkc_n_blk[0] = diag_n_blk[0] - cldg0;
@@ -910,7 +910,7 @@ void setupRhs(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
       rhs->elts[firstRowNode + i] = smps.getRhs(begRowPeriod + i);
     }
 
-  } while (node = node->next());
+  } while ((node = node->next()));
 }
 
 /**
@@ -987,7 +987,7 @@ void setupObj(const Smps &smps, const SmpsTree &tree, SmpsReturn *Ret) {
       upb->elts[firstColNode + i] = smps.getUpperBound(begColPeriod + i);
     }
 
-  } while (node = node->next());
+  } while ((node = node->next()));
 
   // clean up
   delete[] coreObj;
@@ -1237,7 +1237,7 @@ int SmpsOops::applyScenarios(const SmpsTree &tree, SmpsReturn *Ret,
       period--;
     }
 
-  } while (node = node->next());
+  } while ((node = node->next()));
 
   return 0;
 }
