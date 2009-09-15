@@ -1252,16 +1252,16 @@ double* SmpsOops::firstStageContribution() {
   sparse->col_beg[nCols] = sparse->nb_el;
 
   Algebra *sp = NewSparseSimpleAlgebra(sparse);
-  Tree *tRow = new Tree(0, nRows, 0);
-  Tree *tCol = new Tree(0, nCols, 0);
-  tRow->setLeavesLocal(NULL);
-  tCol->setLeavesLocal(NULL);
-  tRow->setIndex();
-  tCol->setIndex();
+  Tree tRow(0, nRows, 0);
+  Tree tCol(0, nCols, 0);
+  tRow.setLeavesLocal(NULL);
+  tCol.setLeavesLocal(NULL);
+  tRow.setIndex();
+  tCol.setIndex();
 
   // get the first stage vector
-  Vector *v = new Vector(tCol, "v", wsPoint->x->elts); // XXX does the ordering here matter?
-  Vector *vsol = new Vector(tRow, "sol");
+  Vector *v = new Vector(&tCol, "v", wsPoint->x->elts); // XXX does the ordering here matter?
+  Vector *vsol = new Vector(&tRow, "sol");
 
   // vsol = sp * v
   sp->MatrixTimesVect(sp, v, vsol, 0, 1.0);
@@ -1280,8 +1280,6 @@ double* SmpsOops::firstStageContribution() {
   FreeAlgebraAlg(sp);
   delete v;
   delete vsol;
-  delete tCol;
-  delete tRow;
 
   return array;
 }
