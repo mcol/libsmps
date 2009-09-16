@@ -601,34 +601,33 @@ void dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode) {
 /**
  *  Generate a subtree rooted at the given node.
  *
- *  @param cNode:
+ *  @param cOrig:
  *         The node to be used as root node of the subtree.
  *  @param nodeName:
  *         A number used to differentiate the names of the subtree nodes.
  *  @return 1 If something goes wrong, 0 otherwise.
  */
-int SmpsOops::createSubtree(Node *cNode, const int nodeName) {
+int SmpsOops::createSubtree(const Node *cOrig, const int nodeName) {
 
   Node *rNode = NULL;
-  const Node *orig = cNode;
-  const double rootProb = cNode->probNode();
+  const double rootProb = cOrig->probNode();
 
   // queue of nodes to be processed
-  queue<Node*> qNodes;
-  qNodes.push(cNode);
+  queue<const Node*> qNodes;
+  qNodes.push(cOrig);
 
   // copy the nodes in the subtree
   while (!qNodes.empty()) {
 
     // take the first element in the queue
-    cNode = qNodes.front();
+    const Node *cNode = qNodes.front();
     qNodes.pop();
     assert(cNode != NULL);
 
     // create a node in the reduced tree
     rNode = new Node(nodeName + cNode->name());
     rNode->copy(cNode);
-    if (cNode != orig)
+    if (cNode != cOrig)
       nMap[cNode->parent()]->addChild(rNode);
 
     // scale the probability of the reduced node by the probability of
