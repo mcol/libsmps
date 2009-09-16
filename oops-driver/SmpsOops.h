@@ -59,7 +59,7 @@ class SmpsOops {
   int aggregateStages(const int nAggr);
 
   /** Retrieve the solution information */
-  int getSolution(PDProblem &Prob, SmpsReturn &Ret);
+  int getSolution(PDProblem &pdProb, SmpsReturn &Ret);
 
   /** Correction to remove first stage variables */
   double *fsContr;

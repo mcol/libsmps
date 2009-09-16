@@ -708,14 +708,14 @@ PDProblem SmpsOops::setupProblem(SmpsReturn &Pb) {
   vl->copyFromDense(Pb.l);
 
   // create the primal dual problem
-  PDProblem Prob(AlgAug, vb, vc, vu, vx, vy, vz);
+  PDProblem pdProb(AlgAug, vb, vc, vu, vx, vy, vz);
   if (smps.hasUpperBounds()) {
-    Prob.s = vs;
-    Prob.w = vw;
+    pdProb.s = vs;
+    pdProb.w = vw;
   }
-  Prob.l = vl;
+  pdProb.l = vl;
 
-  return Prob;
+  return pdProb;
 }
 
 /**
@@ -870,7 +870,7 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
 /**
  *  Retrieve the solution.
  *
- *  @param Prob:
+ *  @param pdProb:
  *         Pointer to the problem solved by OOPS.
  *  @param Ret:
  *         The SmpsReturn structure of the problem.
@@ -879,7 +879,7 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
  *  The value of the slacks is always zero, as the slacks would need to be
  *  computed here.
  */
-int SmpsOops::getSolution(PDProblem &Prob, SmpsReturn &Ret) {
+int SmpsOops::getSolution(PDProblem &pdProb, SmpsReturn &Ret) {
 
   DenseVector *x, *y, *z, *r;
   Tree *Trow = Ret.AlgA->Trow;
@@ -896,9 +896,9 @@ int SmpsOops::getSolution(PDProblem &Prob, SmpsReturn &Ret) {
   r = NewDenseVector(nRows, "slacks");
 
   // recover initial order on solution vectors
-  VectorToSmpsDense(Prob.x, x, Ret, ORDER_COL);
-  VectorToSmpsDense(Prob.y, y, Ret, ORDER_ROW);
-  VectorToSmpsDense(Prob.z, z, Ret, ORDER_COL);
+  VectorToSmpsDense(pdProb.x, x, Ret, ORDER_COL);
+  VectorToSmpsDense(pdProb.y, y, Ret, ORDER_ROW);
+  VectorToSmpsDense(pdProb.z, z, Ret, ORDER_COL);
 
   // print the solution
 #ifdef WITH_MPI
