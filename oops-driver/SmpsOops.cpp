@@ -149,8 +149,7 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
     return rv;
 
   // reset the reduced tree to be empty
-  delete rTree.getRootNode();
-  rTree.setRootNode(NULL);
+  rTree.reset();
 
   printf(" ---- Calling firstStageBlock ----\n");
   wsReady = false;
@@ -185,8 +184,7 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
     rv = solver(rTree, opt, hopdmOpts);
 
     // clean up
-    delete rTree.getRootNode();
-    rTree.setRootNode(NULL);
+    rTree.reset();
 
     if (rv)
       goto TERMINATE;

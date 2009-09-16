@@ -590,10 +590,23 @@ SmpsTree::SmpsTree() :
   ttCols(0) {
 }
 
-/* Destructor */
+/** Destructor */
 SmpsTree::~SmpsTree() {
 
   delete root;
+}
+
+/**
+ *  Remove the root node of the event tree.
+ *
+ *  This can be used to associate another root node to an existing tree,
+ *  but the SmpsTree is allocated on the stack and thus its destructor
+ *  cannot be called explicitly.
+ */
+void SmpsTree::reset() {
+
+  delete root;
+  root = NULL;
 }
 
 /** Print the stochastic tree information */

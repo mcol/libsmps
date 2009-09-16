@@ -395,6 +395,9 @@ class SmpsTree {
     ttCols = cols;
   }
 
+  /** Remove the root node of the event tree */
+  void reset(void);
+
   /** Print the stochastic tree information */
   void print(void) const;
 
