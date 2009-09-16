@@ -91,7 +91,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
 			   HopdmOptions &hopdmOpts) {
 
   // store the original convergence tolerance
-  double origTol = hopdmOpts.glopt->conv_tol;
+  const double origTol = hopdmOpts.glopt->conv_tol;
 
   // options for the reduced problem
   hopdmOpts.glopt->conv_tol = 5.e-1;
@@ -156,7 +156,7 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
   wsReady = false;
 
   // store the original convergence tolerance
-  double origTol = hopdmOpts.glopt->conv_tol;
+  const double origTol = hopdmOpts.glopt->conv_tol;
 
   // options for the decomposed problem
   hopdmOpts.glopt->conv_tol = 5.e-2;
@@ -221,7 +221,7 @@ int SmpsOops::solver(SmpsTree &tree,
                      const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
   SmpsReturn prob;
-  bool reduced = &tree != &smps.getSmpsTree();
+  const bool reduced = &tree != &smps.getSmpsTree();
 
   if (reduced) {
     // order the nodes and set the next links
@@ -740,8 +740,8 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
   printf(" --------------- setupWarmStart ------------\n");
 
   // dimensions of the complete and the reduced deterministic equivalents
-  int nRows = smps.getTotRows(), rRows = rTree.getTotRows();
-  int nCols = smps.getTotCols(), rCols = rTree.getTotCols();
+  const int nRows = smps.getTotRows(), rRows = rTree.getTotRows();
+  const int nCols = smps.getTotCols(), rCols = rTree.getTotCols();
 
   printf("Reduced matrix:  %dx%d\n", rRows, rCols);
   printf("Complete matrix: %dx%d\n", nRows, nCols);
@@ -886,8 +886,8 @@ int SmpsOops::getSolution(PDProblem &Prob, SmpsReturn &Ret) {
   DenseVector *x, *y, *z, *r;
   Tree *Trow = Ret.AlgA->Trow;
   Tree *Tcol = Ret.AlgA->Tcol;
-  int nRows  = Trow->end - Trow->begin;
-  int nCols  = Tcol->end - Tcol->begin;
+  const int nRows = Trow->end - Trow->begin;
+  const int nCols = Tcol->end - Tcol->begin;
 
   // allocate space for the solution vectors
   x = NewDenseVector(nCols, "dx");
@@ -933,7 +933,7 @@ int SmpsOops::getSolution(PDProblem &Prob, SmpsReturn &Ret) {
  */
 int SmpsOops::orderNodes(SmpsTree &Tree) {
 
-  int nPeriods = smps.getPeriods();
+  const int nPeriods = smps.getPeriods();
   Node *node = Tree.getRootNode();
 
   // leave immediately if there is no root node
@@ -1188,13 +1188,13 @@ double* SmpsOops::firstStageContribution() {
 
   const SparseData data = smps.getSparseData();
 
-  int nRows = smps.getBegPeriodRow(2) - smps.getBegPeriodRow(1);
-  int nCols = smps.getBegPeriodCol(1) - smps.getBegPeriodCol(0);
+  const int nRows = smps.getBegPeriodRow(2) - smps.getBegPeriodRow(1);
+  const int nCols = smps.getBegPeriodCol(1) - smps.getBegPeriodCol(0);
 
   // the number of nonzeros is an upper approximation here, since it contains
   // the nonzeros appearing above this block and in the objective
-  int nNonz = data.clpnts[nCols];
-  int firstRow = smps.getBegPeriodRow(1);
+  const int nNonz = data.clpnts[nCols];
+  const int firstRow = smps.getBegPeriodRow(1);
 
   if (!wsPoint) {
     printf("No wsPoint available to obtain the first stage correction!\n");
