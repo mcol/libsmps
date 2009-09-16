@@ -117,11 +117,11 @@ class SmpsOops {
   /** Reorder objective and bounds */
   void reorderObjective(const SmpsTree &tree, SmpsReturn *Ret, const int rnkn);
 
-  /** Copy a Vector into a breadth-first ordered DenseVector */
+  /** Copy a Vector into a DenseVector with the original ordering */
   int VectorToSmpsDense(Vector *v, DenseVector *dv,
                         const SmpsReturn &Ret, const int ordering);
 
-  /** Copy a breadth-first ordered DenseVector into a Vector */
+  /** Copy a DenseVector into a Vector with reordered rank corrector */
   int SmpsDenseToVector(DenseVector *dv, Vector *v,
                         const SmpsReturn &Ret, const int ordering);
 

@@ -230,7 +230,7 @@ int SmpsOops::solver(SmpsTree &tree,
 #endif
   }
 
-  // generate a reduced problem
+  // generate the deterministic equivalent problem
   int rv = generateSmps(tree, prob);
   if (rv) {
     printf("Failed to generate the deterministic equivalent.\n");
@@ -263,7 +263,8 @@ int SmpsOops::solver(SmpsTree &tree,
   if (rv)
     return rv;
 
-  // generate a warmstart point for the complete problem
+  // use the solution to a reduced problem to generate a warmstart point
+  // for the complete problem
   if (reduced)
     setupWarmStart(pdProb, prob);
 
@@ -399,7 +400,7 @@ int SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
   int nlines = 0;
   fgets(buffer, 100, fin);
   fgets(buffer, 100, fin);
-  while(!feof(fin)){
+  while (!feof(fin)) {
     fgets(buffer, 100, fin);
     nlines++;
   }
@@ -721,6 +722,21 @@ PDProblem SmpsOops::setupProblem(SmpsReturn &Pb) {
 /**
  *  Set up a warmstart point from a reduced-tree solution.
  *
+ *  This function takes the Vectors from the pdProb that contain the solution
+ *  to the (reduced) problem just solved to setup the DenseVectors in wsPoint
+ *  (for the complete problem).
+ *
+ *  First of all, the Vectors in pdProb contain the reshuffling done by
+ *  generateSmps() to minimise the size of the Schur complement: this is
+ *  removed by the calls to VectorToSmpsDense(), which produces DenseVectors
+ *  of the dimension of the reduced problem.
+ *
+ *  Then all nodes in the complete tree are visited: for each of them, we find
+ *  the corresponding reduced tree node and copy its part of the solution
+ *  into a DenseVector of the dimension of the complete tree, taking care of
+ *  reconciling the probabilities between the two trees. The DenseVector
+ *  produced are the warmstart point for the complete problem.
+ *
  *  @param pdProb:
  *         The reduced primal-dual problem.
  *  @param Ret:
@@ -895,7 +911,7 @@ int SmpsOops::getSolution(PDProblem &pdProb, SmpsReturn &Ret) {
   // this is just a placeholder, we cannot yet compute the slacks
   r = NewDenseVector(nRows, "slacks");
 
-  // recover initial order on solution vectors
+  // recover the original ordering in the solution vectors
   VectorToSmpsDense(pdProb.x, x, Ret, ORDER_COL);
   VectorToSmpsDense(pdProb.y, y, Ret, ORDER_ROW);
   VectorToSmpsDense(pdProb.z, z, Ret, ORDER_COL);

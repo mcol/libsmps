@@ -1368,10 +1368,11 @@ void SmpsOops::reorderObjective(const SmpsTree &tree, SmpsReturn *Ret,
 }
 
 /**
- *  Copy a Vector into a breadth-first ordered DenseVector.
+ *  Copy a Vector into a DenseVector with the original ordering.
  *
- *  Copies a Vector as used by OOPS into a DenseVector corresponding to a
- *  breadth-first ordering of the scenario tree.
+ *  Copies a Vector as used by OOPS (with elements up to the cutoff level
+ *  split into proper rank corrector and additional diagonal block) into a
+ *  DenseVector.
  *
  *  @note
  *  The reordering happens only for the columns, as in the generation phase
@@ -1408,10 +1409,7 @@ int SmpsOops::VectorToSmpsDense(Vector *x, DenseVector *dx,
 }
 
 /**
- *  Copy a breadth-first ordered DenseVector into a Vector.
- *
- *  Copies a DenseVector corresponding to a breadth-first ordering of the
- *  scenario tree into a Vector in the mixed ordering used by OOPS.
+ *  Copy a DenseVector into a Vector with reordered rank corrector.
  *
  *  Reorders the elements according to the reordering used by OOPS:
  *  first period entries are placed at the end rather than at the beginning,
@@ -1457,19 +1455,14 @@ int SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
 }
 
 /**
- *  The column vectors are setup in the order
- *   [D0 D1 D2 ... Dn-1 Rnk]
- *  ([D0 Rnk] is the RankCorrector and D1,...,Dn-1 are the 'proper' diagonal
- *  blocks).
+ *  The column vectors are set up in the OOPS order
+ *     [ D0 D1 D2 ... Dn-1 Rnk ]
+ *  where [D0 Rnk] is the RankCorrector and D1,...,Dn-1 are the diagonal
+ *  blocks.
  *
  *  This routine re-orders them into the SMPS order:
- *   [(D0Rnk) D1 D2 ... Dn-1]
- *  where (D0Rnk) is the reordered [D0 Rnk] using the original
- *  order of these columns in the core matrix.
- *
- *  Needed from main method (passed through SmpsReturn *Ret)
- *  - nColsRnkc: number of columns in actual rankcor (Rnk) part
- *  - nColsDiag: number of columns in diag rankcor (D0) part
+ *     [ D0+Rnk D1 D2 ... Dn-1 ]
+ *  where D0+Rnk is the original ordering according to the core matrix.
  */
 void backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
 
@@ -1498,6 +1491,7 @@ void backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
   for (int col = 0, coreCol = 0; col < ncol_ttrc; ++col, ++coreCol) {
 
     // find the column in the original core that this belongs to
+    // this occurs only if the cutoff level is bigger than 1
     if (coreCol >= smps.getBegPeriodCol(currPer + 1)) {
 
       // if this is past the last column in this node
@@ -1525,20 +1519,14 @@ void backOrderColVector(const Smps &smps, const SmpsReturn &Ret, double *x) {
 }
 
 /**
- *  The column vectors are setup in OOPS in the order
- *   [D0 D1 D2 ... Dn-1 Rnk]
- *  ([D0 Rnk] is the RankCorrector and D1,...,Dn-1 are the 'proper' diagonal
- *  blocks).
+ *  The column vectors are set up in the SMPS order
+ *     [ D0+Rnk D1 D2 ... Dn-1 ]
+ *  where D0+Rnk is the original order according to the core matrix.
  *
- *  This routine re-orders them from the SMPS order:
- *   [(D0Rnk) D1 D2 ... Dn-1]
- *
- *  In both cases (D0Rnk) is the reordered [D0 Rnk] using the original
- *  order of these columns in the core matrix.
- *
- *  Needed from main method (passed through SmpsReturn *Ret)
- *  - nColsRnkc: number of columns in actual rankcor (Rnk) part
- *  - nColsDiag: number of columns in diag rankcor (D0) part
+ *  This routine re-orders them into the OOPS order:
+ *     [ D0 D1 D2 ... Dn-1 Rnk ]
+ *  where [D0 Rnk] is the RankCorrector and D1,...,Dn-1 are the diagonal
+ *  blocks.
  */
 void forwOrderColVector(const Smps &smps, const SmpsReturn &Ret,
                         const DenseVector *x, DenseVector *xord) {
