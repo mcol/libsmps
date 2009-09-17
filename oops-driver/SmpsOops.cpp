@@ -1158,6 +1158,7 @@ OptionsOops::OptionsOops(const int argc, const char *argv[]) :
   _useReduction(0),
   _useAggregation(0),
   _useDecomposition(0),
+  _warmstartDecomposition(0),
   _cutoffLevel(1),
   _clusteringFileName(NULL) {
 }
@@ -1174,6 +1175,8 @@ int OptionsOops::parse() {
 		     &_useAggregation, true);
   Options::addOption("-k", "use a warmstart strategy with tree decomposition",
                      &_useDecomposition);
+  Options::addOption("-x", "warmstart the subproblems for decomposition",
+                     &_warmstartDecomposition);
   Options::addOption("-l", "cutoff level (for multistage programs)",
 		     &_cutoffLevel, true);
 

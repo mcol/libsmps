@@ -235,6 +235,9 @@ class OptionsOops : public Options {
   /** Whether tree decomposition should be performed */
   int _useDecomposition;
 
+  /** Whether the subproblems in tree decomposition should be warmstarted */
+  int _warmstartDecomposition;
+
   /** The value of the cutoff level (for multistage problems) */
   int _cutoffLevel;
 
@@ -267,6 +270,11 @@ class OptionsOops : public Options {
   /** Retrieve the value of the useDecomposition option */
   int useDecomposition(void) const {
     return _useDecomposition;
+  }
+
+  /** Retrieve the value of the warmstartDecomposition option */
+  int warmstartDecomposition(void) const {
+    return _warmstartDecomposition;
   }
 
   /** Retrieve the value of the cutoffLevel option */
