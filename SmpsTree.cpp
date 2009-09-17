@@ -227,7 +227,7 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
 
   // allocate the root node
   node = new Node(nodeName);
-  Tree.setRootNode(node);
+  Tree.setRootNode(node, NULL);
 
   qNodes.push(node);
 
@@ -585,6 +585,7 @@ int SmpsStoc::scanScenariosType(ifstream &stoc) {
 /** Constructor */
 SmpsTree::SmpsTree() :
   root(NULL),
+  orig(NULL),
   nBlocks(0),
   ttRows(0),
   ttCols(0) {
@@ -607,6 +608,7 @@ void SmpsTree::reset() {
 
   delete root;
   root = NULL;
+  orig = NULL;
 }
 
 /** Print the stochastic tree information */

@@ -360,13 +360,19 @@ class SmpsTree {
   ~SmpsTree();
 
   /** Set the root node of the event tree */
-  void setRootNode(Node *rootNode) {
+  void setRootNode(Node *rootNode, const Node *origNode) {
     root = rootNode;
+    orig = origNode;
   }
 
   /** Retrieve the root node of the event tree */
   Node* getRootNode(void) const {
     return root;
+  }
+
+  /** Retrieve the origin root node of the event tree */
+  const Node* getOrigNode(void) const {
+    return orig;
   }
 
   /** Set the number of diagonal blocks in the deterministic equivalent*/
@@ -405,6 +411,9 @@ class SmpsTree {
 
   /** Root node of the event tree */
   Node *root;
+
+  /** Root node of the event tree from which this is derived (no ownership) */
+  const Node *orig;
 
   /** Number of diagonal blocks in the deterministic equivalent */
   int nBlocks;

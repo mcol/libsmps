@@ -479,7 +479,7 @@ int SmpsOops::reduceTree(const int nScenarios, const char *clusteringFile) {
     nWanted = smps.getMaxScens();
 
   // allocate the root node for the reduced tree
-  rTree.setRootNode(new Node(100 + cNode->name()));
+  rTree.setRootNode(new Node(100 + cNode->name()), cNode);
   Node *rNode = rTree.getRootNode();
 
   // copy the root node
@@ -583,7 +583,7 @@ int SmpsOops::aggregateStages(const int nAggr) {
     rNode = rNode->parent();
 
   // set the root of the reduced tree
-  rTree.setRootNode(rNode);
+  rTree.setRootNode(rNode, smps.getRootNode());
 
   return 0;
 }
@@ -654,7 +654,7 @@ int SmpsOops::createSubtree(const Node *cOrig, const int nodeName) {
     rNode = rNode->parent();
 
   // set the root of the reduced tree
-  rTree.setRootNode(rNode);
+  rTree.setRootNode(rNode, cOrig);
 
   return 0;
 }
