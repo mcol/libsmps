@@ -506,7 +506,8 @@ int SmpsOops::reduceTree(const int nScenarios, const char *clusteringFile) {
     // find the corresponding node in the reduced tree
     rNode = nMap[cNode];
 
-    // update its probability
+    // update its path probability by summing the path probabilities of
+    // the complete nodes that map to it
     rNode->setProb(rNode->probNode() + cNode->probNode());
 
   } while ((cNode = cNode->next()));

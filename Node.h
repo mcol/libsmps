@@ -117,7 +117,7 @@ class Node {
     return _block;
   }
 
-  /** Return the probability associated to the node */
+  /** Return the path probability associated to the node */
   double probNode(void) const {
     return _probNode;
   }
