@@ -382,7 +382,7 @@ int SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
                                      const char *clusteringFile) {
 
   const int nChildren = cNode->nChildren();
-  char buffer[200], *p;
+  char buffer[100];
 
   if (smps.getPeriods() > 2) {
     printf("Scenario clustering can be used only for two-stage problems.\n");
@@ -404,12 +404,12 @@ int SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
     fgets(buffer, 100, fin);
     nlines++;
   }
-  fclose(fin);
 
   // the clustering file must have as many lines as there are scenarios
   printf("Clustering file: %s (%d lines).\n", clusteringFile, nlines);
   if (nlines != nChildren) {
     printf("Expected %d lines.\n", nChildren);
+    fclose(fin);
     return 1;
   }
 
@@ -418,13 +418,13 @@ int SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
   map<int, Node *> keepnodes;
 
   // now read the file again
-  fin = fopen(clusteringFile, "r");
-  p = fgets(buffer, 100, fin);
+  rewind(fin);
+  fgets(buffer, 100, fin);
 
   // copy the needed number of children of the complete node
   for (int i = 0; i < nChildren; ++i) {
-    p = fgets(buffer, 100, fin);
-    sscanf(p, "%d %d", &nd, &src);
+    fgets(buffer, 100, fin);
+    sscanf(buffer, "%d %d", &nd, &src);
     src_nd[i] = src;
 
     // this node should be kept
@@ -447,7 +447,7 @@ int SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
   }
 
   // clean up
-  delete src_nd;
+  delete[] src_nd;
 
   return 0;
 }
