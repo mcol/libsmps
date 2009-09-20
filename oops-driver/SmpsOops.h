@@ -106,6 +106,9 @@ class SmpsOops {
   /** Set up the warmstart point from a reduced-tree solution */
   int setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Pb);
 
+  /** Copy an available solution into a warmstart point */
+  int setupWSPoint(const WSPoint *wsNew, WSPoint *wsRed, const Node *rootNode);
+
   /** Order the nodes of the tree according to the cutoff level */
   int orderNodes(SmpsTree &Tree);
 

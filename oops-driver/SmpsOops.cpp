@@ -726,16 +726,11 @@ PDProblem SmpsOops::setupProblem(SmpsReturn &Pb) {
  *  to the (reduced) problem just solved to setup the DenseVectors in wsPoint
  *  (for the complete problem).
  *
- *  First of all, the Vectors in pdProb contain the reshuffling done by
- *  generateSmps() to minimise the size of the Schur complement: this is
+ *  This considers that the Vectors in pdProb contain the reshuffling done
+ *  by generateSmps() to minimise the size of the Schur complement: this is
  *  removed by the calls to VectorToSmpsDense(), which produces DenseVectors
- *  of the dimension of the reduced problem.
- *
- *  Then all nodes in the complete tree are visited: for each of them, we find
- *  the corresponding reduced tree node and copy its part of the solution
- *  into a DenseVector of the dimension of the complete tree, taking care of
- *  reconciling the probabilities between the two trees. The DenseVector
- *  produced are the warmstart point for the complete problem.
+ *  of the dimension of the reduced problem. With the calls to setupWSPoint(),
+ *  these are then expanded to the dimension of the complete tree.
  *
  *  @param pdProb:
  *         The reduced primal-dual problem.
@@ -785,6 +780,7 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
     VectorToSmpsDense(pdProb.s, sred, Ret, ORDER_COL);
     VectorToSmpsDense(pdProb.w, wred, Ret, ORDER_COL);
   }
+  WSPoint wsReduced(xred, yred, zred, sred, wred);
 
   // allocate space for the vectors in the complete iterate
   if (!wsPoint) {
@@ -805,9 +801,46 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
     wnew = wsPoint->w;
   }
 
-  const Node *cNode = smps.getRootNode(), *rNode;
+  // copy the solution from wsReduced into wsPoint
+  int rv = setupWSPoint(wsPoint, &wsReduced, rTree.getOrigNode());
+  if (rv)
+    return rv;
+
+  // erase the mapping
+  nMap.clear();
+
+  return 0;
+}
+
+/**
+ *  Copy an available solution into a warmstart point.
+ *
+ *  This function traverses all nodes in the complete tree: for each of them,
+ *  it finds the corresponding reduced tree node and copies its part of the
+ *  solution, taking care of reconciling the probabilities between the two
+ *  trees.
+ *
+ *  @param wsNew:
+ *         The WSPoint to be set up.
+ *  @param wsRed:
+ *         The WSPoint which provides the most current solution.
+ *  @param rootNode:
+ *         Node in the complete tree corresponding to the reduced tree root.
+ *  @return 1 If something goes wrong; 0 otherwise.
+ */
+int SmpsOops::setupWSPoint(const WSPoint *wsNew, WSPoint *wsRed,
+                           const Node *rootNode) {
+
+  const Node *cNode = rootNode, *rNode;
   int cIndex, rIndex, nElems;
   double crProb;
+
+  double *xnew = wsNew->x->elts, *ynew = wsNew->y->elts, *znew = wsNew->z->elts;
+  double *snew = wsNew->s ? wsNew->s->elts : NULL;
+  double *wnew = wsNew->w ? wsNew->w->elts : NULL;
+  double *xred = wsRed->x->elts, *yred = wsRed->y->elts, *zred = wsRed->z->elts;
+  double *sred = wsRed->s ? wsRed->s->elts : NULL;
+  double *wred = wsRed->w ? wsRed->w->elts : NULL;
 
   // go through the nodes in the complete tree
   do {
@@ -840,11 +873,11 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
 
     // copy the x and z iterates
     for (int i = 0; i < nElems; i++) {
-      xnew->elts[cIndex + i] = xred->elts[rIndex + i];
-      znew->elts[cIndex + i] = zred->elts[rIndex + i] * crProb;
+      xnew[cIndex + i] = xred[rIndex + i];
+      znew[cIndex + i] = zred[rIndex + i] * crProb;
       if (smps.hasUpperBounds()) {
-	snew->elts[cIndex + i] = sred->elts[rIndex + i];
-	wnew->elts[cIndex + i] = wred->elts[rIndex + i] * crProb;
+	snew[cIndex + i] = sred[rIndex + i];
+	wnew[cIndex + i] = wred[rIndex + i] * crProb;
       }
     }
 
@@ -863,22 +896,10 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
 
     // copy the y iterate
     for (int i = 0; i < nElems; i++) {
-      ynew->elts[cIndex + i] = yred->elts[rIndex + i] * crProb;
+      ynew[cIndex + i] = yred[rIndex + i] * crProb;
     }
 
   } while ((cNode = cNode->next()));
-
-  // clean up
-  FreeDenseVector(xred);
-  FreeDenseVector(yred);
-  FreeDenseVector(zred);
-  if (smps.hasUpperBounds()) {
-    FreeDenseVector(sred);
-    FreeDenseVector(wred);
-  }
-
-  // erase the mapping
-  nMap.clear();
 
   return 0;
 }
