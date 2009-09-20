@@ -50,6 +50,32 @@ int Node::copy(const Node *fromNode) {
   return 0;
 }
 
+/**
+ *  Check whether the node is part of the given scenario.
+ *
+ *  Each node is associated to a specific scenario, which is stored in
+ *  the member variable _scenario. However, a non-leaf node belongs to
+ *  all the scenarios that its children belong to, as it appears in all
+ *  those scenarios.
+ *
+ *  @param scen:
+ *         The index of the scenario we are interested in.
+ *  @return True is the node belongs to the given scenario; False otherwise.
+ */
+bool Node::belongsToScenario(const int scen) const {
+
+  // check the scenario of this node
+  if (_scenario == scen)
+    return true;
+
+  // check the scenarios of the children
+  for (int i = 0; i < (int) _children.size(); ++i)
+    if (_children[i]->_scenario == scen)
+      return true;
+
+  return false;
+}
+
 /** Add a node to the list of children */
 int Node::addChild(Node *childNode) {
 

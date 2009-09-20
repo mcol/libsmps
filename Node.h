@@ -36,6 +36,9 @@ class Node {
   /** Copy the information from a node */
   int copy(const Node *fromNode);
 
+  /** Check whether the node is part of the given scenario */
+  bool belongsToScenario(const int scen) const;
+
   // Setters
 
   /** Set the link to the next node in order */
