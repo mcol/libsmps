@@ -73,7 +73,7 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
   printf(" --------------- solve ---------------------\n");
 
   // pass the problem to the solver
-  int rv = solver(smps.getSmpsTree(), opt, hopdmOpts);
+  int rv = solver(smps.getSmpsTree(), wsPoint, opt, hopdmOpts);
 
   return rv;
 }
@@ -99,7 +99,7 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   printf(" --------------- solveReduced --------------\n");
 
   // pass the problem to the solver
-  int rv = solver(rTree, opt, hopdmOpts);
+  int rv = solver(rTree, NULL, opt, hopdmOpts);
   if (rv)
     return rv;
 
@@ -181,7 +181,7 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
     createSubtree(root->getChild(chd), 1000 * (chd + 1));
 
     // pass the problem to the solver
-    rv = solver(rTree, opt, hopdmOpts);
+    rv = solver(rTree, NULL, opt, hopdmOpts);
 
     // clean up
     rTree.reset();
@@ -209,13 +209,15 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
  *
  *  @param tree:
  *         The tree for the deterministic equivalent that is being built.
+ *  @param wsIterate:
+ *         The WSPoint to be used in case of warmstart.
  *  @param opt:
  *         Command line options.
  *  @param hopdmOpts:
  *         Options for the solver.
  *  @return A nonzero value if something goes wrong; 0 otherwise.
  */
-int SmpsOops::solver(SmpsTree &tree,
+int SmpsOops::solver(SmpsTree &tree, const WSPoint *wsIterate,
                      const OptionsOops &opt, HopdmOptions &hopdmOpts) {
 
   SmpsReturn prob;
@@ -238,7 +240,7 @@ int SmpsOops::solver(SmpsTree &tree,
   }
 
   // setup the primal-dual problem
-  PDProblem pdProb = setupProblem(prob);
+  PDProblem pdProb = setupProblem(prob, wsIterate);
 
   // write the deterministic equivalent in mps format
   if (opt.writeMps()) {
@@ -665,13 +667,15 @@ int SmpsOops::createSubtree(const Node *cOrig, const int nodeName) {
  *
  *  @param Pb:
  *         The SmpsReturn structure of the problem generated.
+ *  @param wsIterate:
+ *         The WSPoint to be used to warmstart the problem.
  *  @return Pointer to the problem to be solved by Oops.
  *
  *  @note
  *  InitAlgebrasNew assumes that a callback function is set up for all
  *  SparseMatrix leaves of A and Q.
  */
-PDProblem SmpsOops::setupProblem(SmpsReturn &Pb) {
+PDProblem SmpsOops::setupProblem(SmpsReturn &Pb, const WSPoint *wsIterate) {
 
   Algebra *A = Pb.AlgA;
   Algebra *Q = Pb.AlgQ;
@@ -694,12 +698,12 @@ PDProblem SmpsOops::setupProblem(SmpsReturn &Pb) {
 
   // use the warmstart point if available
   if (wsReady) {
-    SmpsDenseToVector(wsPoint->x, vx, Pb, ORDER_COL);
-    SmpsDenseToVector(wsPoint->y, vy, Pb, ORDER_ROW);
-    SmpsDenseToVector(wsPoint->z, vz, Pb, ORDER_COL);
+    SmpsDenseToVector(wsIterate->x, vx, Pb, ORDER_COL);
+    SmpsDenseToVector(wsIterate->y, vy, Pb, ORDER_ROW);
+    SmpsDenseToVector(wsIterate->z, vz, Pb, ORDER_COL);
     if (smps.hasUpperBounds()) {
-      SmpsDenseToVector(wsPoint->s, vs, Pb, ORDER_COL);
-      SmpsDenseToVector(wsPoint->w, vw, Pb, ORDER_COL);
+      SmpsDenseToVector(wsIterate->s, vs, Pb, ORDER_COL);
+      SmpsDenseToVector(wsIterate->w, vw, Pb, ORDER_COL);
     }
   }
 

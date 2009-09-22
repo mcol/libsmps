@@ -88,10 +88,11 @@ class SmpsOops {
   int generateSmps(const SmpsTree &tree, SmpsReturn &ret);
 
   /** Set up the Oops algebras and vectors and build the primal-dual problem */
-  PDProblem setupProblem(SmpsReturn &Pb);
+  PDProblem setupProblem(SmpsReturn &Pb, const WSPoint *wsIterate);
 
   /* Generate and solve the deterministic equivalent */
-  int solver(SmpsTree &tree, const OptionsOops &opt, HopdmOptions &hopdmOpts);
+  int solver(SmpsTree &tree, const WSPoint *wsIterate,
+             const OptionsOops &opt, HopdmOptions &hopdmOpts);
 
   /** Create a reduced tree in a recursive manner */
   void reduceScenarios(const Node *cNode, Node *rParent, const int nWanted);
