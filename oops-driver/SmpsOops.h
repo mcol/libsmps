@@ -98,8 +98,7 @@ class SmpsOops {
   void reduceScenarios(const Node *cNode, Node *rParent, const int nWanted);
 
   /** Create a reduced tree from a clustering information file */
-  int reduceScenariosCluster(const Node *cNode, Node *rParent,
-                             const char *clusteringFile);
+  int reduceScenariosCluster(const char *clusteringFile);
 
   /** Generate a subtree rooted at the given node */
   int createSubtree(const Node *cOrig, const int nodeName);

@@ -370,21 +370,17 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
  *  information will be read in from an external file.
  *
  *  @note
+ *  The first line of the clustering file is always skipped: the scenario
+ *  mappings must start from the second line.
+ *
+ *  @note
  *  At the moment it works only for two stage problems.
  *
- *  @param cNode:
- *         Node in the complete tree.
- *  @param rParent:
- *         Node in the reduced tree to which add children.
  *  @param clusteringFile:
  *         Name of the clustering file for scenario reduction.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
-int SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
-                                     const char *clusteringFile) {
-
-  const int nChildren = cNode->nChildren();
-  char buffer[100];
+int SmpsOops::reduceScenariosCluster(const char *clusteringFile) {
 
   if (smps.getPeriods() > 2) {
     printf("Scenario clustering can be used only for two-stage problems.\n");
@@ -399,24 +395,30 @@ int SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
   }
 
   // count the number of lines in the file
-  int nlines = 0;
+  const int nScenarios = smps.getMaxScens();
+  int *clusters = new int[nScenarios], scen, src, nlines = 0;
+  char buffer[100];
+
+  // read the clustering file
   fgets(buffer, 100, fin);
   fgets(buffer, 100, fin);
   while (!feof(fin)) {
-    fgets(buffer, 100, fin);
     nlines++;
+    fgets(buffer, 100, fin);
   }
 
   // the clustering file must have as many lines as there are scenarios
   printf("Clustering file: %s (%d lines).\n", clusteringFile, nlines);
-  if (nlines != nChildren) {
-    printf("Expected %d lines.\n", nChildren);
+  if (nlines != nScenarios) {
+    printf("Expected %d lines.\n", nScenarios);
     fclose(fin);
+    delete[] clusters;
     return 1;
   }
 
+  const Node *cNode = smps.getRootNode();
+  Node *rParent = nMap[cNode];
   Node *child = NULL, *ttt;
-  int nd, src, *src_nd = new int[nChildren];
   map<int, Node *> keepnodes;
 
   // now read the file again
@@ -424,13 +426,13 @@ int SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
   fgets(buffer, 100, fin);
 
   // copy the needed number of children of the complete node
-  for (int i = 0; i < nChildren; ++i) {
+  for (int i = 0; i < nScenarios; ++i) {
     fgets(buffer, 100, fin);
-    sscanf(buffer, "%d %d", &nd, &src);
-    src_nd[i] = src;
+    sscanf(buffer, "%d %d", &scen, &src);
+    clusters[i] = src;
 
     // this node should be kept
-    if (nd == src) {
+    if (scen == src) {
 
       ttt = cNode->getChild(i);
       child = new Node(ttt->name());
@@ -443,13 +445,13 @@ int SmpsOops::reduceScenariosCluster(const Node *cNode, Node *rParent,
   fclose(fin);
 
   // store the mapping of nodes
-  for (int i = 0; i < nChildren; ++i) {
+  for (int i = 0; i < nScenarios; ++i) {
     ttt = cNode->getChild(i);
-    nMap[ttt] = keepnodes[src_nd[i]];
+    nMap[ttt] = keepnodes[clusters[i]];
   }
 
   // clean up
-  delete[] src_nd;
+  delete[] clusters;
 
   return 0;
 }
@@ -495,7 +497,7 @@ int SmpsOops::reduceTree(const int nScenarios, const char *clusteringFile) {
 
   // build up the reduced tree by selecting some scenarios
   if (clusteringFile)
-    rv = reduceScenariosCluster(cNode, rNode, clusteringFile);
+    rv = reduceScenariosCluster(clusteringFile);
   else
     reduceScenarios(cNode, rNode, nWanted);
 
