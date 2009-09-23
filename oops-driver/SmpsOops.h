@@ -202,6 +202,9 @@ class WSPoint {
  public:
 
   /** Constructor */
+  WSPoint(const int nRows, const int nCols, const bool hasUpperBounds);
+
+  /** Constructor */
   WSPoint(DenseVector *vx, DenseVector *vy, DenseVector *vz,
 	  DenseVector *vs = NULL, DenseVector *vw = NULL);
 

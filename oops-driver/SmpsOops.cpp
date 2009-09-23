@@ -746,12 +746,6 @@ PDProblem SmpsOops::setupProblem(SmpsReturn &Pb, const WSPoint *wsIterate) {
  */
 int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
 
-  // dense vectors for the reduced solution
-  DenseVector *xred, *zred, *yred, *sred = NULL, *wred = NULL;
-
-  // dense vectors for the complete solution
-  DenseVector *xnew, *znew, *ynew, *snew = NULL, *wnew = NULL;
-
   printf(" --------------- setupWarmStart ------------\n");
 
   // dimensions of the complete and the reduced deterministic equivalents
@@ -770,41 +764,20 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
 #endif
 
   // allocate space for the vectors in the reduced iterate
-  xred = NewDenseVector(rCols, "xred");
-  yred = NewDenseVector(rRows, "yred");
-  zred = NewDenseVector(rCols, "zred");
-  if (smps.hasUpperBounds()) {
-    sred = NewDenseVector(rCols, "sred");
-    wred = NewDenseVector(rCols, "wred");
-  }
+  WSPoint wsReduced(rRows, rCols, smps.hasUpperBounds());
 
   // recover the initial ordering of the solution vectors
-  VectorToSmpsDense(pdProb.x, xred, Ret, ORDER_COL);
-  VectorToSmpsDense(pdProb.y, yred, Ret, ORDER_ROW);
-  VectorToSmpsDense(pdProb.z, zred, Ret, ORDER_COL);
+  VectorToSmpsDense(pdProb.x, wsReduced.x, Ret, ORDER_COL);
+  VectorToSmpsDense(pdProb.y, wsReduced.y, Ret, ORDER_ROW);
+  VectorToSmpsDense(pdProb.z, wsReduced.z, Ret, ORDER_COL);
   if (smps.hasUpperBounds()) {
-    VectorToSmpsDense(pdProb.s, sred, Ret, ORDER_COL);
-    VectorToSmpsDense(pdProb.w, wred, Ret, ORDER_COL);
+    VectorToSmpsDense(pdProb.s, wsReduced.s, Ret, ORDER_COL);
+    VectorToSmpsDense(pdProb.w, wsReduced.w, Ret, ORDER_COL);
   }
-  WSPoint wsReduced(xred, yred, zred, sred, wred);
 
   // allocate space for the vectors in the complete iterate
   if (!wsPoint) {
-    xnew = NewDenseVector(nCols, "xnew");
-    ynew = NewDenseVector(nRows, "ynew");
-    znew = NewDenseVector(nCols, "znew");
-    if (smps.hasUpperBounds()) {
-      snew = NewDenseVector(nCols, "snew");
-      wnew = NewDenseVector(nCols, "wnew");
-    }
-    wsPoint = new WSPoint(xnew, ynew, znew, snew, wnew);
-  }
-  else {
-    xnew = wsPoint->x;
-    ynew = wsPoint->y;
-    znew = wsPoint->z;
-    snew = wsPoint->s;
-    wnew = wsPoint->w;
+    wsPoint = new WSPoint(nRows, nCols, smps.hasUpperBounds());
   }
 
   // copy the solution from wsReduced into wsPoint
@@ -1156,6 +1129,19 @@ SmpsReturn::~SmpsReturn() {
   FreeDenseVector(u);
 
   delete[] is_col_diag;
+}
+
+/** Constructor */
+WSPoint::WSPoint(const int nRows, const int nCols, const bool hasUpperBounds) :
+  x(NewDenseVector(nCols, "x_ws")),
+  y(NewDenseVector(nRows, "y_ws")),
+  z(NewDenseVector(nCols, "z_ws")),
+  s(NULL),
+  w(NULL) {
+  if (hasUpperBounds) {
+    s = NewDenseVector(nCols, "s_ws");
+    w = NewDenseVector(nCols, "w_ws");
+  }
 }
 
 /** Constructor */
