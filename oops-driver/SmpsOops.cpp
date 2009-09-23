@@ -799,16 +799,23 @@ int SmpsOops::setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Ret) {
  *  solution, taking care of reconciling the probabilities between the two
  *  trees.
  *
+ *  This function also works the other way round, that is it can initialise a
+ *  reduced point from a complete one. In this case, as the mapping of nodes
+ *  (nMap) always refers to nodes in the complete tree, we have to swap the
+ *  roles of cNode and rNode.
+ *
  *  @param wsNew:
  *         The WSPoint to be set up.
  *  @param wsRed:
  *         The WSPoint which provides the most current solution.
  *  @param rootNode:
  *         Node in the complete tree corresponding to the reduced tree root.
+ *  @param swap:
+ *         True if we copy the solution from a complete warmstart point.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
 int SmpsOops::setupWSPoint(const WSPoint *wsNew, WSPoint *wsRed,
-                           const Node *rootNode) {
+                           const Node *rootNode, const bool swap) {
 
   const Node *cNode = rootNode, *rNode;
   int cIndex, rIndex, nElems;
@@ -820,6 +827,10 @@ int SmpsOops::setupWSPoint(const WSPoint *wsNew, WSPoint *wsRed,
   double *xred = wsRed->x->elts, *yred = wsRed->y->elts, *zred = wsRed->z->elts;
   double *sred = wsRed->s ? wsRed->s->elts : NULL;
   double *wred = wsRed->w ? wsRed->w->elts : NULL;
+
+  // ensure that we do not use the swap in the wrong case
+  assert((wsNew == wsPoint) && (swap == false) ||
+         (wsRed == wsPoint) && (swap == true));
 
   // go through the nodes in the complete tree
   do {
@@ -835,6 +846,11 @@ int SmpsOops::setupWSPoint(const WSPoint *wsNew, WSPoint *wsRed,
     cIndex = cNode->firstCol();
     rIndex = rNode->firstCol();
     nElems = cNode->nCols();
+    if (swap) {
+      cIndex = rNode->firstCol();
+      rIndex = cNode->firstCol();
+      crProb = rNode->probNode() / cNode->probNode();
+    }
 
     // adjust rIndex taking into account aggregation
     if (cNode->level() != rNode->level()) {
@@ -863,6 +879,10 @@ int SmpsOops::setupWSPoint(const WSPoint *wsNew, WSPoint *wsRed,
     cIndex = cNode->firstRow();
     rIndex = rNode->firstRow();
     nElems = cNode->nRows();
+    if (swap) {
+      cIndex = rNode->firstRow();
+      rIndex = cNode->firstRow();
+    }
 
     // adjust rIndex taking into account aggregation
     if (cNode->level() != rNode->level()) {
