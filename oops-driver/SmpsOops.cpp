@@ -117,7 +117,8 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
  *
  *  It first generates and solves a problem based on a reduced tree in order
  *  to obtain an approximation to the first-stage decisions, which is then
- *  substituted out in the decomposed subproblems.
+ *  substituted out in the decomposed subproblems. If requested, these can be
+ *  warmstarted from the solution obtained from the reduced tree.
  *
  *  @param opt:
  *         Command line options.
@@ -163,6 +164,10 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
   // solve a subproblem rooted for each second-stage node
   const Node *root = smps.getRootNode();
   const int nSubProblems = root->nChildren();
+  const bool bounds = smps.hasUpperBounds();
+
+  // dense vectors for the subproblem warmstart
+  WSPoint *wsDecomp = NULL;
 
   // compute the correction for the first stage variables
   fsContr = firstStageContribution();
@@ -177,13 +182,31 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
     printf(" --------------- subproblem %2d of %2d -------\n",
            chd + 1, nSubProblems);
 
+    const Node *cNode = root->getChild(chd);
+
     // generate the subtree corresponding to the current child
-    createSubtree(root->getChild(chd), 1000 * (chd + 1));
+    createSubtree(cNode, 1000 * (chd + 1));
+
+    if (opt.warmstartDecomposition()) {
+
+      // force an update of information held by the reduced tree so that the
+      // dimension of the corresponding determinitic equivalent are correct
+      orderNodes(rTree);
+
+      // warmstart point for the subproblem
+      wsDecomp = new WSPoint(rTree.getTotRows(), rTree.getTotCols(), bounds);
+
+      // set up the warmstart point from the complete subtree rooted at cNode
+      setupWSPoint(wsDecomp, wsPoint, cNode, true);
+      hopdmOpts.use_start_point = 1;
+      wsReady = true;
+    }
 
     // pass the problem to the solver
-    rv = solver(rTree, NULL, opt, hopdmOpts);
+    rv = solver(rTree, wsDecomp, opt, hopdmOpts);
 
     // clean up
+    delete wsDecomp;
     rTree.reset();
 
     if (rv)
