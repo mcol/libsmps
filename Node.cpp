@@ -32,6 +32,22 @@ Node::Node(const int nodeName) :
   _nCols(0) {
 }
 
+/** Constructor */
+Node::Node(const Node *fromNode) :
+  _parent(NULL),
+  _next(NULL),
+  _name(fromNode->_name),
+  _level(fromNode->_level),
+  _nLevels(1),
+  _scenario(fromNode->_scenario),
+  _block(0),
+  _probNode(0.0),
+  _firstRow(0),
+  _firstCol(0),
+  _nRows(0),
+  _nCols(0) {
+}
+
 /** Destructor */
 Node::~Node() {
 
@@ -39,15 +55,6 @@ Node::~Node() {
   for (int i = 0; i < (int) _children.size(); ++i) {
     delete _children[i];
   }
-}
-
-/** Copy the information from a node */
-int Node::copy(const Node *fromNode) {
-
-  _level    = fromNode->_level;
-  _scenario = fromNode->_scenario;
-
-  return 0;
 }
 
 /**

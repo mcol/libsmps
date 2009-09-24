@@ -24,6 +24,9 @@ class Node {
   /** Constructor */
   Node(const int name);
 
+  /** Constructor */
+  Node(const Node *fromNode);
+
   /** Destructor */
   ~Node();
 
@@ -32,9 +35,6 @@ class Node {
 
   /** Remove a node from the list of children */
   int removeChild(Node *child);
-
-  /** Copy the information from a node */
-  int copy(const Node *fromNode);
 
   /** Check whether the node is part of the given scenario */
   bool belongsToScenario(const int scen) const;

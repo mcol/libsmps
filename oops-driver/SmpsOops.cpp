@@ -185,7 +185,7 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
     const Node *cNode = root->getChild(chd);
 
     // generate the subtree corresponding to the current child
-    createSubtree(cNode, 1000 * (chd + 1));
+    createSubtree(cNode);
 
     if (opt.warmstartDecomposition()) {
 
@@ -356,8 +356,7 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
     }
 
     // copy the node in the reduced tree
-    rChild = new Node(cChild->name());
-    rChild->copy(cChild);
+    rChild = new Node(cChild);
     rParent->addChild(rChild);
     nMap[cChild] = rChild;
 
@@ -458,8 +457,7 @@ int SmpsOops::reduceScenariosCluster(const char *clusteringFile) {
     if (scen == src) {
 
       ttt = cNode->getChild(i);
-      child = new Node(ttt->name());
-      child->copy(ttt);
+      child = new Node(ttt);
       rParent->addChild(child);
       keepnodes[i] = child;
     }
@@ -506,11 +504,8 @@ int SmpsOops::reduceTree(const int nScenarios, const char *clusteringFile) {
     nWanted = smps.getMaxScens();
 
   // allocate the root node for the reduced tree
-  rTree.setRootNode(new Node(100 + cNode->name()), cNode);
-  Node *rNode = rTree.getRootNode();
-
-  // copy the root node
-  rNode->copy(cNode);
+  Node *rNode = new Node(cNode);
+  rTree.setRootNode(rNode, cNode);
   nMap[cNode] = rNode;
 
   // print the number of scenarios in the reduced tree
@@ -563,7 +558,6 @@ int SmpsOops::aggregateStages(const int nAggr) {
   // aggregate the last stages
   printf("Aggregating stages %d to %d.\n", last, smps.getPeriods());
 
-  int nodeName = 100;
   const Node *cNode = smps.getRootNode();
   Node *rNode = NULL;
 
@@ -583,8 +577,7 @@ int SmpsOops::aggregateStages(const int nAggr) {
     if (cNode->level() < last) {
 
       // create a node in the reduced tree
-      rNode = new Node(++nodeName);
-      rNode->copy(cNode);
+      rNode = new Node(cNode);
       rNode->setProb(cNode->probNode());
       if (cNode->parent())
         nMap[cNode->parent()]->addChild(rNode);
@@ -631,11 +624,9 @@ void dfsMap(map<const Node*, Node*> &nMap, const Node *cNode, Node *rNode) {
  *
  *  @param cOrig:
  *         The node to be used as root node of the subtree.
- *  @param nodeName:
- *         A number used to differentiate the names of the subtree nodes.
  *  @return 1 If something goes wrong, 0 otherwise.
  */
-int SmpsOops::createSubtree(const Node *cOrig, const int nodeName) {
+int SmpsOops::createSubtree(const Node *cOrig) {
 
   Node *rNode = NULL;
   const double rootProb = cOrig->probNode();
@@ -653,8 +644,7 @@ int SmpsOops::createSubtree(const Node *cOrig, const int nodeName) {
     assert(cNode != NULL);
 
     // create a node in the reduced tree
-    rNode = new Node(nodeName + cNode->name());
-    rNode->copy(cNode);
+    rNode = new Node(cNode);
     if (cNode != cOrig)
       nMap[cNode->parent()]->addChild(rNode);
 

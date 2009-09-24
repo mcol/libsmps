@@ -101,7 +101,7 @@ class SmpsOops {
   int reduceScenariosCluster(const char *clusteringFile);
 
   /** Generate a subtree rooted at the given node */
-  int createSubtree(const Node *cOrig, const int nodeName);
+  int createSubtree(const Node *cOrig);
 
   /** Set up the warmstart point from a reduced-tree solution */
   int setupWarmStart(const PDProblem &pdProb, const SmpsReturn &Pb);
