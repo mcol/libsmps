@@ -6,7 +6,6 @@ include $(OOPS)/mkincl
 
 LIBS    += \
 	-L $(LIBDIR) \
-	-L $(LPSOLVE) \
 	-linterface -lsmps -lstoc \
 	-lhopdminterface -lhopdm \
 	$(NULL)
@@ -39,5 +38,4 @@ INCLUDE = \
 	-I $(OOPS)/include \
 	-I $(DEPTH)/interface \
 	-I $(DEPTH) \
-	-I $(LPSOLVE) \
 	$(NULL)
