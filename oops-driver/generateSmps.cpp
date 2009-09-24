@@ -720,10 +720,10 @@ int SmpsOops::generateSmps(const SmpsTree &tree, SmpsReturn &Ret) {
     }
   }
 
-  Ret.b = NewDenseVector(ttm, "RHS");
-  Ret.c = NewDenseVector(ttn, "Obj");
-  Ret.l = NewDenseVector(ttn, "LB");
-  Ret.u = NewDenseVector(ttn, "UB");
+  Ret.b = new DenseVector(ttm, "RHS");
+  Ret.c = new DenseVector(ttn, "Obj");
+  Ret.l = new DenseVector(ttn, "LB");
+  Ret.u = new DenseVector(ttn, "UB");
 
   // setup the right-hand side
   setupRhs(smps, tree, &Ret);
@@ -1442,14 +1442,14 @@ int SmpsOops::SmpsDenseToVector(DenseVector *dx, Vector *x,
 
   DenseVector *dxord = dx;
   if (rowcol == ORDER_COL) {
-    dxord = NewDenseVector(x->node->end - x->node->begin, "dxord");
+    dxord = new DenseVector(x->node->end - x->node->begin, "dxord");
     forwOrderColVector(smps, Ret, dx, dxord);
   }
 
   x->copyFromDense(dxord);
 
   if (rowcol == ORDER_COL)
-    FreeDenseVector(dxord);
+    delete dxord;
 
   return 0;
 }

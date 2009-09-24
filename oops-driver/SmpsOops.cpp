@@ -940,36 +940,29 @@ int SmpsOops::setupWSPoint(const WSPoint *wsNew, WSPoint *wsRed,
  */
 int SmpsOops::getSolution(PDProblem &pdProb, SmpsReturn &Ret) {
 
-  DenseVector *x, *y, *z, *r;
   Tree *Trow = Ret.AlgA->Trow;
   Tree *Tcol = Ret.AlgA->Tcol;
   const int nRows = Trow->end - Trow->begin;
   const int nCols = Tcol->end - Tcol->begin;
 
   // allocate space for the solution vectors
-  x = NewDenseVector(nCols, "dx");
-  y = NewDenseVector(nRows, "dy");
-  z = NewDenseVector(nCols, "dz");
+  DenseVector x(nCols, "dx");
+  DenseVector y(nRows, "dy");
+  DenseVector z(nCols, "dz");
 
   // this is just a placeholder, we cannot yet compute the slacks
-  r = NewDenseVector(nRows, "slacks");
+  DenseVector r(nRows, "slacks");
 
   // recover the original ordering in the solution vectors
-  VectorToSmpsDense(pdProb.x, x, Ret, ORDER_COL);
-  VectorToSmpsDense(pdProb.y, y, Ret, ORDER_ROW);
-  VectorToSmpsDense(pdProb.z, z, Ret, ORDER_COL);
+  VectorToSmpsDense(pdProb.x, &x, Ret, ORDER_COL);
+  VectorToSmpsDense(pdProb.y, &y, Ret, ORDER_ROW);
+  VectorToSmpsDense(pdProb.z, &z, Ret, ORDER_COL);
 
   // print the solution
 #ifdef WITH_MPI
   if (IS_ROOT_PAR)
 #endif
-    printSolution(Ret.rootNode, x->elts, y->elts, r->elts, z->elts);
-
-  // clean up
-  FreeDenseVector(x);
-  FreeDenseVector(y);
-  FreeDenseVector(z);
-  FreeDenseVector(r);
+    printSolution(Ret.rootNode, x.elts, y.elts, r.elts, z.elts);
 
   return 0;
 }
@@ -1176,14 +1169,14 @@ SmpsReturn::~SmpsReturn() {
 
 /** Constructor */
 WSPoint::WSPoint(const int nRows, const int nCols, const bool hasUpperBounds) :
-  x(NewDenseVector(nCols, "x_ws")),
-  y(NewDenseVector(nRows, "y_ws")),
-  z(NewDenseVector(nCols, "z_ws")),
+  x(new DenseVector(nCols, "x_ws")),
+  y(new DenseVector(nRows, "y_ws")),
+  z(new DenseVector(nCols, "z_ws")),
   s(NULL),
   w(NULL) {
   if (hasUpperBounds) {
-    s = NewDenseVector(nCols, "s_ws");
-    w = NewDenseVector(nCols, "w_ws");
+    s = new DenseVector(nCols, "s_ws");
+    w = new DenseVector(nCols, "w_ws");
   }
 }
 
@@ -1200,13 +1193,11 @@ WSPoint::WSPoint(DenseVector *vx, DenseVector *vy, DenseVector *vz,
 /** Destructor */
 WSPoint::~WSPoint() {
 
-  FreeDenseVector(x);
-  FreeDenseVector(y);
-  FreeDenseVector(z);
-  if (s)
-    FreeDenseVector(s);
-  if (w)
-    FreeDenseVector(w);
+  delete x;
+  delete y;
+  delete z;
+  delete s;
+  delete w;
 }
 
 /** Constructor */
@@ -1340,9 +1331,9 @@ double* SmpsOops::firstStageContribution() {
   sp->MatrixTimesVect(sp, v, vsol, 0, 1.0);
 
 #ifdef DEBUG_DECOMPOSITION
-  PrintVector(v);
+  v->print();
   sp->Print(stdout, sp->Matrix, "%f");
-  PrintVector(vsol);
+  vsol->print();
 #endif
 
   DenseVector *ddense = GetDenseVectorFromVector(vsol);
