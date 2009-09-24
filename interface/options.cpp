@@ -11,7 +11,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <iostream>
 #include <string>
 #include "options.h"
 
@@ -76,8 +75,8 @@ int Options::parse() {
 	  break;
 	}
 	else {
-          cerr << "Option '" << optionList[i].name
-	       << "' requires an argument.\n";
+          fprintf(stderr, "Option '%s' requires an argument.\n",
+                  optionList[i].name);
 	  return 1;
 	}
       }
@@ -85,7 +84,7 @@ int Options::parse() {
 
     // the program has been called with an unrecognized option
     if (!found) {
-      cerr << "Option '" << vArgs[arg] << "' not recognised.\n";
+      fprintf(stderr, "Option '%s' not recognised.\n", vArgs[arg]);
       showHelpMessage(programName);
       return 1;
     }

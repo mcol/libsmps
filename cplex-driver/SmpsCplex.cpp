@@ -9,7 +9,6 @@
  *
  */
 
-#include <iostream>
 #include "SmpsCplex.h"
 
 

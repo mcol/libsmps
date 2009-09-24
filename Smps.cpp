@@ -9,7 +9,6 @@
  *
  */
 
-#include <iostream>
 #include <fstream>
 #include <string.h>
 #include <assert.h>
@@ -90,7 +89,7 @@ int Smps::readSmpsFile(string smpsFileName) {
   // open the input file
   smps.open(smpsFile.c_str(), ifstream::in);
   if (smps.fail()) {
-    cerr << "Could not open file '" << smpsFile << "'.\n";
+    fprintf(stderr, "Could not open file '%s'.\n", smpsFile.c_str());
     return ERROR_FILE_NOT_FOUND;
   }
 
@@ -112,7 +111,7 @@ int Smps::readSmpsFile(string smpsFileName) {
   }
 
   if (nRead != 3) {
-    cerr << "The input file should specify the 3 smps files.\n";
+    fprintf(stderr, "The input file should specify the 3 smps files.\n");
     return ERROR_SMPS_FORMAT;
   }
 
@@ -126,15 +125,15 @@ int Smps::readSmpsFile(string smpsFileName) {
 
   // check if the files exist and can be read
   if (access(coreFile.c_str(), R_OK)) {
-    cerr << "File "  << coreFile << " cannot be read.\n";
+    fprintf(stderr, "File '%s' cannot be read.\n", coreFile.c_str());
     rv = ERROR_FILE_NOT_FOUND;
   }
   if (access(timeFile.c_str(), R_OK)) {
-    cerr << "File "  << timeFile << " cannot be read.\n";
+    fprintf(stderr, "File '%s' cannot be read.\n", timeFile.c_str());
     rv = ERROR_FILE_NOT_FOUND;
   }
   if (access(stocFile.c_str(), R_OK)) {
-    cerr << "File "  << stocFile << " cannot be read.\n";
+    fprintf(stderr, "File '%s' cannot be read.\n", stocFile.c_str());
     rv = ERROR_FILE_NOT_FOUND;
   }
 

@@ -36,7 +36,7 @@ enum TestResults {
 int callSuite(int (*testSuite)(void), const char name[]);
 
 /** Print a separator with the name for a family of tests */
-void setFamily(const string& testFamily);
+void setFamily(const char *testFamily);
 
 /** Check equality between two values. */
 template<class T>
@@ -46,9 +46,9 @@ int checkEqual(const T& value, const T& expValue,
   nTests++;
   if (value != expValue) {
     if (testName != "")
-      cout << " | Testing: " << testName << endl;
+      cout << " | Testing: " << testName << "\n";
     cout << " | FAIL: " << valueName << ": " << value
-	 << " (exp: " << expValue << ")\n" << endl;
+	 << " (exp: " << expValue << ")\n\n";
     nFails++;
     return TEST_FAILURE;
   }

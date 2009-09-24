@@ -9,7 +9,6 @@
  *
  */
 
-#include <iostream>
 #include "SmpsLpsolve.h"
 #include "lp_lib.h"
 

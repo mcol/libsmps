@@ -51,13 +51,13 @@ int callSuite(int (*testSuite)(void), const char name[]) {
 
   testSuite();
 
-  cout << " === Total tests: " << nTests << endl;
-  cout << " === Total fails: " << nFails << endl;
+  printf(" === Total tests: %d\n", nTests);
+  printf(" === Total fails: %d\n", nFails);
 
   return 0;
 }
 
 /** Print a separator with the name for a family of tests */
-void setFamily(const string& testFamily) {
-  cout << "   = " << testFamily << endl;
+void setFamily(const char *testFamily) {
+  printf("   = %s\n", testFamily);
 }

@@ -10,7 +10,6 @@
  */
 
 #include <string.h>
-#include <iostream>
 #include <fstream>
 #include <queue>
 #include "Smps.h"
@@ -101,7 +100,7 @@ int SmpsStoc::readStocFile(SmpsTree &Tree) {
   // open the input file
   stoc.open(stocFile.c_str(), ifstream::in);
   if (stoc.fail()) {
-    cerr << "Could not open file '" << stocFile << "'.\n";
+    fprintf(stderr, "Could not open file '%s'.\n", stocFile.c_str());
     return ERROR_FILE_NOT_FOUND;
   }
 
@@ -551,7 +550,8 @@ int SmpsStoc::scanScenariosType(ifstream &stoc) {
       // find out at what period this scenario branches
       branchPeriod = matchPeriodName(perName);
       if (branchPeriod < 0) {
-	cerr << "Period >" << perName << "< not declared in the time file.\n";
+        fprintf(stderr, "Period >%s< not declared in the time file.\n",
+                perName);
 	return ERROR_STOC_FORMAT;
       }
 
@@ -648,6 +648,6 @@ void SmpsTree::print() const {
 /** Report an error message for an unparseable line */
 void printErrorLine(const char *buffer) {
 
-  cerr << "Something wrong with this line?\n"
-       << ">" << buffer << "<\n";
+  fprintf(stderr, "Something wrong with this line?\n"
+          ">%s<\n", buffer);
 }
