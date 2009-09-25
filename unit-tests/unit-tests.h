@@ -46,8 +46,8 @@ int checkEqual(const T& value, const T& expValue,
   nTests++;
   if (value != expValue) {
     if (testName != "")
-      cout << " | Testing: " << testName << "\n";
-    cout << " | FAIL: " << valueName << ": " << value
+      cerr << " | Testing: " << testName << "\n";
+    cerr << " | FAIL: " << valueName << ": " << value
 	 << " (exp: " << expValue << ")\n\n";
     nFails++;
     return TEST_FAILURE;

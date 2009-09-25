@@ -47,17 +47,17 @@ int callSuite(int (*testSuite)(void), const char name[]) {
 
   nTests = 0;
   nFails = 0;
-  printf("\n *** Tests for %s ***\n", name);
+  fprintf(stderr, "\n *** Tests for %s ***\n", name);
 
   testSuite();
 
-  printf(" === Total tests: %d\n", nTests);
-  printf(" === Total fails: %d\n", nFails);
+  fprintf(stderr, " === Total tests: %d\n", nTests);
+  fprintf(stderr, " === Total fails: %d\n", nFails);
 
   return 0;
 }
 
 /** Print a separator with the name for a family of tests */
 void setFamily(const char *testFamily) {
-  printf("   = %s\n", testFamily);
+  fprintf(stderr, "   = %s\n", testFamily);
 }
