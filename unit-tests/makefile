@@ -25,7 +25,7 @@ HEADERS := \
 
 DEPENDS := \
 	$(HEADERS) \
-	$(LIBSMPS) \
+	$(LIBDIR)/libsmps.a \
 	$(NULL)
 
 TESTEXE	:= xtests
