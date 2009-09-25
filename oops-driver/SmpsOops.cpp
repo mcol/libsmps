@@ -395,19 +395,11 @@ void SmpsOops::reduceScenarios(const Node *cNode, Node *rParent,
  *  The first line of the clustering file is always skipped: the scenario
  *  mappings must start from the second line.
  *
- *  @note
- *  At the moment it works only for two stage problems.
- *
  *  @param clusteringFile:
  *         Name of the clustering file for scenario reduction.
  *  @return 1 If something goes wrong; 0 otherwise.
  */
 int SmpsOops::reduceScenariosCluster(const char *clusteringFile) {
-
-  if (smps.getPeriods() > 2) {
-    printf("Scenario clustering can be used only for two-stage problems.\n");
-    return 1;
-  }
 
   FILE *fin = fopen(clusteringFile, "r");
   if (!fin) {
@@ -416,7 +408,6 @@ int SmpsOops::reduceScenariosCluster(const char *clusteringFile) {
     return 1;
   }
 
-  // count the number of lines in the file
   const int nScenarios = smps.getMaxScens();
   int *clusters = new int[nScenarios], scen, src, nlines = 0;
   char buffer[100];
@@ -425,51 +416,83 @@ int SmpsOops::reduceScenariosCluster(const char *clusteringFile) {
   fgets(buffer, 100, fin);
   fgets(buffer, 100, fin);
   while (!feof(fin)) {
+    sscanf(buffer, "%d %d", &scen, &src);
+    clusters[scen] = src;
     nlines++;
     fgets(buffer, 100, fin);
   }
+
+  fclose(fin);
 
   // the clustering file must have as many lines as there are scenarios
   printf("Clustering file: %s (%d lines).\n", clusteringFile, nlines);
   if (nlines != nScenarios) {
     printf("Expected %d lines.\n", nScenarios);
-    fclose(fin);
     delete[] clusters;
     return 1;
   }
 
-  const Node *cNode = smps.getRootNode();
-  Node *rParent = nMap[cNode];
-  Node *child = NULL, *ttt;
-  map<int, Node *> keepnodes;
+  // when we generate the reduced tree we may encounter a cNode that should
+  // map to an rNode that hasn't been created yet: therefore, we only map
+  // the cNodes for which we are creating an rNode.
+  // an unmapped cNode should map to the rNode of the same level and that
+  // belongs to the scenario that the cNode is clustered into. to allow
+  // finding which rNode an unmapped cNode should map to, we compute an
+  // hash of the rNode's level and scenario with the macro NODE_HASH and
+  // store it into tmpMap
+  #define NODE_HASH(node) (node->level() + 100 * clusters[node->scenario()])
+  map<int, Node *> tmpMap;
 
-  // now read the file again
-  rewind(fin);
-  fgets(buffer, 100, fin);
+  // start from the first node after the root
+  const Node *cNode = smps.getRootNode()->next();
+  Node *rParent, *rNode;
 
-  // copy the needed number of children of the complete node
-  for (int i = 0; i < nScenarios; ++i) {
-    fgets(buffer, 100, fin);
-    sscanf(buffer, "%d %d", &scen, &src);
-    clusters[i] = src;
+  do {
 
-    // this node should be kept
-    if (scen == src) {
+    // get to what scenario the scenario of this node maps to
+    scen = clusters[cNode->scenario()];
 
-      ttt = cNode->getChild(i);
-      child = new Node(ttt);
-      rParent->addChild(child);
-      keepnodes[i] = child;
+    if (cNode->belongsToScenario(scen)) {
+
+      // put the node in the reduced tree
+      rNode = new Node(cNode);
+      rParent = nMap[cNode->parent()];
+      rParent->addChild(rNode);
+      nMap[cNode] = rNode;
+
+      // create a map of (scen, period) to rNode that can be used when
+      // after this do-while loop we try to map the unmapped cNodes
+      tmpMap[NODE_HASH(cNode)] = rNode;
     }
-  }
 
-  fclose(fin);
+  } while ((cNode = cNode->next()));
 
-  // store the mapping of nodes
-  for (int i = 0; i < nScenarios; ++i) {
-    ttt = cNode->getChild(i);
-    nMap[ttt] = keepnodes[clusters[i]];
-  }
+#ifdef DEBUG_CLUSTERING
+  map<int, Node*>::iterator ix;
+  printf("tmpMap: hash => rNode:\n");
+  for (ix = tmpMap.begin(); ix != tmpMap.end(); ix++)
+    printf("%3d => %3d\n", (*ix).first, (*ix).second->name());
+#endif
+
+  // create the node mapping: we traverse all the complete tree because
+  // we didn't keep track of which nodes are unmapped
+  cNode = smps.getRootNode()->next();
+
+  do {
+
+#ifdef DEBUG_CLUSTERING
+    printf("Finding cNode %d, code %d", cNode->name(), NODE_HASH(cNode));
+#endif
+
+    rNode = tmpMap[NODE_HASH(cNode)];
+    assert(rNode);
+    nMap[cNode] = rNode;
+
+#ifdef DEBUG_CLUSTERING
+    printf(" =>  mapped to %d\n", rNode->name());
+#endif
+
+  } while ((cNode = cNode->next()));
 
   // clean up
   delete[] clusters;
