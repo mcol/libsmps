@@ -28,7 +28,6 @@ SmpsOops::SmpsOops(string smpsFile, const int lev) :
   smps(smpsFile),
   rTree(),
   wsPoint(NULL),
-  wsReady(false),
   cutoff(lev) {
 }
 
@@ -66,10 +65,6 @@ int SmpsOops::solve(const OptionsOops &opt, HopdmOptions &hopdmOpts) {
     smps.setBuildNames();
   }
 
-  // use the warmstart point if available
-  if (wsReady)
-    hopdmOpts.use_start_point = 1;
-
   printf(" --------------- solve ---------------------\n");
 
   // pass the problem to the solver
@@ -102,9 +97,6 @@ int SmpsOops::solveReduced(const OptionsOops &opt,
   int rv = solver(rTree, NULL, opt, hopdmOpts);
   if (rv)
     return rv;
-
-  // the warmstart point is ready
-  wsReady = true;
 
   // restore the tolerance
   hopdmOpts.glopt->conv_tol = origTol;
@@ -153,7 +145,6 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
   rTree.reset();
 
   printf(" ---- Calling firstStageBlock ----\n");
-  wsReady = false;
 
   // store the original convergence tolerance
   const double origTol = hopdmOpts.glopt->conv_tol;
@@ -198,8 +189,6 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
 
       // set up the warmstart point from the complete subtree rooted at cNode
       setupWSPoint(wsDecomp, wsPoint, cNode, true);
-      hopdmOpts.use_start_point = 1;
-      wsReady = true;
     }
 
     // pass the problem to the solver
@@ -212,9 +201,6 @@ int SmpsOops::solveDecomposed(const OptionsOops &opt,
     if (rv)
       goto TERMINATE;
   }
-
-  // the warmstart point is now completely defined
-  wsReady = true;
 
  TERMINATE:
 
@@ -280,6 +266,9 @@ int SmpsOops::solver(SmpsTree &tree, const WSPoint *wsIterate,
   }
 
   PrintOptions Prt(reduced ? PRINT_NONE : PRINT_ITER);
+
+  if (wsIterate)
+    hopdmOpts.use_start_point = 1;
 
   // solve the problem
   hopdm_ret *ret = hopdm(printout, &pdProb, &hopdmOpts, &Prt);
@@ -735,7 +724,7 @@ PDProblem SmpsOops::setupProblem(SmpsReturn &Pb, const WSPoint *wsIterate) {
   }
 
   // use the warmstart point if available
-  if (wsReady) {
+  if (wsIterate) {
     SmpsDenseToVector(wsIterate->x, vx, Pb, ORDER_COL);
     SmpsDenseToVector(wsIterate->y, vy, Pb, ORDER_ROW);
     SmpsDenseToVector(wsIterate->z, vz, Pb, ORDER_COL);
