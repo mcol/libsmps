@@ -90,6 +90,12 @@ ProbData *setupMatrix(Smps &smps, const Node *node) {
   if (obj    == NULL || blo    == NULL || bup    == NULL ||
       acoeff == NULL || rwnmbs == NULL || clpnts == NULL) {
     printf("Memory allocation failed.\n");
+    delete[] obj;
+    delete[] blo;
+    delete[] bup;
+    delete[] acoeff;
+    delete[] rwnmbs;
+    delete[] clpnts;
     return NULL;
   }
   memset(blo, 0, ttn * sizeof(double));
