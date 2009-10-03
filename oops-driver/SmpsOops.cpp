@@ -854,8 +854,8 @@ int SmpsOops::setupWSPoint(const WSPoint *wsNew, WSPoint *wsRed,
   double *wred = wsRed->w ? wsRed->w->elts : NULL;
 
   // ensure that we do not use the swap in the wrong case
-  assert((wsNew == wsPoint) && (swap == false) ||
-         (wsRed == wsPoint) && (swap == true));
+  assert(((wsNew == wsPoint) && (swap == false)) ||
+         ((wsRed == wsPoint) && (swap == true)));
 
   // go through the nodes in the complete tree
   do {
