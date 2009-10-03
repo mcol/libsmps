@@ -83,7 +83,7 @@ class SmpsCore {
   SmpsCore(string coreFileName = "", string timeFileName = "");
 
   /** Destructor */
-  ~SmpsCore();
+  virtual ~SmpsCore();
 
   /** Read the core file */
   int readCoreFile(string coreFileName = "");
