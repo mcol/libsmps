@@ -9,7 +9,7 @@ CPLEX   = /usr/local/ilog/cplex
 LIBS	+= \
 	-L $(LIBDIR) \
 	-L $(CPLEX)/lib/x86_debian4.0_4.1/static_pic \
-	-linterface -lsmps++ -lsmps \
+	-lsmps++ -lsmps \
 	-lilocplex -lcplex -lpthread \
 	$(NULL)
 
@@ -29,7 +29,6 @@ HEADERS = \
 DEPENDS = \
 	$(HEADERS) \
 	$(LIBDIR)/libsmps++.a \
-	$(LIBDIR)/libinterface.a \
 	$(NULL)
 
 OUTPUT  = x2cplex

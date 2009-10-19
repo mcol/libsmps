@@ -6,7 +6,7 @@ include $(OOPS)/mkincl
 
 LIBS    += \
 	-L $(LIBDIR) \
-	-linterface -lsmps++ -lsmps \
+	-lsmps++ -lsmps \
 	-lhopdminterface -lhopdm \
 	$(NULL)
 
@@ -26,7 +26,6 @@ HEADERS = \
 DEPENDS = \
 	$(HEADERS) \
 	$(LIBDIR)/libsmps++.a \
-	$(LIBDIR)/libinterface.a \
 	$(NULL)
 
 OUTPUT  = x2hopdm

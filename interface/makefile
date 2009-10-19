@@ -21,10 +21,9 @@ HEADERS = \
 
 DEPENDS = \
 	$(HEADERS) \
-	$(LIBDIR)/libsmps++.a \
 	$(NULL)
 
-LIBRARY = $(LIBDIR)/libinterface.a
+LIBRARY = $(LIBDIR)/libsmps++.a
 
 include $(OOPS)/mkfhost/rules.mk
 

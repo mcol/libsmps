@@ -9,7 +9,7 @@ include $(OOPS)/mkincl
 LIBS	+= \
 	-L $(LIBDIR) \
 	-L $(GLPK)/lib \
-	-linterface -lsmps++ -lsmps \
+	-lsmps++ -lsmps \
 	-lglpk \
 	$(NULL)
 
@@ -29,7 +29,6 @@ HEADERS = \
 DEPENDS = \
 	$(HEADERS) \
 	$(LIBDIR)/libsmps++.a \
-	$(LIBDIR)/libinterface.a \
 	$(NULL)
 
 OUTPUT  = x2glpk
