@@ -9,7 +9,7 @@ include $(OOPS)/mkincl
 LIBS	+= \
 	-L $(LIBDIR) \
 	-L $(GLPK)/lib \
-	-linterface -lsmps -lstoc \
+	-linterface -lsmps++ -lsmps \
 	-lglpk \
 	$(NULL)
 
@@ -28,7 +28,7 @@ HEADERS = \
 
 DEPENDS = \
 	$(HEADERS) \
-	$(LIBDIR)/libsmps.a \
+	$(LIBDIR)/libsmps++.a \
 	$(LIBDIR)/libinterface.a \
 	$(NULL)
 

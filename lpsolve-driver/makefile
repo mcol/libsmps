@@ -7,7 +7,7 @@ include $(OOPS)/mkincl
 LIBS	+= \
 	-L $(LIBDIR) \
 	-L $(LPSOLVE) \
-	-linterface -lsmps -lstoc \
+	-linterface -lsmps++ -lsmps \
 	-llpsolve55 -ldl \
 	$(NULL)
 
@@ -26,7 +26,7 @@ HEADERS = \
 
 DEPENDS = \
 	$(HEADERS) \
-	$(LIBDIR)/libsmps.a \
+	$(LIBDIR)/libsmps++.a \
 	$(LIBDIR)/libinterface.a \
 	$(NULL)
 

@@ -22,7 +22,7 @@ HEADERS := \
 
 DEPENDS := \
 	$(HEADERS) \
-	$(LIBDIR)/libstoc.a \
+	$(LIBDIR)/libsmps.a \
 	$(NULL)
 
 APPS	:= \
@@ -33,6 +33,6 @@ APPS	:= \
 	oops-driver \
 	$(NULL)
 
-LIBRARY := $(LIBDIR)/libsmps.a
+LIBRARY := $(LIBDIR)/libsmps++.a
 
 include $(OOPS)/mkfhost/rules.mk

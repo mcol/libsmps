@@ -6,7 +6,7 @@ include $(OOPS)/mkincl
 
 LIBS	+= \
 	-L $(LIBDIR) \
-	-lsmps -lstoc \
+	-lsmps++ -lsmps \
 	$(NULL)
 
 SOURCES := \
@@ -25,7 +25,7 @@ HEADERS := \
 
 DEPENDS := \
 	$(HEADERS) \
-	$(LIBDIR)/libsmps.a \
+	$(LIBDIR)/libsmps++.a \
 	$(NULL)
 
 TESTEXE	:= xtests

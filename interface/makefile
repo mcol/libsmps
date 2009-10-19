@@ -21,7 +21,7 @@ HEADERS = \
 
 DEPENDS = \
 	$(HEADERS) \
-	$(LIBDIR)/libsmps.a \
+	$(LIBDIR)/libsmps++.a \
 	$(NULL)
 
 LIBRARY = $(LIBDIR)/libinterface.a

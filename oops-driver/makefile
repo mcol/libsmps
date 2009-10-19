@@ -9,7 +9,7 @@ LIBS	+= \
 	$(LAPACKLIB) \
 	$(METISLIB) \
 	-L $(LIBDIR) \
-	-linterface -lsmps -lstoc \
+	-linterface -lsmps++ -lsmps \
 	$(NULL)
 
 SOURCES	:= \
@@ -26,7 +26,7 @@ HEADERS := \
 DEPENDS := \
 	$(HEADERS) \
 	$(LIBOOPS) \
-	$(LIBDIR)/libsmps.a \
+	$(LIBDIR)/libsmps++.a \
 	$(LIBDIR)/libinterface.a \
 	$(NULL)
 
